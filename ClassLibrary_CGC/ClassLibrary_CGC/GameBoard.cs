@@ -52,15 +52,25 @@ namespace ClassLibrary_CGC
         }
     }
 
+    [Serializable]
     public class Cell : GameObject
     {
-        public CellType CellType
-        {
-            get;
-            set;
-        }
+
     }
 
+    [Serializable]
+    public class Cell_indestructible : Cell
+    {
+
+    }
+
+    [Serializable]
+    public class Cell_destructible : Cell
+    {
+
+    }
+
+    [Serializable]
     public class Lava : GameObject
     {
         int liveTime;
@@ -81,11 +91,11 @@ namespace ClassLibrary_CGC
 
 
 
-
+    [Serializable]
     public class GameBoard
     {
         int w, h;
-        Cell[,] board;
+        Cell[,] cells;
         List<Player> players;
         List<Bonus> bonuses;
         List<Bomb> bombs;
@@ -93,12 +103,13 @@ namespace ClassLibrary_CGC
 
         public int W
         {
-            get {
+            get
+            {
                 return w;
             }
             set
             {
-                if (value>2)
+                if (value > 2)
                 {
                     w = (int)value;
                 }
@@ -118,10 +129,71 @@ namespace ClassLibrary_CGC
                 }
             }
         }
+
+        public Cell[,] Cells
+        {
+            get
+            {
+                return cells;
+            }
+            set
+            {
+                cells = value;
+            }
+        }
+
+        public List<Player> Players
+        {
+            get
+            {
+                return players;
+            }
+            set
+            {
+                players = value;
+            }
+        }
+
+        public List<Bonus> Bonuses
+        {
+            get
+            {
+                return bonuses;
+            }
+            set
+            {
+                bonuses = value;
+            }
+        }
+
+        public List<Bomb> Bombs
+        {
+            get
+            {
+                return bombs;
+            }
+            set
+            {
+                bombs = value;
+            }
+        }
+
+        public List<Lava> Lavas
+        {
+            get
+            {
+                return lavas;
+            }
+            set
+            {
+                lavas = value;
+            }
+        }
+
     }
 
-
-    public class Player:GameObject
+    [Serializable]
+    public class Player : GameObject
     {
         int health;
 
@@ -147,23 +219,40 @@ namespace ClassLibrary_CGC
         }
     }
 
-
-
+    [Serializable]
     public class Bonus : GameObject
     {
         bool visible;
-
-        public BonusType BonusType
+        public bool Visible
         {
-            get;
-            set;
+            get
+            {
+                return visible;
+            }
+            set
+            {
+                visible = value;
+            }
         }
     }
 
-    public class Bomb: GameObject
+    [Serializable]
+    public class Bonus_multiple : Bonus
+    {
+
+    }
+
+    [Serializable]
+    public class Bonus_big : Bonus
+    {
+
+    }
+
+    [Serializable]
+    public class Bomb : GameObject
     {
         int liveTime;
-        
+
         public int LiveTime
         {
             get
@@ -177,17 +266,18 @@ namespace ClassLibrary_CGC
                     liveTime = (int)value;
             }
         }
-
-
-        public BombType BombType
-        {
-            get;
-            set;
-        }
     }
 
+    [Serializable]
+    public class Bomb_multiple : Bomb
+    {
 
+    }
 
+    [Serializable]
+    public class Bomb_big : Bomb
+    {
 
+    }
 
 }
