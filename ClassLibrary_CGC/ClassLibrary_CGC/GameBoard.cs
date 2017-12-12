@@ -61,12 +61,35 @@ namespace ClassLibrary_CGC
         }
     }
 
+    public class Lava : GameObject
+    {
+        int liveTime;
+        public int LiveTime
+        {
+            get
+            {
+                return liveTime;
+            }
+            set
+            {
+                if (value >= 0)
+                    liveTime = (int)value;
+            }
+        }
+
+    }
+
+
 
 
     public class GameBoard
     {
         int w, h;
-        
+        Cell[,] board;
+        List<Player> players;
+        List<Bonus> bonuses;
+        List<Bomb> bombs;
+        List<Lava> lavas;
 
         public int W
         {
@@ -95,9 +118,6 @@ namespace ClassLibrary_CGC
                 }
             }
         }
-
-
-
     }
 
 
@@ -131,6 +151,8 @@ namespace ClassLibrary_CGC
 
     public class Bonus : GameObject
     {
+        bool visible;
+
         public BonusType BonusType
         {
             get;
