@@ -10,9 +10,14 @@ using System.Threading;
 
 namespace Bomber_wpf
 {
-
+    public enum Action
+    {
+        Right, Left, Up, Down, Bomb, wait
+    }
     public partial class Form1 : Form
     {
+     
+
 
         public Form1()
         {
@@ -23,13 +28,15 @@ namespace Bomber_wpf
 
             gb = new GameBoard();
 
-            Bomb tbomb = new Bomb_big();
-            tbomb.X = gb.W/2;
-            tbomb.Y = gb.H/2;
-            tbomb.LiveTime = CONST.bomb_live_time;
-            tbomb.PlayerID = 0;
 
-            gb.Bombs.Add(tbomb);
+
+            //Bomb tbomb = new Bomb_big();
+            //tbomb.X = gb.W/2;
+            //tbomb.Y = gb.H/2;
+            //tbomb.LiveTime = CONST.bomb_live_time;
+            //tbomb.PlayerID = 0;
+
+            //gb.Bombs.Add(tbomb);
 
         }
 
@@ -43,24 +50,58 @@ namespace Bomber_wpf
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
-            for (int i = 0; i < gb.Cells.GetLength(0); i++)
-            {
-                for (int j = 0; j < gb.Cells.GetLength(1); j++)
-                {
-                    var tcell = gb.Cells[i, j];
-                    if (tcell is Cell_indestructible)
-                    {
-                        PaintRect(tcell.X, tcell.Y, Color.Black);
-                    }
-                    else if (tcell is Cell_destructible)
-                    {
-                        PaintRect(tcell.X, tcell.Y, Color.Bisque);
-                        //  g.FillEllipse(new SolidBrush(Color.Red), tcell.X * cw, tcell.Y * cw, cw, cw);
+            DrawCells();
 
-                    }
-                }
+            BonusesProccess();
+            BombsProccess();
+            LavasProccess();
+            BotProccess();
+            PaintPlayers();
+
+
+            DrawGrid();
+
+            Thread.Sleep(555);
+            panel1.Refresh();
+        }
+
+        public void BotProccess()
+        {
+            Player tvitya = gb.Players[0];
+            tvitya.Play();
+
+            switch (tvitya.ACTION)
+            {               
+                case Action.Right:
+                    tvitya.X++;
+                    break;
+                case Action.Left:
+                    tvitya.X--;
+                    break;
+                case Action.Down:
+                    tvitya.Y++;
+                    break;
+                case Action.Up:
+                    tvitya.Y--;
+                    break;
             }
+            
 
+
+        }
+
+        public void PaintPlayers()
+        {
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                var tplayer = gb.Players[i];
+                PaintEllipse(tplayer.X, tplayer.Y, Color.Purple);
+            }
+        }
+
+
+        public void BonusesProccess()
+        {
             for (int i = 0; i < gb.Bonuses.Count; i++)
             {
                 var tbonus = gb.Bonuses[i];
@@ -73,9 +114,13 @@ namespace Bomber_wpf
                 {
                     bcolor = Color.DarkRed;
                 }
-                PaintElliple(tbonus.X, tbonus.Y, bcolor);
+                PaintEllipse(tbonus.X, tbonus.Y, bcolor);
             }
+        }
 
+
+        public void BombsProccess()
+        {
             for (int i = 0; i < gb.Bombs.Count; i++)
             {
                 var tbomb = gb.Bombs[i];
@@ -88,11 +133,14 @@ namespace Bomber_wpf
                     continue;
                 }
 
-                PaintElliple(tbomb.X, tbomb.Y, Color.Gainsboro);
+                PaintEllipse(tbomb.X, tbomb.Y, Color.Gainsboro);
                 tbomb.LiveTime--;
             }
+        }
 
 
+        public void LavasProccess()
+        {
             for (int i = 0; i < gb.Lavas.Count; i++)
             {
                 var tlava = gb.Lavas[i];
@@ -103,17 +151,33 @@ namespace Bomber_wpf
                 }
                 PaintLava();
             }
-
-
-
-
-            DrawGrid();
-
-            Thread.Sleep(555);
-            panel1.Refresh();
         }
 
 
+        public void DrawCells()
+        {
+            for (int i = 0; i < gb.Cells.GetLength(0); i++)
+            {
+                for (int j = 0; j < gb.Cells.GetLength(1); j++)
+                {
+                    var tcell = gb.Cells[i, j];
+                    if (tcell is Cell_indestructible)
+                    {
+                        PaintRect(tcell.X, tcell.Y, Color.Black);
+                    }
+                    else if (tcell is Cell_destructible)
+                    {
+                        PaintRect(tcell.X, tcell.Y, Color.Bisque);
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Создать лаву на основе информации о бомбе, её породившую
+        /// </summary>
+        /// <param name="_bomb"></param>
         public void GenerateLava(Bomb _bomb)
         {
             int tradius = CONST.lava_radius;
@@ -131,7 +195,9 @@ namespace Bomber_wpf
             gb.Lavas.Add(tlava);
         }
 
-
+        /// <summary>
+        /// Нарисовать лаву с соотвествующими радиусами
+        /// </summary>
         public void PaintLava()
         {
             for (int k = 0; k < gb.Lavas.Count; k++)
@@ -160,13 +226,25 @@ namespace Bomber_wpf
             }
         }
 
-        public void PaintElliple(int x, int y, Color cl)
+
+        /// <summary>
+        /// Нариросовать эллипс
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="cl"></param>
+        public void PaintEllipse(int x, int y, Color cl)
         {
             sb = new SolidBrush(cl);
             g.FillEllipse(new SolidBrush(cl), x * cw, y * cw, cw, cw);
         }
 
-
+        /// <summary>
+        /// нарисовать квадрат
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="cl"></param>
         public void PaintRect(int x, int y, Color cl)
         {
             sb = new SolidBrush(cl);
@@ -227,6 +305,13 @@ namespace Bomber_wpf
             GenerateBonuses(CONST.bonuses_count);
             Bombs = new List<Bomb>();
             Lavas = new List<Lava>();
+            Players = new List<Player>();
+
+            Bot vitya = new Bot();
+            vitya.X = W - 1;
+            vitya.Y = 2;
+            players.Add(vitya);
+
         }
 
         /// <summary>
@@ -517,6 +602,7 @@ namespace Bomber_wpf
     {
         int health;
         int id;
+        Action action;
 
         public int ID
         {
@@ -534,10 +620,16 @@ namespace Bomber_wpf
         }
     
 
-        public Action Action
+       public Action ACTION
         {
-            get;
-            set;
+            get
+            {
+                return action;
+            }
+            set
+            {
+                action = value;
+            }
         }
 
         public int Health
@@ -556,11 +648,31 @@ namespace Bomber_wpf
         }
 
 
-        public void Play ()
+        public virtual void Play ()
         {
 
         }
+
+
     }
+
+    public class Bot: Player
+    {
+        public override void Play()
+        {
+            if (this.Y % 2 == 0)
+            {
+                ACTION = Action.Down;
+            }
+            else
+            {
+                ACTION = Action.Up;
+            }
+        }
+    }
+
+
+
 
     [Serializable]
     public class Bonus : GameObject
@@ -748,7 +860,7 @@ namespace Bomber_wpf
         public static int lava_radius = 1;
         public static int lava_radius_big = 2;
         public static int lava_livetime = 5;
-        public static int bomb_live_time = 1;
+        public static int bomb_live_time = 3;
         public static int player_health = 3;
 
         public static Color cell_destructible_color = Color.Bisque;
