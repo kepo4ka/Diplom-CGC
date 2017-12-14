@@ -53,7 +53,16 @@ namespace Bomber_wpf
             for (int i = 0; i < gb.Bonuses.Count; i++)
             {
                 var tbonus = gb.Bonuses[i];
-                PaintElliple(tbonus.X, tbonus.Y, Color.Red);
+                Color bcolor;
+                if (tbonus is Bonus_big)
+                {
+                    bcolor = Color.IndianRed;
+                }
+                else
+                {
+                    bcolor = Color.DarkRed;
+                }
+                PaintElliple(tbonus.X, tbonus.Y, bcolor);
             }
           
 
