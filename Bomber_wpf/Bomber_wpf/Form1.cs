@@ -185,11 +185,11 @@ namespace Bomber_wpf
         public Random rn = new Random();
 
 
-        public GameBoard(int _size,  int _players_count)
-        {
-            W = _size;
-            H = _size;
-        }
+        //public GameBoard(int _size,  int _players_count)
+        //{
+        //    W = _size;
+        //    H = _size;
+        //}
 
         public GameBoard()
         {
@@ -327,10 +327,18 @@ namespace Bomber_wpf
 
             bonuses_count = bonuses_count % cells_dest.Count;
 
+            List<int> cells_dest_indexes = new List<int>();
+            for (int i = 0; i < cells_dest.Count; i++)
+            {
+                cells_dest_indexes.Add(i);
+            }
+
 
             for (int i = 0; i < bonuses_count; i++)
             {
-                int rpoint = rn.Next(0, cells_dest.Count);
+                int rpoint = cells_dest_indexes[rn.Next(0, cells_dest_indexes.Count)];
+                cells_dest_indexes.Remove(rpoint);
+
                 int rtype = rn.Next(0, 2);
                 Bonus tbonus;
                 if (rtype%2==0)
