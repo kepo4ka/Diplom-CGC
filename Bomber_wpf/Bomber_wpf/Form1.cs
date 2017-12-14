@@ -338,10 +338,13 @@ namespace Bomber_wpf
                     tbonus = new Bonus_multiple(cells_dest[rpoint].X, cells_dest[rpoint].Y);
                     bonuses.Add(tbonus);
 
+                    tbonus = new Bonus_multiple(W - cells_dest[rpoint].X-1, cells_dest[rpoint].Y);
                     bonuses.Add(tbonus);
 
+                    tbonus = new Bonus_multiple(cells_dest[rpoint].X, H - cells_dest[rpoint].Y-1);
                     bonuses.Add(tbonus);
 
+                    tbonus = new Bonus_multiple(W - cells_dest[rpoint].X-1, H - cells_dest[rpoint].Y-1);
                     bonuses.Add(tbonus);
                 }
                 else
@@ -349,10 +352,13 @@ namespace Bomber_wpf
                     tbonus = new Bonus_big(cells_dest[rpoint].X, cells_dest[rpoint].Y);
                     bonuses.Add(tbonus);
 
+                    tbonus = new Bonus_big(W - cells_dest[rpoint].X-1, cells_dest[rpoint].Y);
                     bonuses.Add(tbonus);
 
+                    tbonus = new Bonus_big(cells_dest[rpoint].X, H - cells_dest[rpoint].Y-1);
                     bonuses.Add(tbonus);
 
+                    tbonus = new Bonus_big(W - cells_dest[rpoint].X-1, H - cells_dest[rpoint].Y-1);
                     bonuses.Add(tbonus);
                 }               
             }
@@ -464,13 +470,13 @@ namespace Bomber_wpf
         }
 
     }
-
+    
     [Serializable]
     public class Player : GameObject
     {
         int health;
         int id;
-    
+
         public int ID
         {
             get
