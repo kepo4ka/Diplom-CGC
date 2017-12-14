@@ -13,14 +13,23 @@ namespace Bomber_wpf
 
     public partial class Form1 : Form
     {
+
         public Form1()
         {
             InitializeComponent();
             g = panel1.CreateGraphics();
             p = new Pen(Color.Black);
             sb = new SolidBrush(Color.DimGray);
+
             gb = new GameBoard();
-            g = panel1.CreateGraphics();           
+
+            Bomb tbomb = new Bomb_big();
+            tbomb.X = gb.W/2;
+            tbomb.Y = gb.H/2;
+            tbomb.LiveTime = CONST.bomb_live_time;
+            tbomb.PlayerID = 0;
+
+            gb.Bombs.Add(tbomb);
 
         }
 
@@ -30,8 +39,10 @@ namespace Bomber_wpf
         SolidBrush sb;
         GameBoard gb;
 
+
+
         private void panel1_Paint(object sender, PaintEventArgs e)
-        {           
+        {
             for (int i = 0; i < gb.Cells.GetLength(0); i++)
             {
                 for (int j = 0; j < gb.Cells.GetLength(1); j++)
@@ -44,7 +55,7 @@ namespace Bomber_wpf
                     else if (tcell is Cell_destructible)
                     {
                         PaintRect(tcell.X, tcell.Y, Color.Bisque);
-                      //  g.FillEllipse(new SolidBrush(Color.Red), tcell.X * cw, tcell.Y * cw, cw, cw);
+                        //  g.FillEllipse(new SolidBrush(Color.Red), tcell.X * cw, tcell.Y * cw, cw, cw);
 
                     }
                 }
@@ -64,15 +75,90 @@ namespace Bomber_wpf
                 }
                 PaintElliple(tbonus.X, tbonus.Y, bcolor);
             }
-          
+
+            for (int i = 0; i < gb.Bombs.Count; i++)
+            {
+                var tbomb = gb.Bombs[i];
+
+                if (tbomb.LiveTime < 1)
+                {
+                    GenerateLava(tbomb);
+
+                    gb.Bombs.Remove(tbomb);
+                    continue;
+                }
+
+                PaintElliple(tbomb.X, tbomb.Y, Color.Gainsboro);
+                tbomb.LiveTime--;
+            }
+
+
+            for (int i = 0; i < gb.Lavas.Count; i++)
+            {
+                var tlava = gb.Lavas[i];
+
+                if (tlava.LiveTime < 1)
+                {
+                    gb.Lavas.Remove(tlava);
+                }
+                PaintLava();
+            }
+
+
 
 
             DrawGrid();
 
-            //Thread.Sleep(103);
-            //panel1.Refresh();
+            Thread.Sleep(555);
+            panel1.Refresh();
         }
 
+
+        public void GenerateLava(Bomb _bomb)
+        {
+            int tradius = CONST.lava_radius;
+            if (_bomb is Bomb_big)
+            {
+                tradius = CONST.lava_radius_big;
+            }
+
+            Lava tlava = new Lava();
+            tlava.X = _bomb.X;
+            tlava.Y = _bomb.Y;
+            tlava.Radius = tradius;
+            tlava.LiveTime = CONST.lava_livetime;
+            tlava.PlayerID = _bomb.PlayerID;
+            gb.Lavas.Add(tlava);
+        }
+
+
+        public void PaintLava()
+        {
+            for (int k = 0; k < gb.Lavas.Count; k++)
+            {
+                var tlava = gb.Lavas[k];
+                for (int i = tlava.X - tlava.Radius; i <= tlava.X + tlava.Radius; i++)
+                {
+                    if (i<0 || i>gb.W-1)
+                    {
+                        continue;
+                    }
+
+                    for (int j = tlava.Y - tlava.Radius; j <= tlava.Y + tlava.Radius; j++)
+                    {
+                        if (j < 0 || j > gb.H - 1)
+                        {
+                            continue;
+                        }
+                        PaintRect(i, j, CONST.lava_color);
+                    }
+                }
+
+
+                tlava.LiveTime--;
+
+            }
+        }
 
         public void PaintElliple(int x, int y, Color cl)
         {
@@ -112,78 +198,10 @@ namespace Bomber_wpf
 
 
 
-
-    public class GameObject
-    {
-        int x, y;
-        public int X
-        {
-            get
-            {
-                return x;
-            }
-            set
-            {
-                if (value >= 0)
-                    x = (int)value;
-            }
-        }
-        public int Y
-        {
-            get
-            {
-                return y;
-            }
-            set
-            {
-                if (value >= 0)
-                    y = (int)value;
-            }
-        }
-    }
-
-    [Serializable]
-    public class Cell : GameObject
-    {
-
-    }
-
-    [Serializable]
-    public class Cell_indestructible : Cell
-    {
-
-    }
-
-    [Serializable]
-    public class Cell_destructible : Cell
-    {
-
-    }
-
-    [Serializable]
-    public class Lava : GameObject
-    {
-        int liveTime;
-        public int LiveTime
-        {
-            get
-            {
-                return liveTime;
-            }
-            set
-            {
-                if (value >= 0)
-                    liveTime = (int)value;
-            }
-        }
-
-    }
-
-
-
     [Serializable]
     public class GameBoard
     {
+
         int w, h;
         Cell[,] cells;
         List<Player> players;
@@ -206,8 +224,9 @@ namespace Bomber_wpf
             W = size;
             H = size;
             GenerateBoard(size);
-            GenerateBonuses(3);
-
+            GenerateBonuses(CONST.bonuses_count);
+            Bombs = new List<Bomb>();
+            Lavas = new List<Lava>();
         }
 
         /// <summary>
@@ -485,9 +504,14 @@ namespace Bomber_wpf
                 lavas = value;
             }
         }
-
     }
     
+
+
+
+
+
+
     [Serializable]
     public class Player : GameObject
     {
@@ -530,6 +554,12 @@ namespace Bomber_wpf
                 }
             }
         }
+
+
+        public void Play ()
+        {
+
+        }
     }
 
     [Serializable]
@@ -559,8 +589,6 @@ namespace Bomber_wpf
             this.Y = y;
             Visible = false;
         }
-
-
     }
 
     [Serializable]
@@ -578,6 +606,21 @@ namespace Bomber_wpf
     public class Bomb : GameObject
     {
         int liveTime;
+        int playerID;
+
+        public int PlayerID
+        {
+            get
+            {
+                return playerID;
+            }
+
+            set
+            {
+                if (value >= 0)
+                    playerID = (int)value;
+            }
+        }
 
         public int LiveTime
         {
@@ -595,14 +638,124 @@ namespace Bomber_wpf
     }
 
     [Serializable]
-    public class Bomb_multiple : Bomb
+    public class Bomb_big : Bomb
+    {
+
+    }
+
+
+
+    public class GameObject
+    {
+        int x, y;
+        public int X
+        {
+            get
+            {
+                return x;
+            }
+            set
+            {
+                if (value >= 0)
+                    x = (int)value;
+            }
+        }
+        public int Y
+        {
+            get
+            {
+                return y;
+            }
+            set
+            {
+                if (value >= 0)
+                    y = (int)value;
+            }
+        }
+    }
+
+    [Serializable]
+    public class Cell : GameObject
     {
 
     }
 
     [Serializable]
-    public class Bomb_big : Bomb
+    public class Cell_indestructible : Cell
     {
 
     }
+
+    [Serializable]
+    public class Cell_destructible : Cell
+    {
+
+    }
+
+    [Serializable]
+    public class Lava : GameObject
+    {
+        int liveTime;
+
+        int playerID;
+        int radius;
+
+        public int Radius
+        {
+            get
+            {
+                return radius;
+            }
+            set
+            {
+                if (value >= 0)
+                    radius = (int)value;
+            }
+        }
+
+        public int PlayerID
+        {
+            get
+            {
+                return playerID;
+            }
+            set
+            {
+                if (value >= 0)
+                    playerID = (int)value;
+            }
+        }
+
+        public int LiveTime
+        {
+            get
+            {
+                return liveTime;
+            }
+            set
+            {
+                if (value >= 0)
+                    liveTime = (int)value;
+            }
+        }
+
+    }
+
+
+    public class CONST
+    {
+        public static int bonuses_count = 3;
+        public static int lava_radius = 1;
+        public static int lava_radius_big = 2;
+        public static int lava_livetime = 5;
+        public static int bomb_live_time = 1;
+        public static int player_health = 3;
+
+        public static Color cell_destructible_color = Color.Bisque;
+        public static Color cell_indestructible_color = Color.Black;
+
+        public static Color lava_color = Color.Orange;
+
+    }
+
 }
