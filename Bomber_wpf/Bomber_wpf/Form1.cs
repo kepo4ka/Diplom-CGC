@@ -14,10 +14,20 @@ namespace Bomber_wpf
     {
         Right, Left, Up, Down, Bomb, wait
     }
+
+    public enum BonusType
+    {
+       Big, Fast, None, All
+    }
+
     public partial class Form1 : Form
     {
-     
 
+        public int cw = 30;
+        Graphics g;
+        Pen p;
+        SolidBrush sb;
+        GameBoard gb;
 
         public Form1()
         {
@@ -28,23 +38,51 @@ namespace Bomber_wpf
 
             gb = new GameBoard();
 
+            for (int i = 0; i < gb.W; i++)
+            {
+                gb.Cells[i, 0] = new Cell_free();
+                gb.Cells[i, 0].X = i;
+                gb.Cells[i, 0].Y = 0;
+
+                gb.Cells[i, 1] = new Cell_indestructible();
+                gb.Cells[i, 1].X = i;
+                gb.Cells[i, 1].Y = 1;
+            }
 
 
-            //Bomb tbomb = new Bomb_big();
-            //tbomb.X = gb.W/2;
-            //tbomb.Y = gb.H/2;
-            //tbomb.LiveTime = CONST.bomb_live_time;
-            //tbomb.PlayerID = 0;
 
-            //gb.Bombs.Add(tbomb);
+
+            Bot vitya = new Bot();
+            vitya.X = 14;
+            vitya.Y = 0;
+            vitya.BonusType = BonusType.None;
+            vitya.ReloadTime = 0;
+            vitya.Color = Color.Purple;
+            vitya.ACTION = Action.Left;
+
+            gb.Players.Add(vitya);
+
+
+            Bot yura = new Bot();
+            yura.X = 5;
+            yura.Y = 0;
+            yura.BonusType = BonusType.None;
+            yura.ReloadTime = 0;
+            yura.Color = Color.Blue;
+            yura.ACTION = Action.wait;
+            gb.Players.Add(yura);
+
+
+            Bonus tmb = new Bonus_big(8, 0);
+            tmb.Visible = true;
+            Bonus tmb1 = new Bonus_fast(7, 0);
+            tmb1.Visible = true;
+
+            gb.Bonuses.Add(tmb);
+            gb.Bonuses.Add(tmb1);
+
 
         }
-
-        public int cw = 30;
-        Graphics g;
-        Pen p;
-        SolidBrush sb;
-        GameBoard gb;
 
 
 
@@ -52,42 +90,267 @@ namespace Bomber_wpf
         {
             DrawCells();
 
-            BonusesProccess();
-            BombsProccess();
-            LavasProccess();
-            BotProccess();
-            PaintPlayers();
 
+            MessageBox.Show(gb.Players[0].BonusType + "");
+
+            LavasProccess();
+            PlayerProcess();
+
+            PlayerBonusCollision();
+
+            BonusesProccess();
+
+            PaintPlayers();
+            BombsProccess();
 
             DrawGrid();
-
-            Thread.Sleep(555);
+            Thread.Sleep(435);
             panel1.Refresh();
         }
 
-        public void BotProccess()
+        public void PlayerProcess()
         {
-            Player tvitya = gb.Players[0];
-            tvitya.Play();
+            List<Player> tempplayers = new List<Player>();
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                var tvitya = gb.Players[i];
+                
+               // tvitya.Play();
 
-            switch (tvitya.ACTION)
-            {               
+                PlayerFire(tvitya);
+
+
+                Player tempplayer = new Player();
+                tempplayer.ACTION = tvitya.ACTION;
+                tempplayer.X = tvitya.X;
+                tempplayer.Y = tvitya.Y;
+                PlayerMove(tempplayer);
+                tempplayers.Add(tempplayer);
+            }
+
+            for (int i = 0; i < tempplayers.Count; i++)
+            {
+                var tvitya1 = tempplayers[i];
+                for (int j = i+1; j < tempplayers.Count; j++)
+                {
+                    var tvitya2 = tempplayers[j];
+                    if (tvitya1.X == tvitya2.X && tvitya1.Y == tvitya2.Y)
+                    {
+                        gb.Players[i].ACTION = Action.wait;
+                        gb.Players[j].ACTION = Action.wait;
+                    }
+                    if (tvitya2.X == gb.Players[i].X  && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
+                    {
+                        gb.Players[i].ACTION = Action.wait;
+                        gb.Players[j].ACTION = Action.wait;
+                    }
+
+                }
+            }
+
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                PlayerMove(gb.Players[i]);
+
+            }
+        }
+
+
+
+        public void PlayerBonusCollision()
+        {
+
+            Bonus[,] tempbonus = ListToMass(gb.Bonuses);
+           
+            for (int k = 0; k < gb.Players.Count; k++)
+            {
+                var tvitya = gb.Players[k];
+
+                int i = tvitya.X;
+                int j = tvitya.Y;
+
+                if(tempbonus[i,j] != null && tempbonus[i,j].Visible == true)
+                {
+                    if (tempbonus[i,j] is Bonus_big)
+                    {
+                        switch (tvitya.BonusType)
+                        {
+                            case BonusType.None:
+                                tvitya.BonusType = BonusType.Big;
+                                
+                                break;
+                            case BonusType.Fast:
+                                tvitya.BonusType = BonusType.All;
+                                tvitya.ReloadTime = CONST.player_reload_fast;
+                                break;
+                        }
+                    }
+                    else if (tempbonus[i,j] is Bonus_fast)
+                    {
+                        switch (tvitya.BonusType)
+                        {
+                            case BonusType.None:
+                                tvitya.BonusType = BonusType.Fast;
+                                tvitya.ReloadTime = CONST.player_reload_fast;
+                                break;
+                            case BonusType.Big:
+                                tvitya.BonusType = BonusType.All;
+                                tvitya.ReloadTime = CONST.player_reload_fast;
+                                break;
+                        }
+                    }
+                    gb.Bonuses.Remove(tempbonus[i, j]);
+                    tempbonus[i, j] = null;
+                }
+            }
+        }
+
+
+
+
+        public Bomb[,] ListToMass(List<Bomb> pbombs)
+        {
+            Bomb[,] tbombs_mass = new Bomb[gb.W, gb.H];
+
+            for (int i = 0; i < pbombs.Count; i++)
+            {
+                tbombs_mass[pbombs[i].X, pbombs[i].Y] = pbombs[i];
+            }
+            return tbombs_mass;
+        }
+
+        public Player[,] ListToMass(List<Player> pplayers)
+        {
+            Player[,] tplayers_mass = new Player[gb.W, gb.H];
+
+            for (int i = 0; i < pplayers.Count; i++)
+            {
+
+                tplayers_mass[pplayers[i].X, pplayers[i].Y] = pplayers[i];
+            }
+            return tplayers_mass;
+        }
+
+        public Bonus[,] ListToMass(List<Bonus> pbonuses)
+        {
+            Bonus[,] tbonus_mass = new Bonus[gb.W, gb.H];
+
+            for (int i = 0; i < pbonuses.Count; i++)
+            {
+                tbonus_mass[pbonuses[i].X, pbonuses[i].Y] = pbonuses[i];
+            }
+            return tbonus_mass;
+        }
+
+
+
+
+
+
+
+        /// <summary>
+        /// Совершить действие, планируемое игроком (свойство ACTION), если оно возможно
+        /// </summary>
+        /// <param name="pplayer">Игрок, действие которого планируется выполнить</param>
+        public void PlayerMove(Player pplayer)
+        {
+
+            Bomb[,] tbombs_mass = ListToMass(gb.Bombs);
+
+
+            switch (pplayer.ACTION)
+            {
                 case Action.Right:
-                    tvitya.X++;
+                    if (pplayer.X + 1 > gb.W - 1)
+                    {
+                        break;
+                    }
+                    if (gb.Cells[pplayer.X + 1, pplayer.Y] is Cell_destructible || gb.Cells[pplayer.X + 1, pplayer.Y] is Cell_indestructible)
+                    {
+                        break;
+                    }
+
+                    if (tbombs_mass[pplayer.X + 1, pplayer.Y] != null)
+                    {
+                        break;
+                    }
+
+
+                    pplayer.X++;
                     break;
+
                 case Action.Left:
-                    tvitya.X--;
+                    if (pplayer.X - 1 < 0)
+                    {
+                        break;
+                    }
+                    if (gb.Cells[pplayer.X - 1, pplayer.Y] is Cell_destructible || gb.Cells[pplayer.X - 1, pplayer.Y] is Cell_indestructible)
+                    {
+                        break;
+                    }
+
+                    if (tbombs_mass[pplayer.X - 1, pplayer.Y] != null)
+                    {
+                        break;
+                    }
+
+
+                    pplayer.X--;
                     break;
+
                 case Action.Down:
-                    tvitya.Y++;
+                    if (pplayer.Y + 1 > gb.H - 1)
+                    {
+                        break;
+                    }
+                    if (gb.Cells[pplayer.X, pplayer.Y + 1] is Cell_destructible || gb.Cells[pplayer.X, pplayer.Y + 1] is Cell_indestructible)
+                    {
+                        break;
+                    }
+
+                    if (tbombs_mass[pplayer.X, pplayer.Y + 1] != null)
+                    {
+                        break;
+                    }
+
+
+                    pplayer.Y++;
                     break;
+
                 case Action.Up:
-                    tvitya.Y--;
+                    if (pplayer.Y - 1 < 0)
+                    {
+                        break;
+                    }
+                    if (gb.Cells[pplayer.X, pplayer.Y - 1] is Cell_destructible || gb.Cells[pplayer.X, pplayer.Y - 1] is Cell_indestructible)
+                    {
+                        break;
+                    }
+
+                    if (tbombs_mass[pplayer.X, pplayer.Y - 1] != null)
+                    {
+                        break;
+                    }
+
+                    pplayer.Y--;
+                    break;
+                case Action.wait:
                     break;
             }
-            
+        }
 
 
+        public void PlayerFire(Player pplayer)
+        {
+            if (pplayer.ACTION == Action.Bomb)
+            {
+                if (pplayer.ReloadTime < 1)
+                {
+                    CreateBomb(pplayer);
+                    PlayerReload(pplayer);                   
+                }
+            }
+            pplayer.ReloadTime--;
         }
 
         public void PaintPlayers()
@@ -95,26 +358,47 @@ namespace Bomber_wpf
             for (int i = 0; i < gb.Players.Count; i++)
             {
                 var tplayer = gb.Players[i];
-                PaintEllipse(tplayer.X, tplayer.Y, Color.Purple);
+                PaintEllipse(tplayer.X, tplayer.Y, tplayer.Color);
             }
         }
 
+
+        public void PlayerReload(Player _player)
+        {
+            if (_player.BonusType == BonusType.Fast || _player.BonusType == BonusType.All)
+            {
+                _player.ReloadTime = CONST.player_reload_fast;
+            }
+            else
+            {
+                _player.ReloadTime = CONST.player_reload;
+            }
+        }
+
+   
+
+
+        public void CreateBomb(Player _player)
+        {
+            Bomb tbomb = new Bomb();
+            tbomb.LiveTime = CONST.bomb_live_time;
+            tbomb.PlayerID = _player.ID;
+            tbomb.X = _player.X;
+            tbomb.Y = _player.Y;
+            gb.Bombs.Add(tbomb);
+        }
 
         public void BonusesProccess()
         {
             for (int i = 0; i < gb.Bonuses.Count; i++)
             {
                 var tbonus = gb.Bonuses[i];
-                Color bcolor;
-                if (tbonus is Bonus_big)
+
+                if (tbonus.Visible == false)
                 {
-                    bcolor = Color.IndianRed;
+                    continue;
                 }
-                else
-                {
-                    bcolor = Color.DarkRed;
-                }
-                PaintEllipse(tbonus.X, tbonus.Y, bcolor);
+                PaintEllipse(tbonus.X, tbonus.Y, tbonus.Color);              
             }
         }
 
@@ -124,32 +408,105 @@ namespace Bomber_wpf
             for (int i = 0; i < gb.Bombs.Count; i++)
             {
                 var tbomb = gb.Bombs[i];
+                PaintBomb(tbomb.X, tbomb.Y, tbomb.Color);
 
                 if (tbomb.LiveTime < 1)
                 {
                     GenerateLava(tbomb);
 
                     gb.Bombs.Remove(tbomb);
+                    
                     continue;
                 }
 
-                PaintEllipse(tbomb.X, tbomb.Y, Color.Gainsboro);
                 tbomb.LiveTime--;
             }
         }
 
 
+
+
+
+
+        public void LavaCellsBonusesCollision(Lava plava)
+        {
+            Bonus[,] tbonuses_mass = ListToMass(gb.Bonuses);
+
+            for (int i = plava.X - plava.Radius; i <= plava.X + plava.Radius; i++)
+            {
+                if (i < 0 || i > gb.W - 1 || gb.Cells[i, plava.Y] is Cell_indestructible)
+                {
+                    continue;
+                }
+                if (gb.Cells[i, plava.Y] is Cell_destructible)
+                {
+                    gb.Cells[i, plava.Y] = new Cell_free();
+                    gb.Cells[i, plava.Y].X = i;
+                    gb.Cells[i, plava.Y].Y = plava.Y;
+
+                    if (tbonuses_mass[i, plava.Y] !=null)
+                    {
+                        tbonuses_mass[i, plava.Y].Visible = true;
+                    }
+                }
+            }
+
+            for (int j = plava.Y - plava.Radius; j <= plava.Y + plava.Radius; j++)
+            {
+                if (j < 0 || j > gb.H - 1 || gb.Cells[plava.X, j] is Cell_indestructible)
+                {
+                    continue;
+                }
+                if (gb.Cells[plava.X, j] is Cell_destructible)
+                {
+                    gb.Cells[plava.X, j] = new Cell_free();
+                    gb.Cells[plava.X, j].X = plava.X;
+                    gb.Cells[plava.X, j].Y = j;
+
+                    if (tbonuses_mass[plava.X, j] != null)
+                    {
+                        tbonuses_mass[plava.X, j].Visible = true;
+                    }
+                }
+            }  
+        }
+
+        
+
         public void LavasProccess()
         {
-            for (int i = 0; i < gb.Lavas.Count; i++)
+            for (int k = 0; k < gb.Lavas.Count; k++)
             {
-                var tlava = gb.Lavas[i];
+                var tlava = gb.Lavas[k];
 
-                if (tlava.LiveTime < 1)
+                if (tlava.LiveTime<1)
                 {
                     gb.Lavas.Remove(tlava);
+                    continue;
                 }
-                PaintLava();
+
+                LavaCellsBonusesCollision(tlava);
+
+                for (int i = tlava.X - tlava.Radius; i <= tlava.X + tlava.Radius; i++)
+                {
+                    if (i < 0 || i > gb.W - 1 || gb.Cells[i, tlava.Y] is Cell_indestructible)
+                    {                       
+                        continue;
+                    }
+                    PaintRect(i, tlava.Y, CONST.lava_color);
+                }
+
+                for (int j = tlava.Y - tlava.Radius; j <= tlava.Y + tlava.Radius; j++)
+                {
+                    if (j < 0 || j > gb.H - 1 || gb.Cells[tlava.X, j] is Cell_indestructible)
+                    {
+                        continue;
+                    }
+
+                    PaintRect(tlava.X, j, CONST.lava_color);
+                }             
+            
+                tlava.LiveTime--;
             }
         }
 
@@ -160,14 +517,15 @@ namespace Bomber_wpf
             {
                 for (int j = 0; j < gb.Cells.GetLength(1); j++)
                 {
-                    var tcell = gb.Cells[i, j];
+                    var tcell = gb.Cells[i, j];          
+
                     if (tcell is Cell_indestructible)
                     {
-                        PaintRect(tcell.X, tcell.Y, Color.Black);
+                        PaintRect(tcell.X, tcell.Y, tcell.Color);
                     }
                     else if (tcell is Cell_destructible)
                     {
-                        PaintRect(tcell.X, tcell.Y, Color.Bisque);
+                        PaintRect(tcell.X, tcell.Y, tcell.Color);
                     }
                 }
             }
@@ -195,37 +553,23 @@ namespace Bomber_wpf
             gb.Lavas.Add(tlava);
         }
 
-        /// <summary>
-        /// Нарисовать лаву с соотвествующими радиусами
-        /// </summary>
-        public void PaintLava()
-        {
-            for (int k = 0; k < gb.Lavas.Count; k++)
-            {
-                var tlava = gb.Lavas[k];
-                for (int i = tlava.X - tlava.Radius; i <= tlava.X + tlava.Radius; i++)
-                {
-                    if (i<0 || i>gb.W-1)
-                    {
-                        continue;
-                    }
-
-                    for (int j = tlava.Y - tlava.Radius; j <= tlava.Y + tlava.Radius; j++)
-                    {
-                        if (j < 0 || j > gb.H - 1)
-                        {
-                            continue;
-                        }
-                        PaintRect(i, j, CONST.lava_color);
-                    }
-                }
-
-
-                tlava.LiveTime--;
-
-            }
+        public void GenerateLava(int x, int y)
+        {          
+            Lava tlava = new Lava();
+            tlava.X = x;
+            tlava.Y = y;
+            tlava.Radius = CONST.lava_radius_big;
+            tlava.LiveTime = CONST.lava_livetime;
+            gb.Lavas.Add(tlava);
         }
 
+
+
+        public void PaintBomb(int x, int y, Color cl)
+        {
+            sb = new SolidBrush(cl);
+            g.FillEllipse(new SolidBrush(cl), x * cw, y * cw, cw/2, cw/2);
+        }
 
         /// <summary>
         /// Нариросовать эллипс
@@ -290,11 +634,7 @@ namespace Bomber_wpf
         public Random rn = new Random();
 
 
-        //public GameBoard(int _size,  int _players_count)
-        //{
-        //    W = _size;
-        //    H = _size;
-        //}
+
 
         public GameBoard()
         {
@@ -306,12 +646,6 @@ namespace Bomber_wpf
             Bombs = new List<Bomb>();
             Lavas = new List<Lava>();
             Players = new List<Player>();
-
-            Bot vitya = new Bot();
-            vitya.X = W - 1;
-            vitya.Y = 2;
-            players.Add(vitya);
-
         }
 
         /// <summary>
@@ -323,14 +657,13 @@ namespace Bomber_wpf
             Cells = new Cell[size, size];
             int temp_rn = 0;
 
-
             for (int i = 0; i < Cells.GetLength(0); i++)
             {
                 for (int j = 0; j < Cells.GetLength(1); j++)
                 {
-                    Cells[i, j] = new Cell();
-                    Cells[i, j].X = j;
-                    Cells[i, j].Y = i;
+                    Cells[i, j] = new Cell_free();
+                    Cells[i, j].X = i;
+                    Cells[i, j].Y = j;
                 }
             }
 
@@ -388,20 +721,20 @@ namespace Bomber_wpf
                     if (temp_rn < 5)
                     {
                         Cells[i, j] = new Cell_destructible();
-                        Cells[i, j].X = j;
-                        Cells[i, j].Y = i;
+                        Cells[i, j].X = i;
+                        Cells[i, j].Y = j;
 
                         Cells[ii, jj] = new Cell_destructible();
-                        Cells[ii, jj].X = jj;
-                        Cells[ii, jj].Y = ii;
+                        Cells[ii, jj].X = ii;
+                        Cells[ii, jj].Y = jj;
 
                         Cells[ii, j] = new Cell_destructible();
-                        Cells[ii, j].X = j;
-                        Cells[ii, j].Y = ii;
+                        Cells[ii, j].X = ii;
+                        Cells[ii, j].Y = j;
 
                         Cells[i, jj] = new Cell_destructible();
-                        Cells[i, jj].X = jj;
-                        Cells[i, jj].Y = i;
+                        Cells[i, jj].X = i;
+                        Cells[i, jj].Y = jj;
                     }                    
                 }
             }
@@ -420,7 +753,10 @@ namespace Bomber_wpf
 
 
 
-
+        /// <summary>
+        /// Сгенерировать бонусы внутри разрушаемых стен
+        /// </summary>
+        /// <param name="bonuses_count">Количество бонусов (будет умножено в 4 раза)</param>
         private void GenerateBonuses(int bonuses_count)
         {
             bonuses = new List<Bonus>();
@@ -446,7 +782,6 @@ namespace Bomber_wpf
                 cells_dest_indexes.Add(i);
             }
 
-
             for (int i = 0; i < bonuses_count; i++)
             {
                 int rpoint = cells_dest_indexes[rn.Next(0, cells_dest_indexes.Count)];
@@ -456,16 +791,16 @@ namespace Bomber_wpf
                 Bonus tbonus;
                 if (rtype%2==0)
                 {
-                    tbonus = new Bonus_multiple(cells_dest[rpoint].X, cells_dest[rpoint].Y);
+                    tbonus = new Bonus_fast(cells_dest[rpoint].X, cells_dest[rpoint].Y);
                     bonuses.Add(tbonus);
 
-                    tbonus = new Bonus_multiple(W - cells_dest[rpoint].X-1, cells_dest[rpoint].Y);
+                    tbonus = new Bonus_fast(W - cells_dest[rpoint].X-1, cells_dest[rpoint].Y);
                     bonuses.Add(tbonus);
 
-                    tbonus = new Bonus_multiple(cells_dest[rpoint].X, H - cells_dest[rpoint].Y-1);
+                    tbonus = new Bonus_fast(cells_dest[rpoint].X, H - cells_dest[rpoint].Y-1);
                     bonuses.Add(tbonus);
 
-                    tbonus = new Bonus_multiple(W - cells_dest[rpoint].X-1, H - cells_dest[rpoint].Y-1);
+                    tbonus = new Bonus_fast(W - cells_dest[rpoint].X-1, H - cells_dest[rpoint].Y-1);
                     bonuses.Add(tbonus);
                 }
                 else
@@ -488,8 +823,9 @@ namespace Bomber_wpf
 
 
 
-
-
+        /// <summary>
+        /// Длина поля
+        /// </summary>
         public int W
         {
             get
@@ -504,6 +840,10 @@ namespace Bomber_wpf
                 }
             }
         }
+
+        /// <summary>
+        /// Ширина поля
+        /// </summary>
         public int H
         {
             get
@@ -519,6 +859,10 @@ namespace Bomber_wpf
             }
         }
 
+
+        /// <summary>
+        /// Массив клеток поля
+        /// </summary>
         public Cell[,] Cells
         {
             get
@@ -531,6 +875,9 @@ namespace Bomber_wpf
             }
         }
 
+        /// <summary>
+        /// Список игроков на поле
+        /// </summary>
         public List<Player> Players
         {
             get
@@ -543,6 +890,10 @@ namespace Bomber_wpf
             }
         }
 
+
+        /// <summary>
+        /// Список бонусов
+        /// </summary>
         public List<Bonus> Bonuses
         {
             get
@@ -566,6 +917,9 @@ namespace Bomber_wpf
             }
         }
 
+        /// <summary>
+        /// Список бонусов
+        /// </summary>
         public List<Bomb> Bombs
         {
             get
@@ -578,6 +932,10 @@ namespace Bomber_wpf
             }
         }
 
+
+        /// <summary>
+        /// Список центров крестовидных лав
+        /// </summary>
         public List<Lava> Lavas
         {
             get
@@ -603,6 +961,40 @@ namespace Bomber_wpf
         int health;
         int id;
         Action action;
+
+        int reloadTime;
+
+        BonusType bonusType;
+
+        public BonusType BonusType
+        {
+            get
+            {
+                return bonusType;
+            }
+            set
+            {
+                if (value >= 0)
+                {
+                    bonusType = value;
+                }
+            }
+        }
+
+        public int ReloadTime
+        {
+            get
+            {
+                return reloadTime;
+            }
+            set
+            {
+                if (value >= 0)
+                {
+                    reloadTime = value;
+                }
+            }
+        }
 
         public int ID
         {
@@ -660,14 +1052,31 @@ namespace Bomber_wpf
     {
         public override void Play()
         {
-            if (this.Y % 2 == 0)
+            Random rn = new Random();
+
+            int rnumber = rn.Next(0,6);
+            switch(rnumber)
             {
-                ACTION = Action.Down;
-            }
-            else
-            {
-                ACTION = Action.Up;
-            }
+                case 0:
+                    ACTION = Action.wait;
+                    break;
+                case 1:
+                    
+                    ACTION = Action.Bomb;
+                    break;
+                case 2:
+                    ACTION = Action.Right;
+                    break;
+                case 3:
+                    ACTION = Action.Left;
+                    break;
+                case 4:
+                    ACTION = Action.Up;
+                    break;
+                case 5:
+                    ACTION = Action.Down;
+                    break; 
+            }    
         }
     }
 
@@ -678,7 +1087,7 @@ namespace Bomber_wpf
     public class Bonus : GameObject
     {
         bool visible;
-
+ 
         public bool Visible
         {
             get
@@ -690,16 +1099,19 @@ namespace Bomber_wpf
                 visible = value;
             }
         }
+
+
     }
 
     [Serializable]
-    public class Bonus_multiple : Bonus
+    public class Bonus_fast : Bonus
     {
-       public Bonus_multiple(int x, int y)
+       public Bonus_fast(int x, int y)
         {
             this.X = x;
             this.Y = y;
-            Visible = false;
+            this.Visible = false;
+            this.Color = CONST.bonus_fast;
         }
     }
 
@@ -710,7 +1122,9 @@ namespace Bomber_wpf
         {
             this.X = x;
             this.Y = y;
-            Visible = false;
+           this.Visible = false;
+            this.Color = CONST.bonus_big;
+
         }
     }
 
@@ -719,7 +1133,12 @@ namespace Bomber_wpf
     {
         int liveTime;
         int playerID;
-
+        
+        public Bomb()
+        {
+            this.Color = CONST.bomb_color;
+        }
+        
         public int PlayerID
         {
             get
@@ -760,6 +1179,8 @@ namespace Bomber_wpf
     public class GameObject
     {
         int x, y;
+        Color color;
+
         public int X
         {
             get
@@ -783,25 +1204,53 @@ namespace Bomber_wpf
                 if (value >= 0)
                     y = (int)value;
             }
+        }     
+
+        public Color Color
+        {
+            get
+            {
+                return color;
+            }
+            set
+            {
+                color = value;
+            }
         }
     }
 
     [Serializable]
     public class Cell : GameObject
     {
-
+      
     }
 
     [Serializable]
     public class Cell_indestructible : Cell
     {
-
+        public Cell_indestructible()
+        {
+            this.Color = CONST.cell_indestructible_color;
+        }
     }
 
     [Serializable]
     public class Cell_destructible : Cell
     {
+        public Cell_destructible()
+        {
+            this.Color = CONST.cell_destructible_color;
+        }
+    }
 
+
+    [Serializable]
+    public class Cell_free : Cell
+    {
+        public Cell_free()
+        {
+            this.Color = Color.Transparent;
+        }
     }
 
     [Serializable]
@@ -859,14 +1308,20 @@ namespace Bomber_wpf
         public static int bonuses_count = 3;
         public static int lava_radius = 1;
         public static int lava_radius_big = 2;
-        public static int lava_livetime = 5;
+        public static int lava_livetime = 2;
         public static int bomb_live_time = 3;
         public static int player_health = 3;
+        public static int player_reload = 3;
+        public static int player_reload_fast = 1;
 
         public static Color cell_destructible_color = Color.Bisque;
         public static Color cell_indestructible_color = Color.Black;
 
         public static Color lava_color = Color.Orange;
+        public static Color bomb_color = Color.Red;
+
+        public static Color bonus_fast = Color.Yellow;
+        public static Color bonus_big = Color.IndianRed;
 
     }
 
