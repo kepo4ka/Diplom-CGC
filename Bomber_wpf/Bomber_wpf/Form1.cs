@@ -53,6 +53,7 @@ namespace Bomber_wpf
 
 
             Bot vitya = new Bot();
+            vitya.ID = 0;
             vitya.X = 14;
             vitya.Y = 0;
             vitya.BonusType = BonusType.None;
@@ -64,6 +65,7 @@ namespace Bomber_wpf
 
 
             Bot yura = new Bot();
+            yura.ID = 1;
             yura.X = 5;
             yura.Y = 0;
             yura.BonusType = BonusType.None;
@@ -73,6 +75,10 @@ namespace Bomber_wpf
             gb.Players.Add(yura);
 
 
+            vitya_points.Text = vitya.Points+"";
+
+            yura_points.Text = yura.Points + "";
+
             Bonus tmb = new Bonus_big(8, 0);
             tmb.Visible = true;
             Bonus tmb1 = new Bonus_fast(7, 0);
@@ -80,6 +86,17 @@ namespace Bomber_wpf
 
             gb.Bonuses.Add(tmb);
             gb.Bonuses.Add(tmb1);
+
+            Cell cl = new Cell_destructible();
+            cl.X = 3;
+            cl.Y = 0;
+            gb.Cells[3, 0] = cl;
+
+            Bomb bmb = new Bomb();
+            bmb.X = 2;
+            bmb.Y = 0;
+            bmb.PlayerID = 0;
+            gb.Bombs.Add(bmb);
 
 
         }
@@ -91,7 +108,7 @@ namespace Bomber_wpf
             DrawCells();
 
 
-            MessageBox.Show(gb.Players[0].BonusType + "");
+          //  MessageBox.Show(gb.Players[0].BonusType + "");
 
             LavasProccess();
             PlayerProcess();
@@ -405,6 +422,7 @@ namespace Bomber_wpf
 
         public void BombsProccess()
         {
+            yura_points.Text = "123";
             for (int i = 0; i < gb.Bombs.Count; i++)
             {
                 var tbomb = gb.Bombs[i];
@@ -428,16 +446,28 @@ namespace Bomber_wpf
 
 
 
-        public void LavaCellsBonusesCollision(Lava plava)
+        public void LavaCollision(Lava plava)
         {
             Bonus[,] tbonuses_mass = ListToMass(gb.Bonuses);
-
+            
             for (int i = plava.X - plava.Radius; i <= plava.X + plava.Radius; i++)
             {
                 if (i < 0 || i > gb.W - 1 || gb.Cells[i, plava.Y] is Cell_indestructible)
                 {
                     continue;
                 }
+
+                for (int k = 0; k < gb.Players.Count; k++)
+                {
+                    var tplayer = gb.Players[k];
+
+                    if (tplayer.X == i && tplayer.Y == plava.Y)
+                    {
+                        MessageBox.Show("player with ID " + tplayer.ID + " Lost");
+                        gb.Players.Remove(tplayer);
+                    }
+                }
+
                 if (gb.Cells[i, plava.Y] is Cell_destructible)
                 {
                     gb.Cells[i, plava.Y] = new Cell_free();
@@ -448,7 +478,23 @@ namespace Bomber_wpf
                     {
                         tbonuses_mass[i, plava.Y].Visible = true;
                     }
-                }
+                    for (int k = 0; k < gb.Players.Count; k++)
+                    {
+                        if (gb.Players[k].ID == plava.PlayerID)
+                        {
+                            gb.Players[k].Points++;
+                            if (gb.Players[k].ID == 0)
+                            {
+                                vitya_points.Text = gb.Players[k].Points + "";
+                            }
+                            else
+                            {
+                                yura_points.Text = gb.Players[k].Points + "";
+                            }
+                            break;
+                        }
+                    }                                      
+                }                
             }
 
             for (int j = plava.Y - plava.Radius; j <= plava.Y + plava.Radius; j++)
@@ -457,6 +503,18 @@ namespace Bomber_wpf
                 {
                     continue;
                 }
+
+                for (int k = 0; k < gb.Players.Count; k++)
+                {
+                    var tplayer = gb.Players[k];
+
+                    if (tplayer.X == plava.X && tplayer.Y == j)
+                    {
+                        MessageBox.Show("player with ID " + tplayer.ID + " Lost");
+                        gb.Players.Remove(tplayer);
+                    }
+                }
+
                 if (gb.Cells[plava.X, j] is Cell_destructible)
                 {
                     gb.Cells[plava.X, j] = new Cell_free();
@@ -466,6 +524,23 @@ namespace Bomber_wpf
                     if (tbonuses_mass[plava.X, j] != null)
                     {
                         tbonuses_mass[plava.X, j].Visible = true;
+                    }
+
+                    for (int k = 0; k < gb.Players.Count; k++)
+                    {
+                        if (gb.Players[k].ID == plava.PlayerID)
+                        {
+                            gb.Players[k].Points++;
+                            if (gb.Players[k].ID == 0)
+                            {
+                                vitya_points.Text = gb.Players[k].Points + "";
+                            }
+                            else
+                            {
+                                yura_points.Text = gb.Players[k].Points + "";
+                            }
+                            break;
+                        }
                     }
                 }
             }  
@@ -485,7 +560,7 @@ namespace Bomber_wpf
                     continue;
                 }
 
-                LavaCellsBonusesCollision(tlava);
+                LavaCollision(tlava);
 
                 for (int i = tlava.X - tlava.Radius; i <= tlava.X + tlava.Radius; i++)
                 {
@@ -900,11 +975,11 @@ namespace Bomber_wpf
             {
                 //List<Bonus> visible_bombs = new List<Bonus>();
 
-                //for (int i = 0; i < bonuses.Count; i++)
+                //for (int k = 0; k < bonuses.Count; k++)
                 //{
-                //    if (bonuses[i].Visible == true)
+                //    if (bonuses[k].Visible == true)
                 //    {
-                //        visible_bombs.Add(bonuses[i]);
+                //        visible_bombs.Add(bonuses[k]);
                 //    }
                 //}
                 //return visible_bombs;
@@ -961,10 +1036,26 @@ namespace Bomber_wpf
         int health;
         int id;
         Action action;
+        int points;
 
         int reloadTime;
 
         BonusType bonusType;
+
+        public int Points
+        {
+            get
+            {
+                return points;
+            }
+            set
+            {
+                if (value>0)
+                {
+                    points = value;
+                }
+            }
+        }
 
         public BonusType BonusType
         {
