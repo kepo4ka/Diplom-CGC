@@ -20,8 +20,8 @@ namespace Bomber_wpf
     public partial class Form1 : Form
     {
 
-        private readonly SynchronizationContext synchronizationContext;
-        private DateTime previousTime = DateTime.Now;
+        //private readonly SynchronizationContext synchronizationContext;
+        //private DateTime previousTime = DateTime.Now;
 
 
         public int cw = 30;
@@ -29,6 +29,7 @@ namespace Bomber_wpf
         Pen p;
         SolidBrush sb;
         GameBoard gb;
+        List<Player> allPlayers = new List<Player>();
 
         public Form1()
         {
@@ -54,10 +55,11 @@ namespace Bomber_wpf
                 };
             }
 
-            
+
 
             Bot vitya = new Bot()
-            {               
+            {
+                Name = "VITYA",
                 ID = 0,
                 X = 14,
                 Y = 0,               
@@ -66,7 +68,8 @@ namespace Bomber_wpf
             };
             
             Bot yura = new Bot()
-            {               
+            {        
+                Name = "YURA",
                 ID = 1,
                 X = 5,
                 Y = 0,               
@@ -76,6 +79,11 @@ namespace Bomber_wpf
 
             gb.Players.Add(vitya);
             gb.Players.Add(yura);
+
+
+            
+            //players_ListBox.Items.Add(vitya.Name + vitya.ID + ":" + "bonuses: " + vitya.BonusType.ToString() + "|" + "Health: " + vitya.Health + "|" + "reloadTime: " + vitya.ReloadTime + " |" + "Points: " + gb.Players[0].Points);
+            //players_ListBox.Items.Add(yura.Name + yura.ID + ":" + "bonuses: " + yura.BonusType.ToString() + "|" + "Health: " + yura.Health + "|" + "reloadTime: " + yura.ReloadTime + " |" + "Points: " + gb.Players[0].Points);
 
 
 
@@ -105,50 +113,158 @@ namespace Bomber_wpf
             };
             gb.Bombs.Add(bmb);
 
-            players_ListBox.Items.Add(test);
+            game_timer.Tick += game_timer_Tick;
+            game_timer.Interval = 800;
+
+            game_timer.Start();
+
+            initListView();
+            //NextTick();
         }
 
-        int test = 0;
-        
-
-        
-
-        public void UpdatePlayerInfoOnDisplay(int value)
+        /// <summary>
+        /// Обновить информацию о живых игроках
+        /// </summary>
+        public void UpdateListView()
         {
-            var timeNow = DateTime.Now;
-
-            if ((DateTime.Now - previousTime).Milliseconds <= 50) return;
-
-            synchronizationContext.Post(new SendOrPostCallback(o =>
+            players_listView.Items.Clear();
+            for (int i = 0; i < gb.Players.Count; i++)
             {
-                players_ListBox.Text = o + "";
-            }), value);
+                var tplayer = gb.Players[i];
 
-            previousTime = timeNow;
+                var item = new ListViewItem(new[] {
+                    tplayer.Name, tplayer.ID.ToString(),
+                    tplayer.Health.ToString(),
+                    tplayer.Points.ToString(),
+                    tplayer.ACTION.ToString(),
+                    tplayer.ReloadTime.ToString(),
+                    tplayer.BonusType.ToString(),
+                    tplayer.X.ToString(),
+                    tplayer.Y.ToString()
+                });
+                players_listView.Items.Add(item);
+            }
         }
+       
 
-        public async void testt()
+        /// <summary>
+        /// Перенести умершершего игрока в список мётрвых
+        /// </summary>
+        /// <param name="pplayer">Почивший игрок</param>
+        public void ChangeListView(Player pplayer)
         {
-            await Task.Run(() =>
+            for (int i = 0; i < players_listView.Items.Count; i++)
             {
-                
-               // UpdatePlayerInfoOnDisplay(test);
-            });
-        }
-
-
-        public  void panel1_Paint(object sender, PaintEventArgs e)
-        {
-            test++;
-            if (test == 10)
-            {
-                testt();
+                var tItem = players_listView.Items[i].SubItems[0].Text;
+                if (tItem == pplayer.ID.ToString())
+                {
+                    players_listView.Items.RemoveAt(i);
+                    break;
+                }
             }
 
-        
+            var item = new ListViewItem(new[] {
+                    pplayer.Name,
+                    pplayer.ID.ToString(),
+                    pplayer.Health.ToString(),
+                    pplayer.Points.ToString(),
+                    pplayer.ACTION.ToString(),
+                    pplayer.ReloadTime.ToString(),
+                    pplayer.BonusType.ToString(),
+                    pplayer.X.ToString(),
+                    pplayer.Y.ToString()
+                });
+            dead_players_listvView.Items.Add(item);
+        }
 
+
+        /// <summary>
+        /// Задать списки игроков
+        /// </summary>
+        public void initListView()
+        {
+            players_listView.View = View.Details;
+            dead_players_listvView.View = View.Details;
+
+            players_listView.Columns.Add("Name");
+            players_listView.Columns.Add("ID");
+            players_listView.Columns.Add("Health");
+            players_listView.Columns.Add("Points");
+            players_listView.Columns.Add("Action");
+            players_listView.Columns.Add("reloadTime");
+            players_listView.Columns.Add("Bonus");
+            players_listView.Columns.Add("X");
+            players_listView.Columns.Add("Y");
+
+
+            dead_players_listvView.Columns.Add("Name");
+            dead_players_listvView.Columns.Add("ID");
+            dead_players_listvView.Columns.Add("Health");
+            dead_players_listvView.Columns.Add("Points");
+            dead_players_listvView.Columns.Add("Action");
+            dead_players_listvView.Columns.Add("reloadTime");
+            dead_players_listvView.Columns.Add("Bonus");
+            dead_players_listvView.Columns.Add("X");
+            dead_players_listvView.Columns.Add("Y");
+
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                var tplayer = gb.Players[i];
+
+                var item = new ListViewItem(new[] {
+                    tplayer.Name, tplayer.ID.ToString(),
+                    tplayer.Health.ToString(),
+                    tplayer.Points.ToString(),
+                    tplayer.ACTION.ToString(),
+                    tplayer.ReloadTime.ToString(),
+                    tplayer.BonusType.ToString(),
+                    tplayer.X.ToString(),
+                    tplayer.Y.ToString()
+                });
+                players_listView.Items.Add(item);
+            }
+
+        }
+
+        private void game_timer_Tick(object sender, EventArgs e)
+        {
+            UpdateListView();
+            panel1.Refresh();
+            NextTick();
+
+
+            allPlayers = new List<Player>();
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                var tplayer = gb.Players[i];
+                Player nplayer = new Player()
+                {
+                    Name = tplayer.Name,
+                    ID = tplayer.ID,
+                    ReloadTime = tplayer.ReloadTime,
+                    BonusType = tplayer.BonusType,
+                    ACTION = tplayer.ACTION,
+                    Color = tplayer.Color,
+                    Points = tplayer.Points,
+                    X = tplayer.X,
+                    Y = tplayer.Y
+                };           
+                allPlayers.Add(nplayer);
+            }
+
+
+            //players_ListBox.Items[0] = allPlayers[0].Name + allPlayers[0].ID + ":" + "bonuses: " + allPlayers[0].BonusType.ToString() + "|" + "Health: " + allPlayers[0].Health + "|" + "reloadTime: " + allPlayers[0].ReloadTime + "|" + "Points: " + allPlayers[0].Points;
+            //players_ListBox.Items[1] = allPlayers[1].Name + allPlayers[1].ID + ":" + "bonuses: " + allPlayers[1].BonusType.ToString() + "|" + "Health: " + allPlayers[1].Health + "|" + "reloadTime: " + allPlayers[1].ReloadTime + "|" + "Points: " + allPlayers[1].Points;
+
+        }
+
+        /// <summary>
+        /// Следующий ход игры
+        /// </summary>
+        public void NextTick()
+        {          
+            
             DrawCells();
-
             LavasProccess();
             PlayerProcess();
 
@@ -160,10 +276,27 @@ namespace Bomber_wpf
             BombsProccess();
 
             DrawGrid();
-            Thread.Sleep(15);
-            panel1.Refresh();
+            // Thread.Sleep(15);
+            //panel1.Refresh();
         }
 
+
+        public async void panel1_Paint(object sender, PaintEventArgs e)
+        {
+            //DateTime now = DateTime.Now;
+            //if ((now - previousTime).Milliseconds > 50)
+            //{
+            //    players_ListBox.Items[0] = test + "";
+            //    previousTime = now;
+            //}
+            //NextTick();
+
+        }
+
+
+        /// <summary>
+        /// обработка действий игроков
+        /// </summary>
         public void PlayerProcess()
         {
             List<Player> tempplayers = new List<Player>();
@@ -175,7 +308,6 @@ namespace Bomber_wpf
                
                 PlayerFire(tvitya);
 
-
                 Player tempplayer = new Player()
                 {
                     ACTION = tvitya.ACTION,
@@ -184,7 +316,7 @@ namespace Bomber_wpf
                 };
                 PlayerMove(tempplayer);
                 tempplayers.Add(tempplayer);
-            }
+            }          
 
             for (int i = 0; i < tempplayers.Count; i++)
             {
@@ -209,15 +341,15 @@ namespace Bomber_wpf
             for (int i = 0; i < gb.Players.Count; i++)
             {
                 PlayerMove(gb.Players[i]);
-
             }
         }
 
 
-
+        /// <summary>
+        /// Подбор игроками Бонусов
+        /// </summary>
         public void PlayerBonusCollision()
         {
-
             Bonus[,] tempbonus = ListToMass(gb.Bonuses);
            
             for (int k = 0; k < gb.Players.Count; k++)
@@ -265,7 +397,11 @@ namespace Bomber_wpf
 
 
 
-
+        /// <summary>
+        /// Перевести список в матрицу координат бомб
+        /// </summary>
+        /// <param name="pbombs"></param>
+        /// <returns></returns>
         public Bomb[,] ListToMass(List<Bomb> pbombs)
         {
             Bomb[,] tbombs_mass = new Bomb[gb.W, gb.H];
@@ -276,7 +412,12 @@ namespace Bomber_wpf
             }
             return tbombs_mass;
         }
-
+        
+        /// <summary>
+        /// Перевести список в матрицу координат игроков
+        /// </summary>
+        /// <param name="pplayers"></param>
+        /// <returns></returns>
         public Player[,] ListToMass(List<Player> pplayers)
         {
             Player[,] tplayers_mass = new Player[gb.W, gb.H];
@@ -289,6 +430,12 @@ namespace Bomber_wpf
             return tplayers_mass;
         }
 
+
+        /// <summary>
+        /// Перевести список в матрицу координат бонусов 
+        /// </summary>
+        /// <param name="pbonuses"></param>
+        /// <returns></returns>
         public Bonus[,] ListToMass(List<Bonus> pbonuses)
         {
             Bonus[,] tbonus_mass = new Bonus[gb.W, gb.H];
@@ -394,7 +541,10 @@ namespace Bomber_wpf
             }
         }
 
-
+        /// <summary>
+        /// Выстрел игрока по возможности
+        /// </summary>
+        /// <param name="pplayer"></param>
         public void PlayerFire(Player pplayer)
         {
             if (pplayer.ACTION == Action.Bomb)
@@ -408,6 +558,10 @@ namespace Bomber_wpf
             pplayer.ReloadTime--;
         }
 
+
+        /// <summary>
+        /// Отрисовать живых игроков
+        /// </summary>
         public void PaintPlayers()
         {
             for (int i = 0; i < gb.Players.Count; i++)
@@ -417,7 +571,10 @@ namespace Bomber_wpf
             }
         }
 
-
+        /// <summary>
+        /// Перезарядка игроков
+        /// </summary>
+        /// <param name="_player"></param>
         public void PlayerReload(Player _player)
         {
             if (_player.BonusType == BonusType.Fast || _player.BonusType == BonusType.All)
@@ -432,7 +589,10 @@ namespace Bomber_wpf
 
    
 
-
+        /// <summary>
+        /// Создать бомбу на месте игрока
+        /// </summary>
+        /// <param name="_player">Игрок, создающий бомбу</param>
         public void CreateBomb(Player _player)
         {
             Bomb tbomb = new Bomb()
@@ -445,6 +605,9 @@ namespace Bomber_wpf
             gb.Bombs.Add(tbomb);
         }
 
+        /// <summary>
+        /// Нарисовать видимые бонусы
+        /// </summary>
         public void BonusesProccess()
         {
             for (int i = 0; i < gb.Bonuses.Count; i++)
@@ -459,10 +622,11 @@ namespace Bomber_wpf
             }
         }
 
-
+        /// <summary>
+        /// Нарисовать бомбы
+        /// </summary>
         public void BombsProccess()
-        {
-          
+        {          
             for (int i = 0; i < gb.Bombs.Count; i++)
             {
                 var tbomb = gb.Bombs[i];
@@ -481,6 +645,11 @@ namespace Bomber_wpf
             }
         }
 
+
+        /// <summary>
+        /// Зачислить поинты за убийство другого игрока
+        /// </summary>
+        /// <param name="plava">Лава, убившая другого игрока</param>
         public void PlayerAddPointsKill(Lava plava)
         {
             for (int i = 0; i < gb.Players.Count; i++)
@@ -494,6 +663,11 @@ namespace Bomber_wpf
             }
         }
 
+
+        /// <summary>
+        /// Зачислить поинты за разрушение стены
+        /// </summary>
+        /// <param name="plava">Лава, разрушившая стену</param>
         public void PlayerAddPointsCellDestroy(Lava plava)
         {
             for (int i = 0; i < gb.Players.Count; i++)
@@ -507,24 +681,35 @@ namespace Bomber_wpf
             }
         }
 
-
+        /// <summary>
+        /// Взаимодействие лавы и игроков
+        /// </summary>
+        /// <param name="plava"></param>
+        /// <param name="i"></param>
         public void LavaPlayersCollision(Lava plava, int i)
         {
             for (int k = 0; k < gb.Players.Count; k++)
-            {
+            {                
                 var tplayer = gb.Players[k];
 
                 if (tplayer.X == i && tplayer.Y == plava.Y)
                 {
-                    PlayerAddPointsKill(plava);
+                    if (plava.PlayerID != tplayer.ID)
+                    {
+                        PlayerAddPointsKill(plava);
+                    }
                     tplayer.Health = 0;
                     gb.Players.Remove(tplayer);
+                    ChangeListView(tplayer);
                     gb.DeadPlayers.Add(tplayer);
                 }
             }
         }
 
-
+        /// <summary>
+        /// Взаимодействие лавы с остальными объектами
+        /// </summary>
+        /// <param name="plava">Лава</param>
         public void LavaCollision(Lava plava)
         {
             Bonus[,] tbonuses_mass = ListToMass(gb.Bonuses);
@@ -581,7 +766,9 @@ namespace Bomber_wpf
         }
 
         
-
+        /// <summary>
+        /// Обработка лавы
+        /// </summary>
         public void LavasProccess()
         {
             for (int k = 0; k < gb.Lavas.Count; k++)
@@ -619,7 +806,9 @@ namespace Bomber_wpf
             }
         }
 
-
+        /// <summary>
+        /// Нарисовать стены
+        /// </summary>
         public void DrawCells()
         {
             for (int i = 0; i < gb.Cells.GetLength(0); i++)
@@ -664,6 +853,12 @@ namespace Bomber_wpf
             gb.Lavas.Add(tlava);
         }
 
+
+        /// <summary>
+        /// Создать лаву, на месте взрыва бомбы
+        /// </summary>
+        /// <param name="x">Координата бомбы</param>
+        /// <param name="y">Координата бомбы</param>
         public void GenerateLava(int x, int y)
         {
             Lava tlava = new Lava()
@@ -677,7 +872,12 @@ namespace Bomber_wpf
         }
 
 
-
+        /// <summary>
+        /// Нарисовать бомбу
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="cl"></param>
         public void PaintBomb(int x, int y, Color cl)
         {
             sb = new SolidBrush(cl);
@@ -728,7 +928,7 @@ namespace Bomber_wpf
             }
         }
 
-
+   
     }
 
 
