@@ -4,6 +4,10 @@ using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Net;
+using System.Net.Sockets;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
 using User_class;
 
@@ -26,14 +30,19 @@ namespace Bomber_wpf
         //private readonly SynchronizationContext synchronizationContext;
         //private DateTime previousTime = DateTime.Now;
 
+        //List<Player> allPlayers = new List<Player>();
 
         public int cw = 30;
         Graphics g;
         Pen p;
         SolidBrush sb;
         GameBoard gb;
-        List<Player> allPlayers = new List<Player>();
         int GameTimer;
+
+        string serverIp = "127.0.0.1";
+        TcpClient client;
+
+
 
         public Form1()
         {
@@ -41,7 +50,14 @@ namespace Bomber_wpf
             g = panel1.CreateGraphics();
             p = new Pen(Color.Black);
             sb = new SolidBrush(Color.DimGray);
+
+            string serverIp = "127.0.0.1";
+
+            client = new TcpClient(serverIp, 9595);
+
             InitGame();
+
+
         }
 
 
