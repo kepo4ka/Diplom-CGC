@@ -4,18 +4,21 @@ using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ClassLibrary_CGC;
+using User_class;
 
 namespace Bomber_wpf
 {
-    public enum Action
-    {
-        Right, Left, Up, Down, Bomb, wait
-    }
+    //public enum PlayerAction
+    //{
+    //    Right, Left, Up, Down, Bomb, wait
+    //}
 
-    public enum BonusType
-    {
-       Big, Fast, None, All
-    }
+    //public enum BonusType
+    //{
+    //   Big, Fast, None, All
+    //}
+
 
     public partial class Form1 : Form
     {
@@ -30,6 +33,7 @@ namespace Bomber_wpf
         SolidBrush sb;
         GameBoard gb;
         List<Player> allPlayers = new List<Player>();
+        int GameTimer;
 
         public Form1()
         {
@@ -37,79 +41,117 @@ namespace Bomber_wpf
             g = panel1.CreateGraphics();
             p = new Pen(Color.Black);
             sb = new SolidBrush(Color.DimGray);
+            InitGame();
+        }
+
+
+        public void InitGame()
+        {
 
             gb = new GameBoard();
+            GameTimer = CONST.gameTicksMax;
 
 
-            for (int i = 0; i < gb.W; i++)
+            //for (int i = 0; i < gb.W; i++)
+            //{
+            //    gb.Cells[i, 0] = new Cell_free()
+            //    {
+            //        X = i,
+            //        Y = 0
+            //    };
+            //    gb.Cells[i, 1] = new Cell_indestructible()
+            //    {
+            //        X = i,
+            //        Y = 1
+            //    };
+            //}
+
+
+
+            Player vitya = new Bot()
             {
-                gb.Cells[i, 0] = new Cell_free()
-                {
-                    X = i,
-                    Y = 0
-                };
-                gb.Cells[i, 1] = new Cell_indestructible()
-                {
-                    X = i,
-                    Y = 1
-                };
-            }
-
-
-
-            Bot vitya = new Bot()
-            {
-                Name = "VITYA",
-                ID = 0,
-                X = 14,
-                Y = 0,               
-                ReloadTime = 0,
-                Color = Color.Purple               
-            };
-            
-            Bot yura = new Bot()
-            {        
-                Name = "YURA",
+                Name = "vitya_bot",
                 ID = 1,
-                X = 5,
-                Y = 0,               
+                BonusType = BonusType.All,
+                X = gb.W-1,
+                Y = 0,
                 ReloadTime = 0,
-                Color = Color.Blue               
+                Health = 250,
+                Color = Color.Purple
+            };
+
+            Player Yura = new Bot()
+            {
+                Name = "Yura_bot",
+                ID = 2,
+                BonusType = BonusType.None,
+                X = gb.W-1,
+                Y = gb.H-1,
+                ReloadTime = 0,
+                Health = 200,
+                Color = Color.Aqua
+            };
+
+            Player Oleg = new Bot()
+            {
+                Name = "Oleg_bot",
+                ID = 2,
+                BonusType = BonusType.Big,
+                X = 0,
+                Y = 0,
+                ReloadTime = 0,
+                Health = 350,
+                Color = Color.BlueViolet
+            };
+
+            Player user = new User()
+            {
+                Name = "User",
+                Health = 50,
+                ID = 0,
+                X = 0,
+                Y = 14,
+                ReloadTime = 0,
+                Color = Color.Blue
             };
 
             gb.Players.Add(vitya);
-            gb.Players.Add(yura);
+            gb.Players.Add(Yura);
+            gb.Players.Add(Oleg);
+            gb.Players.Add(user);
 
 
-            
+
             //players_ListBox.Items.Add(vitya.Name + vitya.ID + ":" + "bonuses: " + vitya.BonusType.ToString() + "|" + "Health: " + vitya.Health + "|" + "reloadTime: " + vitya.ReloadTime + " |" + "Points: " + gb.Players[0].Points);
             //players_ListBox.Items.Add(yura.Name + yura.ID + ":" + "bonuses: " + yura.BonusType.ToString() + "|" + "Health: " + yura.Health + "|" + "reloadTime: " + yura.ReloadTime + " |" + "Points: " + gb.Players[0].Points);
 
 
 
-            Bonus tmb = new Bonus_big(8, 0)
-            {
-                Visible = true
-            };
-            Bonus tmb1 = new Bonus_fast(7, 0)
-            {
-                Visible = true
-            };
-            gb.Bonuses.Add(tmb);
-            gb.Bonuses.Add(tmb1);
+            //Bonus tmb = new Bonus_big(8, 0)
+            //{
+            //    Visible = true
+            //};
+            //Bonus tmb1 = new Bonus_fast(7, 0)
+            //{
+            //    Visible = true
+            //};
+            //gb.Bonuses.Add(tmb);
+            //gb.Bonuses.Add(tmb1);
 
-            Cell cl = new Cell_destructible()
-            {
-                X = 3,
-                Y = 0
-            };
-            gb.Cells[3, 0] = cl;
+            //Cell cl = new Cell_destructible()
+            //{
+            //    X = 3,
+            //    Y = 0
+            //};
+            //gb.Cells[3, 0] = cl;
 
-            Bomb bmb = new Bomb()
+            Bomb bmb = new Bomb_big()
             {
-                X = 2,
-                Y = 0,
-                PlayerID = 0
+                X = 0,
+                Y = 12,
+                PlayerID = 0,
+                LiveTime = CONST.bomb_live_time               
+
             };
             gb.Bombs.Add(bmb);
 
@@ -119,8 +161,10 @@ namespace Bomber_wpf
             game_timer.Start();
 
             initListView();
+
             //NextTick();
         }
+
 
         /// <summary>
         /// Обновить информацию о живых игроках
@@ -190,7 +234,7 @@ namespace Bomber_wpf
             players_listView.Columns.Add("ID");
             players_listView.Columns.Add("Health");
             players_listView.Columns.Add("Points");
-            players_listView.Columns.Add("Action");
+            players_listView.Columns.Add("PlayerAction");
             players_listView.Columns.Add("reloadTime");
             players_listView.Columns.Add("Bonus");
             players_listView.Columns.Add("X");
@@ -201,7 +245,7 @@ namespace Bomber_wpf
             dead_players_listvView.Columns.Add("ID");
             dead_players_listvView.Columns.Add("Health");
             dead_players_listvView.Columns.Add("Points");
-            dead_players_listvView.Columns.Add("Action");
+            dead_players_listvView.Columns.Add("PlayerAction");
             dead_players_listvView.Columns.Add("reloadTime");
             dead_players_listvView.Columns.Add("Bonus");
             dead_players_listvView.Columns.Add("X");
@@ -228,29 +272,29 @@ namespace Bomber_wpf
 
         private void game_timer_Tick(object sender, EventArgs e)
         {
-            UpdateListView();
             panel1.Refresh();
+            UpdateListView();            
             NextTick();
 
 
-            allPlayers = new List<Player>();
-            for (int i = 0; i < gb.Players.Count; i++)
-            {
-                var tplayer = gb.Players[i];
-                Player nplayer = new Player()
-                {
-                    Name = tplayer.Name,
-                    ID = tplayer.ID,
-                    ReloadTime = tplayer.ReloadTime,
-                    BonusType = tplayer.BonusType,
-                    ACTION = tplayer.ACTION,
-                    Color = tplayer.Color,
-                    Points = tplayer.Points,
-                    X = tplayer.X,
-                    Y = tplayer.Y
-                };           
-                allPlayers.Add(nplayer);
-            }
+            //allPlayers = new List<Player>();
+            //for (int i = 0; i < gb.Players.Count; i++)
+            //{
+            //    var tplayer = gb.Players[i];
+            //    Player nplayer = new Player()
+            //    {
+            //        Name = tplayer.Name,
+            //        ID = tplayer.ID,
+            //        ReloadTime = tplayer.ReloadTime,
+            //        BonusType = tplayer.BonusType,
+            //        ACTION = tplayer.ACTION,
+            //        Color = tplayer.Color,
+            //        Points = tplayer.Points,
+            //        X = tplayer.X,
+            //        Y = tplayer.Y
+            //    };           
+            //    allPlayers.Add(nplayer);
+            //}
 
 
             //players_ListBox.Items[0] = allPlayers[0].Name + allPlayers[0].ID + ":" + "bonuses: " + allPlayers[0].BonusType.ToString() + "|" + "Health: " + allPlayers[0].Health + "|" + "reloadTime: " + allPlayers[0].ReloadTime + "|" + "Points: " + allPlayers[0].Points;
@@ -258,12 +302,26 @@ namespace Bomber_wpf
 
         }
 
+
+
         /// <summary>
         /// Следующий ход игры
         /// </summary>
         public void NextTick()
-        {          
-            
+        {           
+            this.Text = "Тик - " + GameTimer;
+            if (GameTimer <1)
+            {
+                MessageBox.Show("Время игры истекло");
+                InitGame();
+            }
+            if (gb.Players.Count<1)
+            {
+                MessageBox.Show("Все игроки погибли");
+                InitGame();
+            }
+
+            GameTimer--;
             DrawCells();
             LavasProccess();
             PlayerProcess();
@@ -278,10 +336,11 @@ namespace Bomber_wpf
             DrawGrid();
             // Thread.Sleep(15);
             //panel1.Refresh();
+           
         }
 
 
-        public async void panel1_Paint(object sender, PaintEventArgs e)
+        public void panel1_Paint(object sender, PaintEventArgs e)
         {
             //DateTime now = DateTime.Now;
             //if ((now - previousTime).Milliseconds > 50)
@@ -303,8 +362,8 @@ namespace Bomber_wpf
             for (int i = 0; i < gb.Players.Count; i++)
             {
                 var tvitya = gb.Players[i];
-                
-               tvitya.Play();
+
+                tvitya.ACTION = tvitya.Play();
                
                 PlayerFire(tvitya);
 
@@ -326,15 +385,14 @@ namespace Bomber_wpf
                     var tvitya2 = tempplayers[j];
                     if (tvitya1.X == tvitya2.X && tvitya1.Y == tvitya2.Y)
                     {
-                        gb.Players[i].ACTION = Action.wait;
-                        gb.Players[j].ACTION = Action.wait;
+                        gb.Players[i].ACTION = PlayerAction.wait;
+                        gb.Players[j].ACTION = PlayerAction.wait;
                     }
                     if (tvitya2.X == gb.Players[i].X  && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
                     {
-                        gb.Players[i].ACTION = Action.wait;
-                        gb.Players[j].ACTION = Action.wait;
+                        gb.Players[i].ACTION = PlayerAction.wait;
+                        gb.Players[j].ACTION = PlayerAction.wait;
                     }
-
                 }
             }
 
@@ -462,7 +520,7 @@ namespace Bomber_wpf
             Bomb[,] tbombs_mass = ListToMass(gb.Bombs);
             switch (pplayer.ACTION)
             {
-                case Action.Right:
+                case PlayerAction.Right:
                     if (pplayer.X + 1 > gb.W - 1)
                     {
                         break;
@@ -481,7 +539,7 @@ namespace Bomber_wpf
                     pplayer.X++;
                     break;
 
-                case Action.Left:
+                case PlayerAction.Left:
                     if (pplayer.X - 1 < 0)
                     {
                         break;
@@ -500,7 +558,7 @@ namespace Bomber_wpf
                     pplayer.X--;
                     break;
 
-                case Action.Down:
+                case PlayerAction.Down:
                     if (pplayer.Y + 1 > gb.H - 1)
                     {
                         break;
@@ -519,7 +577,7 @@ namespace Bomber_wpf
                     pplayer.Y++;
                     break;
 
-                case Action.Up:
+                case PlayerAction.Up:
                     if (pplayer.Y - 1 < 0)
                     {
                         break;
@@ -536,7 +594,7 @@ namespace Bomber_wpf
 
                     pplayer.Y--;
                     break;
-                case Action.wait:
+                case PlayerAction.wait:
                     break;
             }
         }
@@ -547,7 +605,7 @@ namespace Bomber_wpf
         /// <param name="pplayer"></param>
         public void PlayerFire(Player pplayer)
         {
-            if (pplayer.ACTION == Action.Bomb)
+            if (pplayer.ACTION == PlayerAction.Bomb)
             {
                 if (pplayer.ReloadTime < 1)
                 {
@@ -595,13 +653,21 @@ namespace Bomber_wpf
         /// <param name="_player">Игрок, создающий бомбу</param>
         public void CreateBomb(Player _player)
         {
-            Bomb tbomb = new Bomb()
+            Bomb tbomb;
+            if (_player.BonusType == BonusType.Big || _player.BonusType == BonusType.All)
             {
-                LiveTime = CONST.bomb_live_time,
-                PlayerID = _player.ID,
-                X = _player.X,
-                Y = _player.Y
-            };
+                tbomb = new Bomb_big();
+            }
+            else
+            {
+                tbomb = new Bomb();                
+            }
+
+            tbomb.LiveTime = CONST.bomb_live_time;
+            tbomb.PlayerID = _player.ID;
+            tbomb.X = _player.X;
+            tbomb.Y = _player.Y;
+
             gb.Bombs.Add(tbomb);
         }
 
@@ -686,22 +752,44 @@ namespace Bomber_wpf
         /// </summary>
         /// <param name="plava"></param>
         /// <param name="i"></param>
-        public void LavaPlayersCollision(Lava plava, int i)
+        public void LavaPlayersCollision(Lava plava, int i, bool _k)
         {
             for (int k = 0; k < gb.Players.Count; k++)
             {                
                 var tplayer = gb.Players[k];
-
-                if (tplayer.X == i && tplayer.Y == plava.Y)
+                if (_k)
                 {
-                    if (plava.PlayerID != tplayer.ID)
+                    if (tplayer.X == i && tplayer.Y == plava.Y)
                     {
-                        PlayerAddPointsKill(plava);
+                        tplayer.Health--;
+                        if (tplayer.Health < 1)
+                        {
+                            if (plava.PlayerID != tplayer.ID)
+                            {
+                                PlayerAddPointsKill(plava);
+                            }
+                            gb.Players.Remove(tplayer);
+                            ChangeListView(tplayer);
+                            gb.DeadPlayers.Add(tplayer);
+                        }
                     }
-                    tplayer.Health = 0;
-                    gb.Players.Remove(tplayer);
-                    ChangeListView(tplayer);
-                    gb.DeadPlayers.Add(tplayer);
+                }
+                else
+                {
+                    if (tplayer.X == plava.X && tplayer.Y == i)
+                    {
+                        tplayer.Health--;
+                        if (tplayer.Health < 1)
+                        {
+                            if (plava.PlayerID != tplayer.ID)
+                            {
+                                PlayerAddPointsKill(plava);
+                            }
+                            gb.Players.Remove(tplayer);
+                            ChangeListView(tplayer);
+                            gb.DeadPlayers.Add(tplayer);
+                        }
+                    }
                 }
             }
         }
@@ -721,8 +809,7 @@ namespace Bomber_wpf
                     continue;
                 }
 
-                LavaPlayersCollision(plava, i);
-               
+                LavaPlayersCollision(plava, i, true);               
 
                 if (gb.Cells[i, plava.Y] is Cell_destructible)
                 {
@@ -746,7 +833,7 @@ namespace Bomber_wpf
                     continue;
                 }
 
-                LavaPlayersCollision(plava, j);
+                LavaPlayersCollision(plava, j, false);
 
                 if (gb.Cells[plava.X, j] is Cell_destructible)
                 {
@@ -926,17 +1013,14 @@ namespace Bomber_wpf
             {
                 g.DrawLine(p, 0, j * cw, h * cw, j * cw);
             }
-        }
-
-   
+        }   
     }
 
 
-
+    /*
     [Serializable]
     public class GameBoard
     {
-
         int w, h;
         Cell[,] cells;
         List<Player> players;
@@ -962,8 +1046,7 @@ namespace Bomber_wpf
         }
 
         public GameBoard(int SIZE)
-        {
-            
+        {            
             W = SIZE;
             H = SIZE;
             GenerateBoard(SIZE);
@@ -1311,7 +1394,7 @@ namespace Bomber_wpf
         int health;
         int id;
         string name;
-        Action action;
+        PlayerAction action;
         int points;
         BonusType bonusType;
 
@@ -1321,7 +1404,7 @@ namespace Bomber_wpf
         public Player()
         {
             Health = 1;
-            ACTION = Action.wait;
+            ACTION = PlayerAction.wait;
             ReloadTime = CONST.player_reload;
             BonusType = BonusType.None;
         }
@@ -1330,7 +1413,7 @@ namespace Bomber_wpf
         {
             this.ID = ID;
             Health = 1;
-            ACTION = Action.wait;
+            ACTION = PlayerAction.wait;
             ReloadTime = CONST.player_reload;
             BonusType = BonusType.None;
         }
@@ -1340,7 +1423,7 @@ namespace Bomber_wpf
             this.ID = ID;
             this.Name = NAME;
             Health = 1;
-            ACTION = Action.wait;
+            ACTION = PlayerAction.wait;
             ReloadTime = CONST.player_reload;
             BonusType = BonusType.None;
         }
@@ -1421,7 +1504,7 @@ namespace Bomber_wpf
         }
     
 
-       public Action ACTION
+       public PlayerAction ACTION
         {
             get
             {
@@ -1453,8 +1536,6 @@ namespace Bomber_wpf
         {
 
         }
-
-
     }
 
     public class Bot: Player
@@ -1473,29 +1554,30 @@ namespace Bomber_wpf
             switch(rnumber)
             {
                 case 0:
-                    ACTION = Action.wait;
+                    ACTION = PlayerAction.wait;
                     break;
                 case 1:
                     
-                    ACTION = Action.Bomb;
+                    ACTION = PlayerAction.Bomb;
                     break;
                 case 2:
-                    ACTION = Action.Right;
+                    ACTION = PlayerAction.Right;
                     break;
                 case 3:
-                    ACTION = Action.Left;
+                    ACTION = PlayerAction.Left;
                     break;
                 case 4:
-                    ACTION = Action.Up;
+                    ACTION = PlayerAction.Up;
                     break;
                 case 5:
-                    ACTION = Action.Down;
+                    ACTION = PlayerAction.Down;
                     break; 
             }    
         }
     }
 
 
+    
 
 
     [Serializable]
@@ -1514,8 +1596,6 @@ namespace Bomber_wpf
                 visible = value;
             }
         }
-
-
     }
 
     [Serializable]
@@ -1537,9 +1617,8 @@ namespace Bomber_wpf
         {
             this.X = x;
             this.Y = y;
-           this.Visible = false;
+            this.Visible = false;
             this.Color = CONST.bonus_big;
-
         }
     }
 
@@ -1553,7 +1632,22 @@ namespace Bomber_wpf
         {
             this.Color = CONST.bomb_color;
         }
-        
+
+        public Bomb(int x, int y)
+        {
+            this.X = x;
+            this.Y = y;
+            this.Color = CONST.bomb_color;
+        }
+
+        public Bomb(int x, int y, Player pplayer)
+        {
+            this.X = x;
+            this.Y = y;
+            this.Color = CONST.bomb_color;
+            this.playerID = pplayer.ID;
+        }
+
         public int PlayerID
         {
             get
@@ -1588,8 +1682,6 @@ namespace Bomber_wpf
     {
 
     }
-
-
 
     public class GameObject
     {
@@ -1637,7 +1729,8 @@ namespace Bomber_wpf
     [Serializable]
     public class Cell : GameObject
     {
-      
+     
+
     }
 
     [Serializable]
@@ -1664,7 +1757,7 @@ namespace Bomber_wpf
     {
         public Cell_free()
         {
-            this.Color = Color.Transparent;
+           
         }
     }
 
@@ -1672,9 +1765,28 @@ namespace Bomber_wpf
     public class Lava : GameObject
     {
         int liveTime;
-
         int playerID;
         int radius;
+
+        public Lava ()
+        {
+            this.Color = CONST.lava_color;
+            this.LiveTime = CONST.lava_livetime;
+        }
+        public Lava(Bomb pbomb)
+        {
+            this.Color = CONST.lava_color;
+            this.LiveTime = CONST.lava_livetime;
+            if (pbomb is Bomb_big)
+            {
+                this.Radius = CONST.lava_radius_big;
+            }
+            else
+            {
+                this.Radius = CONST.lava_radius;
+            }
+        }
+
 
         public int Radius
         {
@@ -1714,10 +1826,9 @@ namespace Bomber_wpf
                     liveTime = (int)value;
             }
         }
-
     }
 
-
+    [Serializable]
     public class CONST
     {
         public static int bonuses_count = 3;
@@ -1741,7 +1852,6 @@ namespace Bomber_wpf
         public static Color bonus_fast = Color.Yellow;
         public static Color bonus_big = Color.IndianRed;
 
-
     }
-
+    */
 }
