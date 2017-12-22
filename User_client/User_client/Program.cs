@@ -24,36 +24,44 @@ namespace User_client
 
         static void Main(string[] args)
         {
-            gameBoard = new GameBoard();
-            myUser = new User();
-            myUser.Name = "user1";
-            myUser.ID = 1111;
-            myUser.Color = Color.Blue;
+            try
+            {
+                gameBoard = new GameBoard();                
 
-            server = new TcpClient(serverIp, 9595);
-            connected = true;
-           
-
+                server = new TcpClient(serverIp, 9595);
+                connected = true;
+                Connect();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
-        static void Connect(User user)
+        static void Connect()
         {
             while (connected)
             {
                 try
                 {
-                    IFormatter formatter = new BinaryFormatter(); // the formatter that will serialize my object on my stream 
-                    NetworkStream strm = server.GetStream(); // the stream 
+                    IFormatter formatter = new BinaryFormatter(); 
+                    NetworkStream strm = server.GetStream(); 
 
+                    //Информация о игровом мире, полученная с сервера
                     gameBoard = (GameBoard) formatter.Deserialize(strm);
+                    Console.WriteLine(gameBoard.Players[0].Name);
+                    myUser = (User)formatter.Deserialize(strm);                   
 
-                    user.ACTION = user.Play();
-                    formatter.Serialize(strm, user); // the serialization process 
+                    myUser.ACTION = myUser.Play(gameBoard);
+                    Console.WriteLine(myUser.Name);
+
+                    //Отправка на сервер информацию об игроке, в частности, планируемое действие
+                     formatter.Serialize(strm, myUser); 
                 }
                 catch (Exception e)
                 {
-                    Console.Write("ERROR: " + e.Message);
-                    connected = false;
+                    Console.WriteLine("ERROR: " + e.Message);
+                    connected = false;                  
                 }
             }
         }

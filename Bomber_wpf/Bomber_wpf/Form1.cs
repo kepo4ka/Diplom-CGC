@@ -40,7 +40,9 @@ namespace Bomber_wpf
         int GameTimer;
 
         string serverIp = "127.0.0.1";
-        TcpClient client;
+        TcpListener server;
+        List<Player> winners = new List<Player>();
+        Dictionary<Player, TcpClient> clients = new Dictionary<Player, TcpClient>();
 
 
 
@@ -51,38 +53,29 @@ namespace Bomber_wpf
             p = new Pen(Color.Black);
             sb = new SolidBrush(Color.DimGray);
 
-            string serverIp = "127.0.0.1";
+            IPAddress ip = IPAddress.Parse(serverIp);
+            server = new TcpListener(ip, 9595);
+            server.Start();
+           
 
-            client = new TcpClient(serverIp, 9595);
-
+         
             InitGame();
-
+            // server.Stop();
 
         }
 
-
+        /// <summary>
+        /// Начать сеанс игры
+        /// </summary>
         public void InitGame()
         {
 
-            gb = new GameBoard();
+            clients.Clear();
+            winners.Clear();
+
+
             GameTimer = CONST.gameTicksMax;
-
-
-            //for (int i = 0; i < gb.W; i++)
-            //{
-            //    gb.Cells[i, 0] = new Cell_free()
-            //    {
-            //        X = i,
-            //        Y = 0
-            //    };
-            //    gb.Cells[i, 1] = new Cell_indestructible()
-            //    {
-            //        X = i,
-            //        Y = 1
-            //    };
-            //}
-
-
+            gb = new GameBoard();
 
             Player vitya = new Bot()
             {
@@ -96,13 +89,36 @@ namespace Bomber_wpf
                 Color = Color.Purple
             };
 
+            Player user = new User()
+            {
+                Name = "User",
+                Health = 50,
+                ID = 333,
+                X = 0,
+                Y = 14,
+                ReloadTime = 0,
+                Color = Color.Blue
+            };
+
+            gb.Players.Add(user);
+            gb.Players.Add(vitya);
+
+            while (clients.Count < 1)
+            {
+                clients.Add(user, server.AcceptTcpClient());
+                MessageBox.Show("Клиент подключился");
+            }
+            SendGameInfo();
+
+
+            /* Дополнительные боты
             Player Yura = new Bot()
             {
                 Name = "Yura_bot",
                 ID = 2,
                 BonusType = BonusType.None,
-                X = gb.W-1,
-                Y = gb.H-1,
+                X = gb.W - 1,
+                Y = gb.H - 1,
                 ReloadTime = 0,
                 Health = 200,
                 Color = Color.Aqua
@@ -119,22 +135,9 @@ namespace Bomber_wpf
                 Health = 350,
                 Color = Color.BlueViolet
             };
-
-            Player user = new User()
-            {
-                Name = "User",
-                Health = 50,
-                ID = 0,
-                X = 0,
-                Y = 14,
-                ReloadTime = 0,
-                Color = Color.Blue
-            };
-
-            gb.Players.Add(vitya);
             gb.Players.Add(Yura);
             gb.Players.Add(Oleg);
-            gb.Players.Add(user);
+             Дополнительные боты */
 
 
 
@@ -161,25 +164,73 @@ namespace Bomber_wpf
             //};
             //gb.Cells[3, 0] = cl;
 
-            Bomb bmb = new Bomb_big()
-            {
-                X = 0,
-                Y = 12,
-                PlayerID = 0,
-                LiveTime = CONST.bomb_live_time               
+            //Bomb bmb = new Bomb_big()
+            //{
+            //    X = 0,
+            //    Y = 12,
+            //    PlayerID = 0,
+            //    LiveTime = CONST.bomb_live_time               
 
-            };
-            gb.Bombs.Add(bmb);
+            //};
+            //gb.Bombs.Add(bmb);
 
             game_timer.Tick += game_timer_Tick;
             game_timer.Interval = 800;
-
             game_timer.Start();
 
             initListView();
-
-            //NextTick();
         }
+
+        /// <summary>
+        /// Отправить Клиентам инофрмацию об Игровом мире (объект класса GameBoard)
+        /// </summary>
+        public void SendGameInfo()
+        {
+            try
+            {
+                foreach (var tclient in clients)
+                {
+                    try
+                    {
+                        NetworkStream strm = tclient.Value.GetStream();
+                        IFormatter formatter = new BinaryFormatter();
+                        formatter.Serialize(strm, gb);
+                        formatter.Serialize(strm, tclient.Key);
+                    }
+                    catch
+                    {
+                        PlayerDisconnect(tclient.Value);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Получить информацию об Игроках (класс Player) от Клиентов
+        /// </summary>
+        public void ReceiveUserInfo()
+        {
+            foreach (var tclient in clients)
+            {
+                try
+                {
+                    NetworkStream strm = tclient.Value.GetStream();
+                    IFormatter formatter = new BinaryFormatter();
+                    Player nplayer = (Player)formatter.Deserialize(strm);
+                    gb.Players.Find(c => c.ID == nplayer.ID).ACTION = nplayer.ACTION;
+                }
+                catch (Exception e)
+                {
+                    PlayerDisconnect(tclient.Value);
+                }
+            }
+        }
+
+
 
 
         /// <summary>
@@ -287,9 +338,7 @@ namespace Bomber_wpf
         }
 
         private void game_timer_Tick(object sender, EventArgs e)
-        {
-            panel1.Refresh();
-            UpdateListView();            
+        {                  
             NextTick();
 
 
@@ -324,20 +373,16 @@ namespace Bomber_wpf
         /// Следующий ход игры
         /// </summary>
         public void NextTick()
-        {           
-            this.Text = "Тик - " + GameTimer;
-            if (GameTimer <1)
-            {
-                MessageBox.Show("Время игры истекло");
-                InitGame();
-            }
-            if (gb.Players.Count<1)
-            {
-                MessageBox.Show("Все игроки погибли");
-                InitGame();
-            }
+        {
+            ReceiveUserInfo();
 
+            panel1.Refresh();
+            UpdateListView();
+
+            this.Text = "Тик - " + GameTimer;
+            CheckGameOver();
             GameTimer--;
+
             DrawCells();
             LavasProccess();
             PlayerProcess();
@@ -350,6 +395,8 @@ namespace Bomber_wpf
             BombsProccess();
 
             DrawGrid();
+
+            SendGameInfo();
             // Thread.Sleep(15);
             //panel1.Refresh();
            
@@ -368,6 +415,52 @@ namespace Bomber_wpf
 
         }
 
+        /// <summary>
+        /// Проверить наступили ли условия для наступления Конца игры
+        /// </summary>
+        public void CheckGameOver()
+        {
+            if (GameTimer < 1)
+            {
+                string message = "Время истекло. \n";
+                message += "Живые игроки и их Очки: \n";
+
+
+                for (int i = 0; i < gb.Players.Count; i++)
+                {
+                    var tplayer = gb.Players[i];
+                    winners.Add(tplayer);
+                    message += tplayer.Name + ": " + tplayer.Points + " \n";
+                }
+
+                message+="Начать заново?";
+
+                var result = MessageBox.Show(message, "GAME OVER",
+                                  MessageBoxButtons.YesNo,
+                                  MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    InitGame();
+                }
+            }
+
+            if (gb.Players.Count == 1)
+            {
+                string message = "Всех порешал игрок - " + gb.Players[0].Name + ", количество Очков - " + gb.Players[0].Points + ". \n Начать заново?";
+
+                var result = MessageBox.Show(message, "GAME OVER",
+                                  MessageBoxButtons.YesNo,
+                                  MessageBoxIcon.Question);
+
+                if (result == DialogResult.Yes)
+                {
+                    InitGame();
+                }
+            }
+        }
+
+
 
         /// <summary>
         /// обработка действий игроков
@@ -378,9 +471,11 @@ namespace Bomber_wpf
             for (int i = 0; i < gb.Players.Count; i++)
             {
                 var tvitya = gb.Players[i];
+                if (tvitya is Bot)
+                {
+                    tvitya.ACTION = tvitya.Play();
+                }
 
-                tvitya.ACTION = tvitya.Play();
-               
                 PlayerFire(tvitya);
 
                 Player tempplayer = new Player()
@@ -763,6 +858,65 @@ namespace Bomber_wpf
             }
         }
 
+
+        public void PlayerDeath(Player pplayer, Lava plava)
+        {
+            if (plava.PlayerID != pplayer.ID)
+            {
+                PlayerAddPointsKill(plava);
+            }
+            gb.Players.Remove(pplayer);
+
+            if (clients[pplayer] != null)
+            {
+                clients[pplayer].Close();
+            }
+            clients.Remove(pplayer);
+
+            ChangeListView(pplayer);
+            gb.DeadPlayers.Add(pplayer);
+        }
+
+        public void PlayerDisconnect(Player pplayer)
+        {         
+            gb.Players.Remove(pplayer);
+            gb.DeadPlayers.Add(pplayer);
+            ChangeListView(pplayer);
+
+            if (clients[pplayer] != null)
+            {
+                clients[pplayer].Close();
+            }
+
+            clients.Remove(pplayer);
+        }
+
+        public void PlayerDisconnect(TcpClient client)
+        {
+            if (client != null)
+            {
+                client.Close();
+            }
+
+
+            Player tplayer = new Player();
+            foreach (var tclient in clients)
+            {
+                if (tclient.Value == client)
+                {
+                    tplayer = tclient.Key;
+                    break;
+                }
+            }                     
+
+            gb.Players.Remove(tplayer);
+            gb.DeadPlayers.Add(tplayer);
+            ChangeListView(tplayer);
+
+            clients.Remove(tplayer);           
+        }
+
+
         /// <summary>
         /// Взаимодействие лавы и игроков
         /// </summary>
@@ -780,13 +934,7 @@ namespace Bomber_wpf
                         tplayer.Health--;
                         if (tplayer.Health < 1)
                         {
-                            if (plava.PlayerID != tplayer.ID)
-                            {
-                                PlayerAddPointsKill(plava);
-                            }
-                            gb.Players.Remove(tplayer);
-                            ChangeListView(tplayer);
-                            gb.DeadPlayers.Add(tplayer);
+                            PlayerDeath(tplayer, plava);
                         }
                     }
                 }
@@ -797,13 +945,7 @@ namespace Bomber_wpf
                         tplayer.Health--;
                         if (tplayer.Health < 1)
                         {
-                            if (plava.PlayerID != tplayer.ID)
-                            {
-                                PlayerAddPointsKill(plava);
-                            }
-                            gb.Players.Remove(tplayer);
-                            ChangeListView(tplayer);
-                            gb.DeadPlayers.Add(tplayer);
+                            PlayerDeath(tplayer, plava);
                         }
                     }
                 }

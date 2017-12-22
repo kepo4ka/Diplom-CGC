@@ -495,6 +495,8 @@ namespace ClassLibrary_CGC
 
     }
 
+
+    [Serializable]
     public class GameObject
     {
         int x, y;
@@ -787,7 +789,11 @@ namespace ClassLibrary_CGC
 
         public virtual PlayerAction Play()
         {
+            return PlayerAction.wait;
+        }
 
+        public virtual PlayerAction Play(GameBoard gb)
+        {
             return PlayerAction.wait;
         }
     }
@@ -869,8 +875,8 @@ namespace ClassLibrary_CGC
         public static int bomb_live_time = 3;
         
         public static int player_health = 3;
-        public static int player_reload = 3;
-        public static int player_reload_fast = 1;
+        public static int player_reload = 4;
+        public static int player_reload_fast = 3;
         public static int player_kill_points = 10;
         public static int player_cell_destroy_points = 1;
 
