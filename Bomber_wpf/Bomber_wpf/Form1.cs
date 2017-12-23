@@ -72,21 +72,13 @@ namespace Bomber_wpf
         /// Начать сеанс игры
         /// </summary>
         public void InitGame()
-        {
-         
-
-            clients.Clear();
-            if (isGameOver)
-            {
-                MessageBox.Show(gb.Players.Count + "");
-            }
-
+        {        
+            clients.Clear();      
             winners.Clear();
             gameBoardStates.Clear();
-            isGameOver = false;
 
-          
-
+            isGameOver = false;    
+            
             GameTimer = CONST.gameTicksMax;
             gb = new GameBoard();
 
