@@ -10,6 +10,8 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
 using User_class;
+using System.IO;
+using System.Globalization;
 
 namespace Bomber_wpf
 {
@@ -43,8 +45,11 @@ namespace Bomber_wpf
         TcpListener server;
         List<Player> winners = new List<Player>();
         Dictionary<Player, TcpClient> clients = new Dictionary<Player, TcpClient>();
+        List<GameBoard> gameBoardStates = new List<GameBoard>();
 
+        bool isGameOver = false;
 
+        bool testbool = false;
 
         public Form1()
         {
@@ -56,7 +61,6 @@ namespace Bomber_wpf
             IPAddress ip = IPAddress.Parse(serverIp);
             server = new TcpListener(ip, 9595);
             server.Start();
-           
 
          
             InitGame();
@@ -69,10 +73,19 @@ namespace Bomber_wpf
         /// </summary>
         public void InitGame()
         {
+         
 
             clients.Clear();
-            winners.Clear();
+            if (isGameOver)
+            {
+                MessageBox.Show(gb.Players.Count + "");
+            }
 
+            winners.Clear();
+            gameBoardStates.Clear();
+            isGameOver = false;
+
+          
 
             GameTimer = CONST.gameTicksMax;
             gb = new GameBoard();
@@ -85,7 +98,7 @@ namespace Bomber_wpf
                 X = gb.W-1,
                 Y = 0,
                 ReloadTime = 0,
-                Health = 250,
+                Health = 2,
                 Color = Color.Purple
             };
 
@@ -101,15 +114,18 @@ namespace Bomber_wpf
             };
 
             gb.Players.Add(user);
-            gb.Players.Add(vitya);
+            gb.Players.Add(vitya);        
 
             while (clients.Count < 1)
             {
+                MessageBox.Show("Ожидаем клиентов в фоновом режиме");
                 clients.Add(user, server.AcceptTcpClient());
                 MessageBox.Show("Клиент подключился");
             }
             SendGameInfo();
 
+            gameBoardStates.Add((GameBoard)gb.Clone());
+            SaveGameInfoFile();
 
             /* Дополнительные боты
             Player Yura = new Bot()
@@ -188,14 +204,19 @@ namespace Bomber_wpf
         {
             try
             {
-                foreach (var tclient in clients)
+                Dictionary<Player, TcpClient> tclients = clients;
+
+                foreach (var tclient in tclients)
                 {
                     try
                     {
-                        NetworkStream strm = tclient.Value.GetStream();
-                        IFormatter formatter = new BinaryFormatter();
-                        formatter.Serialize(strm, gb);
-                        formatter.Serialize(strm, tclient.Key);
+                        if (tclient.Value != null)
+                        {
+                            NetworkStream strm = tclient.Value.GetStream();
+                            IFormatter formatter = new BinaryFormatter();
+                            formatter.Serialize(strm, gb);
+                            formatter.Serialize(strm, tclient.Key);
+                        }
                     }
                     catch
                     {
@@ -218,10 +239,13 @@ namespace Bomber_wpf
             {
                 try
                 {
-                    NetworkStream strm = tclient.Value.GetStream();
-                    IFormatter formatter = new BinaryFormatter();
-                    Player nplayer = (Player)formatter.Deserialize(strm);
-                    gb.Players.Find(c => c.ID == nplayer.ID).ACTION = nplayer.ACTION;
+                    if (tclient.Value != null)
+                    {
+                        NetworkStream strm = tclient.Value.GetStream();
+                        IFormatter formatter = new BinaryFormatter();
+                        Player nplayer = (Player)formatter.Deserialize(strm);
+                        gb.Players.Find(c => c.ID == nplayer.ID).ACTION = nplayer.ACTION;
+                    }
                 }
                 catch (Exception e)
                 {
@@ -267,7 +291,7 @@ namespace Bomber_wpf
             for (int i = 0; i < players_listView.Items.Count; i++)
             {
                 var tItem = players_listView.Items[i].SubItems[0].Text;
-                if (tItem == pplayer.ID.ToString())
+                if (tItem == pplayer.Name)
                 {
                     players_listView.Items.RemoveAt(i);
                     break;
@@ -294,6 +318,9 @@ namespace Bomber_wpf
         /// </summary>
         public void initListView()
         {
+            players_listView.Clear();
+            dead_players_listvView.Clear();
+
             players_listView.View = View.Details;
             dead_players_listvView.View = View.Details;
 
@@ -374,32 +401,35 @@ namespace Bomber_wpf
         /// </summary>
         public void NextTick()
         {
-            ReceiveUserInfo();
+            if (isGameOver == false)
+            {
+                ReceiveUserInfo();
 
-            panel1.Refresh();
-            UpdateListView();
+                panel1.Refresh();
+                UpdateListView();
 
-            this.Text = "Тик - " + GameTimer;
-            CheckGameOver();
-            GameTimer--;
+                this.Text = "Тик - " + GameTimer;
+                GameTimer--;
 
-            DrawCells();
-            LavasProccess();
-            PlayerProcess();
+                DrawCells();
 
-            PlayerBonusCollision();
+                LavasProccess();
+                PlayerProcess();
 
-            BonusesProccess();
+                PlayerBonusCollision();
+                BonusesProccess();
 
-            PaintPlayers();
-            BombsProccess();
+                PaintPlayers();
+                BombsProccess();
 
-            DrawGrid();
+                DrawGrid();
 
-            SendGameInfo();
-            // Thread.Sleep(15);
-            //panel1.Refresh();
-           
+                SendGameInfo();
+
+                gameBoardStates.Add((GameBoard)gb.Clone());
+
+                CheckGameOver();
+            }
         }
 
 
@@ -420,46 +450,93 @@ namespace Bomber_wpf
         /// </summary>
         public void CheckGameOver()
         {
-            if (GameTimer < 1)
+            if (isGameOver == false)
             {
-                string message = "Время истекло. \n";
-                message += "Живые игроки и их Очки: \n";
-
-
-                for (int i = 0; i < gb.Players.Count; i++)
+                if (GameTimer < 1)
                 {
-                    var tplayer = gb.Players[i];
-                    winners.Add(tplayer);
-                    message += tplayer.Name + ": " + tplayer.Points + " \n";
+                    isGameOver = true;
+                    game_timer.Stop();
+                    SaveGameInfoFile();
+
+                    string message = "Время истекло. \n";
+                    message += "Живые игроки и их Очки: \n";
+
+
+                    for (int i = 0; i < gb.Players.Count; i++)
+                    {
+                        var tplayer = gb.Players[i];
+                        winners.Add(tplayer);
+                        message += tplayer.Name + ": " + tplayer.Points + " \n";
+                    }
+
+                    message += "Начать заново?";
+
+                    var result = MessageBox.Show(message, "GAME OVER",
+                                      MessageBoxButtons.YesNo,
+                                      MessageBoxIcon.Question);
+
+                    if (result == DialogResult.Yes)
+                    {
+                        InitGame();
+                    }
                 }
 
-                message+="Начать заново?";
-
-                var result = MessageBox.Show(message, "GAME OVER",
-                                  MessageBoxButtons.YesNo,
-                                  MessageBoxIcon.Question);
-
-                if (result == DialogResult.Yes)
+                if (gb.Players.Count == 1)
                 {
-                    InitGame();
-                }
-            }
+                    isGameOver = true;
+                    game_timer.Stop();
+                    SaveGameInfoFile();
 
-            if (gb.Players.Count == 1)
-            {
-                string message = "Всех порешал игрок - " + gb.Players[0].Name + ", количество Очков - " + gb.Players[0].Points + ". \n Начать заново?";
+                    string message = "Всех порешал игрок - " + gb.Players[0].Name + ", количество Очков - " + gb.Players[0].Points + ". \n Начать заново?";
 
-                var result = MessageBox.Show(message, "GAME OVER",
-                                  MessageBoxButtons.YesNo,
-                                  MessageBoxIcon.Question);
+                    var result = MessageBox.Show(message, "GAME OVER",
+                                      MessageBoxButtons.YesNo,
+                                      MessageBoxIcon.Question);
 
-                if (result == DialogResult.Yes)
-                {
-                    InitGame();
+                    if (result == DialogResult.Yes)
+                    {
+                        InitGame();
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Сохранение "слепков" игры в виде списка, где индекс - это номер Тика игры
+        /// </summary>
+        public void SaveGameInfoFile()
+        {
+            //try
+            //{
+                DateTime time = DateTime.Now;
+                string time_str = time.ToString("dd-MM-yyyy H-mm-ss");
+
+                string gameStatesFileName = "Game - (";
+                if (gameBoardStates[0].Players.Count > 1)
+                {
+                    for (int i = 0; i < gameBoardStates[0].Players.Count - 1; i++)
+                    {
+                        var tplayer = gameBoardStates[0].Players[i];
+                        gameStatesFileName += tplayer.Name + " vs ";
+                    }
+                }
+                gameStatesFileName += gameBoardStates[0].Players[gameBoardStates[0].Players.Count-1].Name + ")";
+
+
+                gameStatesFileName += " " + time_str;
+                gameStatesFileName += ".dat";
+
+                BinaryFormatter form = new BinaryFormatter();
+                using (FileStream fs = new FileStream(gameStatesFileName, FileMode.OpenOrCreate))
+                {
+                    form.Serialize(fs, gameBoardStates);
+                }
+            //}
+            //catch (Exception e)
+            //{
+            //    MessageBox.Show("Ошибка при сохранении информации об игре в файл: " + e.Message);
+            //}
+        }
 
 
         /// <summary>
@@ -832,7 +909,7 @@ namespace Bomber_wpf
             for (int i = 0; i < gb.Players.Count; i++)
             {
                 var tplayer = gb.Players[i];
-                if (tplayer.ID == plava.PlayerID)
+                if (tplayer.ID != plava.PlayerID)
                 {
                     tplayer.Points += CONST.player_kill_points;
                     break;
@@ -867,29 +944,18 @@ namespace Bomber_wpf
             }
             gb.Players.Remove(pplayer);
 
-            if (clients[pplayer] != null)
+            if (pplayer is User && clients[pplayer] != null)
             {
                 clients[pplayer].Close();
             }
-            clients.Remove(pplayer);
+
+            clients[pplayer] = null;
 
             ChangeListView(pplayer);
             gb.DeadPlayers.Add(pplayer);
         }
 
-        public void PlayerDisconnect(Player pplayer)
-        {         
-            gb.Players.Remove(pplayer);
-            gb.DeadPlayers.Add(pplayer);
-            ChangeListView(pplayer);
 
-            if (clients[pplayer] != null)
-            {
-                clients[pplayer].Close();
-            }
-
-            clients.Remove(pplayer);
-        }
 
         public void PlayerDisconnect(TcpClient client)
         {
@@ -913,7 +979,7 @@ namespace Bomber_wpf
             gb.DeadPlayers.Add(tplayer);
             ChangeListView(tplayer);
 
-            clients.Remove(tplayer);           
+            //clients[tplayer] = null;           
         }
 
 

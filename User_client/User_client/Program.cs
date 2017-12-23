@@ -49,11 +49,9 @@ namespace User_client
 
                     //Информация о игровом мире, полученная с сервера
                     gameBoard = (GameBoard) formatter.Deserialize(strm);
-                    Console.WriteLine(gameBoard.Players[0].Name);
                     myUser = (User)formatter.Deserialize(strm);                   
 
                     myUser.ACTION = myUser.Play(gameBoard);
-                    Console.WriteLine(myUser.Name);
 
                     //Отправка на сервер информацию об игроке, в частности, планируемое действие
                      formatter.Serialize(strm, myUser); 

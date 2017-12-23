@@ -21,7 +21,7 @@ namespace ClassLibrary_CGC
 
 
     [Serializable]
-    public class GameBoard
+    public class GameBoard : ICloneable
     {
         int w, h;
         Cell[,] cells;
@@ -382,6 +382,118 @@ namespace ClassLibrary_CGC
                 lavas = value;
             }
         }
+
+        public object Clone()
+        {
+            GameBoard nGameBoard = new GameBoard();
+            nGameBoard =(GameBoard) this.MemberwiseClone();
+
+
+            nGameBoard.Cells = new Cell[nGameBoard.W, nGameBoard.H];
+
+            for (int i = 0; i < nGameBoard.Cells.GetLength(0); i++)
+            {
+                for (int j = 0; j < nGameBoard.Cells.GetLength(1); j++)
+                {
+                    if (this.Cells[i, j] is Cell_destructible)
+                    {
+                        nGameBoard.Cells[i, j] = new Cell_destructible();
+                    }
+                    else if (this.Cells[i, j] is Cell_indestructible)
+                    {
+                        nGameBoard.Cells[i, j] = new Cell_indestructible();
+                    }
+                    else
+                    {
+                        nGameBoard.Cells[i, j] = new Cell_free();
+                    }
+                }
+            }
+
+            nGameBoard.Bonuses = new List<Bonus>();
+
+            for (int i = 0; i < this.Bonuses.Count; i++)
+            {
+                Bonus nbonus;
+                if (this.Bonuses[i] is Bonus_big)
+                {
+                    nbonus = new Bonus_big(this.Bonuses[i].X, this.Bonuses[i].Y);                    
+                }
+                else
+                {
+                    nbonus = new Bonus_fast(this.Bonuses[i].X, this.Bonuses[i].Y);
+                }
+                nbonus.Visible = this.Bonuses[i].Visible;
+                nbonus.Color = this.Bonuses[i].Color;
+                nGameBoard.Bonuses.Add(nbonus);
+            }
+
+            nGameBoard.Bombs = new List<Bomb>();
+
+            for (int i = 0; i < this.Bombs.Count; i++)
+            {
+                Bomb nbomb;
+                if (this.Bombs[i] is Bomb_big)
+                {
+                    nbomb = new Bomb_big();
+                }
+                else
+                {
+                    nbomb = new Bomb();
+                }
+                nbomb.X = this.Bombs[i].X;
+                nbomb.Y = this.Bombs[i].Y;
+                nbomb.Color = this.Bombs[i].Color;
+                nbomb.PlayerID = this.Bombs[i].PlayerID;
+                nbomb.LiveTime = this.Bombs[i].LiveTime;
+
+                nGameBoard.Bombs.Add(nbomb);
+            }
+
+            nGameBoard.Players = new List<Player>();
+
+            for (int i = 0; i < this.Players.Count; i++)
+            {
+                Player nplayer = new Player();              
+
+                nplayer.X = this.Players[i].X;
+                nplayer.Y = this.Players[i].Y;
+                nplayer.Health = this.Players[i].Health;
+                nplayer.ID = this.Players[i].ID;
+                nplayer.Name = this.Players[i].Name;
+                nplayer.Points = this.Players[i].Points;
+                nplayer.ReloadTime = this.Players[i].ReloadTime;
+                nplayer.BonusType = this.Players[i].BonusType;
+                nplayer.Color = this.Players[i].Color;
+                nplayer.ACTION = this.Players[i].ACTION;
+
+                nGameBoard.Players.Add(nplayer);
+            }
+
+            nGameBoard.DeadPlayers = new List<Player>();
+
+            for (int i = 0; i < this.DeadPlayers.Count; i++)
+            {
+                Player nplayer = new Player();
+                nplayer.X = this.DeadPlayers[i].X;
+                nplayer.Y = this.DeadPlayers[i].Y;
+                nplayer.Health = this.DeadPlayers[i].Health;
+                nplayer.ID = this.DeadPlayers[i].ID;
+                nplayer.Name = this.DeadPlayers[i].Name;
+                nplayer.Points = this.DeadPlayers[i].Points;
+                nplayer.ReloadTime = this.DeadPlayers[i].ReloadTime;
+                nplayer.BonusType = this.DeadPlayers[i].BonusType;
+                nplayer.Color = this.DeadPlayers[i].Color;
+                nplayer.ACTION = this.DeadPlayers[i].ACTION;
+
+                nGameBoard.DeadPlayers.Add(nplayer);
+            }
+
+            return nGameBoard;
+
+        } 
+
+
     }
 
 
