@@ -510,16 +510,63 @@ namespace Bomber_wpf
 
 
         public void panel1_Paint(object sender, PaintEventArgs e)
-        {
-            //DateTime now = DateTime.Now;
-            //if ((now - previousTime).Milliseconds > 50)
-            //{
-            //    players_ListBox.Items[0] = test + "";
-            //    previousTime = now;
-            //}
-            //NextTick();
+        {     
 
         }
+
+        /// <summary>
+        /// Окончание игры: вывод и сохранение информации
+        /// </summary>
+        public void GameOver()
+        {
+            isGameOver = true;
+            game_timer.Stop();
+            SaveGameInfoFile();
+            var result = DialogResult.No;
+            string message = "";
+
+            if (GameTimer < 1)
+            {
+                message = "Время истекло. \n";
+                message += "Живые игроки и их Очки: \n";
+
+                for (int i = 0; i < gb.Players.Count; i++)
+                {
+                    var tplayer = gb.Players[i];
+                    winners.Add(tplayer);
+                    message += tplayer.Name + ": " + tplayer.Points + " \n";
+                }
+
+                message += "Начать заново?";
+
+                result = MessageBox.Show(message, "GAME OVER",
+                                  MessageBoxButtons.YesNo,
+                                  MessageBoxIcon.Question);
+            }
+
+            else if (gb.Players.Count == 1)
+            {  
+                message = "Всех порешал игрок - " + gb.Players[0].Name + ", количество Очков - " + gb.Players[0].Points + ". \n Начать заново?";
+
+                result = MessageBox.Show(message, "GAME OVER",
+                                  MessageBoxButtons.YesNo,
+                                  MessageBoxIcon.Question);            
+            }
+            else if (gb.Players.Count<1)
+            {
+                message = "Игроки погибли одновременно \n Начать заново?";
+
+                 result = MessageBox.Show(message, "GAME OVER",
+                                  MessageBoxButtons.YesNo,
+                                  MessageBoxIcon.Question);
+            }
+
+            if (result == DialogResult.Yes)
+            {
+                InitGame();
+            }
+        }
+
 
         /// <summary>
         /// Проверить наступили ли условия для наступления Конца игры
@@ -528,51 +575,9 @@ namespace Bomber_wpf
         {
             if (isGameOver == false)
             {
-                if (GameTimer < 1)
-                {
-                    isGameOver = true;
-                    game_timer.Stop();
-                    SaveGameInfoFile();
-
-                    string message = "Время истекло. \n";
-                    message += "Живые игроки и их Очки: \n";
-
-
-                    for (int i = 0; i < gb.Players.Count; i++)
-                    {
-                        var tplayer = gb.Players[i];
-                        winners.Add(tplayer);
-                        message += tplayer.Name + ": " + tplayer.Points + " \n";
-                    }
-
-                    message += "Начать заново?";
-
-                    var result = MessageBox.Show(message, "GAME OVER",
-                                      MessageBoxButtons.YesNo,
-                                      MessageBoxIcon.Question);
-
-                    if (result == DialogResult.Yes)
-                    {
-                        InitGame();
-                    }
-                }
-
-                if (gb.Players.Count == 1)
-                {
-                    isGameOver = true;
-                    game_timer.Stop();
-                    SaveGameInfoFile();
-
-                    string message = "Всех порешал игрок - " + gb.Players[0].Name + ", количество Очков - " + gb.Players[0].Points + ". \n Начать заново?";
-
-                    var result = MessageBox.Show(message, "GAME OVER",
-                                      MessageBoxButtons.YesNo,
-                                      MessageBoxIcon.Question);
-
-                    if (result == DialogResult.Yes)
-                    {
-                        InitGame();
-                    }
+                if (GameTimer < 1 || gb.Players.Count <= 1)
+                {                
+                    GameOver();
                 }
             }
         }
