@@ -79,7 +79,7 @@ namespace Bomber_wpf
 
             isGameOver = false;    
             
-            GameTimer = CONST.gameTicksMax;
+            GameTimer = CONST.gameTicksMax;           
             gb = new GameBoard();
 
             Player vitya = new Bot()
@@ -90,7 +90,7 @@ namespace Bomber_wpf
                 X = gb.W-1,
                 Y = 0,
                 ReloadTime = 0,
-                Health = 2,
+                Health = 100,
                 Color = Color.Purple
             };
 
@@ -383,7 +383,103 @@ namespace Bomber_wpf
 
             //players_ListBox.Items[0] = allPlayers[0].Name + allPlayers[0].ID + ":" + "bonuses: " + allPlayers[0].BonusType.ToString() + "|" + "Health: " + allPlayers[0].Health + "|" + "reloadTime: " + allPlayers[0].ReloadTime + "|" + "Points: " + allPlayers[0].Points;
             //players_ListBox.Items[1] = allPlayers[1].Name + allPlayers[1].ID + ":" + "bonuses: " + allPlayers[1].BonusType.ToString() + "|" + "Health: " + allPlayers[1].Health + "|" + "reloadTime: " + allPlayers[1].ReloadTime + "|" + "Points: " + allPlayers[1].Points;
+        }
 
+        /// <summary>
+        /// Отрисовать все элементы
+        /// </summary>
+        public void DrawAll()
+        {
+            DrawCells();
+            DrawLavas();
+            DrawBonuses();
+            DrawPlayers();
+            DrawBombs();
+            DrawGrid();
+        }
+
+        /// <summary>
+        /// Нарисовать видимые бонусы
+        /// </summary>
+        public void DrawBonuses()
+        {
+            for (int i = 0; i < gb.Bonuses.Count; i++)
+            {
+                var tbonus = gb.Bonuses[i];
+
+                if (tbonus.Visible == false)
+                {
+                    continue;
+                }
+                PaintEllipse(tbonus.X, tbonus.Y, tbonus.Color);
+            }
+        }
+
+        /// <summary>
+        /// Отрисовать живых Игроков на поле
+        /// </summary>
+        public void DrawPlayers()
+        {
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                var tplayer = gb.Players[i];
+                PaintEllipse(tplayer.X, tplayer.Y, tplayer.Color);
+            }
+        }
+
+        /// <summary>
+        /// Отрисовать Бомбы
+        /// </summary>
+        public void DrawBombs()
+        {
+            for (int i = 0; i < gb.Bombs.Count; i++)
+            {
+                var tbomb = gb.Bombs[i];
+                PaintBomb(tbomb.X, tbomb.Y, tbomb.Color);
+            }
+        }
+
+        /// <summary>
+        /// Отрисовать лаву
+        /// </summary>
+        public void DrawLavas()
+        {
+            for (int k = 0; k < gb.Lavas.Count; k++)
+            {
+                var tlava = gb.Lavas[k];              
+
+                for (int i = tlava.X - tlava.Radius; i <= tlava.X + tlava.Radius; i++)
+                {
+                    if (i < 0 || i > gb.W - 1 || gb.Cells[i, tlava.Y] is Cell_indestructible)
+                    {
+                        continue;
+                    }
+                    PaintRect(i, tlava.Y, CONST.lava_color);
+                }
+
+                for (int j = tlava.Y - tlava.Radius; j <= tlava.Y + tlava.Radius; j++)
+                {
+                    if (j < 0 || j > gb.H - 1 || gb.Cells[tlava.X, j] is Cell_indestructible)
+                    {
+                        continue;
+                    }
+
+                    PaintRect(tlava.X, j, CONST.lava_color);
+                }            
+            }
+        }
+
+        /// <summary>
+        /// Обновить состояние игрового мира
+        /// </summary>
+        public void GameProccess()
+        {
+            GameTimer--;
+
+            LavasProccess();
+            PlayerProcess();
+            PlayerBonusCollision();
+            BombsProccess();
         }
 
 
@@ -401,26 +497,14 @@ namespace Bomber_wpf
                 UpdateListView();
 
                 this.Text = "Тик - " + GameTimer;
-                GameTimer--;
 
-                DrawCells();
+                GameProccess();                            
+                DrawAll();
+                CheckGameOver();
 
-                LavasProccess();
-                PlayerProcess();
-
-                PlayerBonusCollision();
-                BonusesProccess();
-
-                PaintPlayers();
-                BombsProccess();
-
-                DrawGrid();
+                gameBoardStates.Add((GameBoard)gb.Clone());               
 
                 SendGameInfo();
-
-                gameBoardStates.Add((GameBoard)gb.Clone());
-
-                CheckGameOver();
             }
         }
 
@@ -797,17 +881,7 @@ namespace Bomber_wpf
         }
 
 
-        /// <summary>
-        /// Отрисовать живых игроков
-        /// </summary>
-        public void PaintPlayers()
-        {
-            for (int i = 0; i < gb.Players.Count; i++)
-            {
-                var tplayer = gb.Players[i];
-                PaintEllipse(tplayer.X, tplayer.Y, tplayer.Color);
-            }
-        }
+  
 
         /// <summary>
         /// Перезарядка игроков
@@ -851,22 +925,7 @@ namespace Bomber_wpf
             gb.Bombs.Add(tbomb);
         }
 
-        /// <summary>
-        /// Нарисовать видимые бонусы
-        /// </summary>
-        public void BonusesProccess()
-        {
-            for (int i = 0; i < gb.Bonuses.Count; i++)
-            {
-                var tbonus = gb.Bonuses[i];
-
-                if (tbonus.Visible == false)
-                {
-                    continue;
-                }
-                PaintEllipse(tbonus.X, tbonus.Y, tbonus.Color);              
-            }
-        }
+     
 
         /// <summary>
         /// Нарисовать бомбы
@@ -876,14 +935,10 @@ namespace Bomber_wpf
             for (int i = 0; i < gb.Bombs.Count; i++)
             {
                 var tbomb = gb.Bombs[i];
-                PaintBomb(tbomb.X, tbomb.Y, tbomb.Color);
-
                 if (tbomb.LiveTime < 1)
                 {
                     GenerateLava(tbomb);
-
-                    gb.Bombs.Remove(tbomb);
-                    
+                    gb.Bombs.Remove(tbomb);                    
                     continue;
                 }
 
@@ -956,7 +1011,6 @@ namespace Bomber_wpf
                 client.Close();
             }
 
-
             Player tplayer = new Player();
             foreach (var tclient in clients)
             {
@@ -970,8 +1024,6 @@ namespace Bomber_wpf
             gb.Players.Remove(tplayer);
             gb.DeadPlayers.Add(tplayer);
             ChangeListView(tplayer);
-
-            //clients[tplayer] = null;           
         }
 
 
@@ -1070,7 +1122,7 @@ namespace Bomber_wpf
 
         
         /// <summary>
-        /// Обработка лавы
+        /// Обработка состояния лавы
         /// </summary>
         public void LavasProccess()
         {
@@ -1084,27 +1136,7 @@ namespace Bomber_wpf
                     continue;
                 }
 
-                LavaCollision(tlava);
-
-                for (int i = tlava.X - tlava.Radius; i <= tlava.X + tlava.Radius; i++)
-                {
-                    if (i < 0 || i > gb.W - 1 || gb.Cells[i, tlava.Y] is Cell_indestructible)
-                    {                       
-                        continue;
-                    }
-                    PaintRect(i, tlava.Y, CONST.lava_color);
-                }
-
-                for (int j = tlava.Y - tlava.Radius; j <= tlava.Y + tlava.Radius; j++)
-                {
-                    if (j < 0 || j > gb.H - 1 || gb.Cells[tlava.X, j] is Cell_indestructible)
-                    {
-                        continue;
-                    }
-
-                    PaintRect(tlava.X, j, CONST.lava_color);
-                }             
-            
+                LavaCollision(tlava);               
                 tlava.LiveTime--;
             }
         }
