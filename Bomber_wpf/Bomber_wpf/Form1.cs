@@ -117,7 +117,6 @@ namespace Bomber_wpf
             SendGameInfo();
 
             gameBoardStates.Add((GameBoard)gb.Clone());
-            SaveGameInfoFile();
 
             /* Дополнительные боты
             Player Yura = new Bot()
