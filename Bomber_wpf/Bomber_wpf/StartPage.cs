@@ -19,8 +19,8 @@ namespace Bomber_wpf
 
         private void realGameButton_Click(object sender, EventArgs e)
         {
-            Form1 realGameForm = new Form1();
-            this.Visible = false;
+            Form1 realGameForm = new Form1(this);
+            this.Hide();
             realGameForm.Show();
         }
     }

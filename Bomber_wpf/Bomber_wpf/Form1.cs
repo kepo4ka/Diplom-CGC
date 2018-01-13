@@ -34,6 +34,8 @@ namespace Bomber_wpf
 
         //List<Player> allPlayers = new List<Player>();
 
+        StartPage startPage;
+
         public int cw = 30;
         Graphics g;
         Pen p;
@@ -51,7 +53,7 @@ namespace Bomber_wpf
 
         bool testbool = false;
 
-        public Form1()
+        public Form1(StartPage pstartPage)
         {
             InitializeComponent();
             g = panel1.CreateGraphics();
@@ -61,7 +63,7 @@ namespace Bomber_wpf
             IPAddress ip = IPAddress.Parse(serverIp);
             server = new TcpListener(ip, 9595);
             server.Start();
-
+            startPage = pstartPage;
          
             InitGame();
             // server.Stop();
@@ -519,6 +521,7 @@ namespace Bomber_wpf
         public void GameOver()
         {
             isGameOver = true;
+            server.Stop();
             game_timer.Stop();
             SaveGameInfoFile();
             var result = DialogResult.No;
@@ -563,6 +566,11 @@ namespace Bomber_wpf
             if (result == DialogResult.Yes)
             {
                 InitGame();
+            }
+            else
+            {
+                this.Hide();
+                startPage.Show();                
             }
         }
 
@@ -1265,7 +1273,13 @@ namespace Bomber_wpf
             {
                 g.DrawLine(p, 0, j * cw, h * cw, j * cw);
             }
-        }   
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            server.Stop();
+            startPage.Show();
+        }
     }
 
 

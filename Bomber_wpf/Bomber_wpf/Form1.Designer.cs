@@ -31,8 +31,8 @@
             this.components = new System.ComponentModel.Container();
             this.panel1 = new System.Windows.Forms.Panel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.dead_players_listvView = new System.Windows.Forms.ListView();
             this.players_listView = new System.Windows.Forms.ListView();
+            this.dead_players_listvView = new System.Windows.Forms.ListView();
             this.game_timer = new System.Windows.Forms.Timer(this.components);
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox1.SuspendLayout();
@@ -61,15 +61,6 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Живые Игроки";
             // 
-            // dead_players_listvView
-            // 
-            this.dead_players_listvView.GridLines = true;
-            this.dead_players_listvView.Location = new System.Drawing.Point(6, 19);
-            this.dead_players_listvView.Name = "dead_players_listvView";
-            this.dead_players_listvView.Size = new System.Drawing.Size(552, 196);
-            this.dead_players_listvView.TabIndex = 1;
-            this.dead_players_listvView.UseCompatibleStateImageBehavior = false;
-            // 
             // players_listView
             // 
             this.players_listView.GridLines = true;
@@ -78,6 +69,15 @@
             this.players_listView.Size = new System.Drawing.Size(552, 176);
             this.players_listView.TabIndex = 0;
             this.players_listView.UseCompatibleStateImageBehavior = false;
+            // 
+            // dead_players_listvView
+            // 
+            this.dead_players_listvView.GridLines = true;
+            this.dead_players_listvView.Location = new System.Drawing.Point(6, 19);
+            this.dead_players_listvView.Name = "dead_players_listvView";
+            this.dead_players_listvView.Size = new System.Drawing.Size(552, 196);
+            this.dead_players_listvView.TabIndex = 1;
+            this.dead_players_listvView.UseCompatibleStateImageBehavior = false;
             // 
             // game_timer
             // 
@@ -103,6 +103,7 @@
             this.Controls.Add(this.panel1);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
