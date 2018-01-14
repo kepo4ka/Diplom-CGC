@@ -131,7 +131,7 @@ namespace Bomber_wpf
         }
 
         /// <summary>
-        /// Закон
+        /// Проверка условия окончания воспроизведения игры
         /// </summary>
         public void CheckVisualizingGameOver()
         {
@@ -141,6 +141,10 @@ namespace Bomber_wpf
             }
         }
 
+
+        /// <summary>
+        /// Окончание воспроизведения игры
+        /// </summary>
         public void VisualizingGameOver()
         {
             game_timer.Stop();
@@ -1237,6 +1241,7 @@ namespace Bomber_wpf
 
                     if (tcell is Cell_indestructible)
                     {
+                        MessageBox.Show(tcell.X + " " + tcell.Y);
                         PaintRect(tcell.X, tcell.Y, tcell.Color);
                     }
                     else if (tcell is Cell_destructible)
