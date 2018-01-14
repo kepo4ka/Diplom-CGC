@@ -355,6 +355,8 @@ namespace Bomber_wpf
         public void UpdateListView()
         {
             players_listView.Items.Clear();
+            dead_players_listvView.Items.Clear();
+
             for (int i = 0; i < gb.Players.Count; i++)
             {
                 var tplayer = gb.Players[i];
@@ -371,39 +373,27 @@ namespace Bomber_wpf
                 });
                 players_listView.Items.Add(item);
             }
-        }
-       
 
-        /// <summary>
-        /// Перенести умершершего игрока в список мётрвых
-        /// </summary>
-        /// <param name="pplayer">Почивший игрок</param>
-        public void ChangeListView(Player pplayer)
-        {
-            for (int i = 0; i < players_listView.Items.Count; i++)
+            for (int i = 0; i < gb.DeadPlayers.Count; i++)
             {
-                var tItem = players_listView.Items[i].SubItems[0].Text;
-                if (tItem == pplayer.Name)
-                {
-                    players_listView.Items.RemoveAt(i);
-                    break;
-                }
+                var tplayer = gb.DeadPlayers[i];
+
+                var item = new ListViewItem(new[] {
+                    tplayer.Name, tplayer.ID.ToString(),
+                    tplayer.Health.ToString(),
+                    tplayer.Points.ToString(),
+                    tplayer.ACTION.ToString(),
+                    tplayer.ReloadTime.ToString(),
+                    tplayer.BonusType.ToString(),
+                    tplayer.X.ToString(),
+                    tplayer.Y.ToString()
+                });
+                dead_players_listvView.Items.Add(item);
             }
 
-            var item = new ListViewItem(new[] {
-                    pplayer.Name,
-                    pplayer.ID.ToString(),
-                    pplayer.Health.ToString(),
-                    pplayer.Points.ToString(),
-                    pplayer.ACTION.ToString(),
-                    pplayer.ReloadTime.ToString(),
-                    pplayer.BonusType.ToString(),
-                    pplayer.X.ToString(),
-                    pplayer.Y.ToString()
-                });
-            dead_players_listvView.Items.Add(item);
-        }
 
+        }
+       
 
         /// <summary>
         /// Задать списки игроков
@@ -1077,7 +1067,6 @@ namespace Bomber_wpf
             {
                 PlayerAddPointsKill(plava);
             }
-            gb.Players.Remove(pplayer);
 
             if (pplayer is User && clients[pplayer] != null)
             {
@@ -1086,7 +1075,7 @@ namespace Bomber_wpf
 
             clients[pplayer] = null;
 
-            ChangeListView(pplayer);
+            gb.Players.Remove(pplayer);
             gb.DeadPlayers.Add(pplayer);
         }
 
@@ -1110,8 +1099,7 @@ namespace Bomber_wpf
             }                     
 
             gb.Players.Remove(tplayer);
-            gb.DeadPlayers.Add(tplayer);
-            ChangeListView(tplayer);
+            gb.DeadPlayers.Add(tplayer);           
         }
 
 
