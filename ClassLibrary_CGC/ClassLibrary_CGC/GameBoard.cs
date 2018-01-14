@@ -407,6 +407,8 @@ namespace ClassLibrary_CGC
                     {
                         nGameBoard.Cells[i, j] = new Cell_free();
                     }
+                    nGameBoard.Cells[i, j].X = i;
+                    nGameBoard.Cells[i, j].Y = j;
                 }
             }
 
