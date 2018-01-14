@@ -50,6 +50,7 @@
             this.savedGameButton.TabIndex = 1;
             this.savedGameButton.Text = "Запустить ранее сохранённую игру";
             this.savedGameButton.UseVisualStyleBackColor = true;
+            this.savedGameButton.Click += new System.EventHandler(this.savedGameButton_Click);
             // 
             // StartPage
             // 
