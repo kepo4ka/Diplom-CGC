@@ -79,10 +79,6 @@
             this.dead_players_listvView.TabIndex = 1;
             this.dead_players_listvView.UseCompatibleStateImageBehavior = false;
             // 
-            // game_timer
-            // 
-            this.game_timer.Tick += new System.EventHandler(this.game_timer_Tick);
-            // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.dead_players_listvView);

@@ -48,11 +48,17 @@ namespace Bomber_wpf
         List<Player> winners = new List<Player>();
         Dictionary<Player, TcpClient> clients = new Dictionary<Player, TcpClient>();
         List<GameBoard> gameBoardStates = new List<GameBoard>();
+        List<GameBoard> savedGameBoardStates = new List<GameBoard>();
+        int visualizeGameCadrNumber = 0;
 
         bool isGameOver = false;
 
         bool testbool = false;
 
+        /// <summary>
+        /// Игра в реальном времени
+        /// </summary>
+        /// <param name="pstartPage"></param>
         public Form1(StartPage pstartPage)
         {
             InitializeComponent();
@@ -65,10 +71,98 @@ namespace Bomber_wpf
             server.Start();
             startPage = pstartPage;
          
-            InitGame();
-            // server.Stop();
+            InitGame();            
+        }
+
+        /// <summary>
+        /// Воспроизведение сохранённой игры
+        /// </summary>
+        /// <param name="pstartPage"></param>
+        /// <param name="pgameBoardStatates"></param>
+        public Form1(StartPage pstartPage, List<GameBoard> pgameBoardStatates)
+        {
+            InitializeComponent();
+            g = panel1.CreateGraphics();
+            p = new Pen(Color.Black);
+            sb = new SolidBrush(Color.DimGray);
+            startPage = pstartPage;
+
+            savedGameBoardStates = pgameBoardStatates;
+            InitVisualizingGame();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void InitVisualizingGame()
+        {
+            gb = savedGameBoardStates[0];
+
+            initListView();
+
+            game_timer.Tick += visualizing_game_Tick;
+            game_timer.Interval = 1000;
+            game_timer.Start();
+            GameTimer = savedGameBoardStates.Count;
+            visualizeGameCadrNumber = 0;
 
         }
+
+        public void visualizing_game_Tick(object sender, EventArgs e)
+        {
+            NextTickInVisualizingGame();
+        }
+
+        /// <summary>
+        /// Следующий "Кадр" воспроизведения
+        /// </summary>
+        public void NextTickInVisualizingGame()
+        {
+            visualizeGameCadrNumber = savedGameBoardStates.Count - GameTimer;
+            gb = savedGameBoardStates[visualizeGameCadrNumber];
+            panel1.Refresh();
+            UpdateListView();
+
+            this.Text = "Тик - " + GameTimer;
+            DrawAll();
+
+            CheckVisualizingGameOver();            
+            GameTimer--;
+        }
+
+        /// <summary>
+        /// Закон
+        /// </summary>
+        public void CheckVisualizingGameOver()
+        {
+            if (GameTimer<=1)
+            {
+                VisualizingGameOver();
+            }
+        }
+
+        public void VisualizingGameOver()
+        {
+            game_timer.Stop();
+            var result = DialogResult.No;
+            string message = "Воспроизведение завершено!\n Начать заново?";
+            result = MessageBox.Show(message, "GAME OVER",
+                                 MessageBoxButtons.YesNo,
+                                 MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                InitVisualizingGame();
+            }
+            else
+            {
+                this.Hide();
+                game_timer.Stop();
+                startPage.Show();
+            }
+
+        }
+
 
         /// <summary>
         /// Начать сеанс игры
@@ -184,7 +278,7 @@ namespace Bomber_wpf
             //gb.Bombs.Add(bmb);
 
             game_timer.Tick += game_timer_Tick;
-            game_timer.Interval = 800;
+            game_timer.Interval = 300;
             game_timer.Start();
 
             initListView();
@@ -358,32 +452,8 @@ namespace Bomber_wpf
         }
 
         private void game_timer_Tick(object sender, EventArgs e)
-        {                  
+        {
             NextTick();
-
-
-            //allPlayers = new List<Player>();
-            //for (int i = 0; i < gb.Players.Count; i++)
-            //{
-            //    var tplayer = gb.Players[i];
-            //    Player nplayer = new Player()
-            //    {
-            //        Name = tplayer.Name,
-            //        ID = tplayer.ID,
-            //        ReloadTime = tplayer.ReloadTime,
-            //        BonusType = tplayer.BonusType,
-            //        ACTION = tplayer.ACTION,
-            //        Color = tplayer.Color,
-            //        Points = tplayer.Points,
-            //        X = tplayer.X,
-            //        Y = tplayer.Y
-            //    };           
-            //    allPlayers.Add(nplayer);
-            //}
-
-
-            //players_ListBox.Items[0] = allPlayers[0].Name + allPlayers[0].ID + ":" + "bonuses: " + allPlayers[0].BonusType.ToString() + "|" + "Health: " + allPlayers[0].Health + "|" + "reloadTime: " + allPlayers[0].ReloadTime + "|" + "Points: " + allPlayers[0].Points;
-            //players_ListBox.Items[1] = allPlayers[1].Name + allPlayers[1].ID + ":" + "bonuses: " + allPlayers[1].BonusType.ToString() + "|" + "Health: " + allPlayers[1].Health + "|" + "reloadTime: " + allPlayers[1].ReloadTime + "|" + "Points: " + allPlayers[1].Points;
         }
 
         /// <summary>
@@ -521,6 +591,7 @@ namespace Bomber_wpf
         public void GameOver()
         {
             isGameOver = true;
+            MessageBox.Show(game_timer.Interval + "");
             server.Stop();
             game_timer.Stop();
             SaveGameInfoFile();
