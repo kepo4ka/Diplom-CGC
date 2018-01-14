@@ -118,8 +118,9 @@ namespace Bomber_wpf
         /// </summary>
         public void NextTickInVisualizingGame()
         {
-            visualizeGameCadrNumber = savedGameBoardStates.Count - GameTimer;
+            visualizeGameCadrNumber = savedGameBoardStates.Count - GameTimer;            
             gb = savedGameBoardStates[visualizeGameCadrNumber];
+            
             panel1.Refresh();
             UpdateListView();
 
@@ -190,7 +191,7 @@ namespace Bomber_wpf
                 X = gb.W-1,
                 Y = 0,
                 ReloadTime = 0,
-                Health = 100,
+                Health = 10,
                 Color = Color.Purple
             };
 
@@ -575,10 +576,10 @@ namespace Bomber_wpf
 
                 GameProccess();                            
                 DrawAll();
+
+                gameBoardStates.Add((GameBoard)gb.Clone());
+
                 CheckGameOver();
-
-                gameBoardStates.Add((GameBoard)gb.Clone());               
-
                 SendGameInfo();
             }
         }
@@ -594,8 +595,8 @@ namespace Bomber_wpf
         /// </summary>
         public void GameOver()
         {
+
             isGameOver = true;
-            MessageBox.Show(game_timer.Interval + "");
             server.Stop();
             game_timer.Stop();
             SaveGameInfoFile();
@@ -1241,7 +1242,6 @@ namespace Bomber_wpf
 
                     if (tcell is Cell_indestructible)
                     {
-                        MessageBox.Show(tcell.X + " " + tcell.Y);
                         PaintRect(tcell.X, tcell.Y, tcell.Color);
                     }
                     else if (tcell is Cell_destructible)
