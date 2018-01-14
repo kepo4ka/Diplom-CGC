@@ -452,6 +452,22 @@ namespace ClassLibrary_CGC
                 nGameBoard.Bombs.Add(nbomb);
             }
 
+            nGameBoard.Lavas = new List<Lava>();
+
+            for (int i = 0; i < this.Lavas.Count; i++)
+            {
+                var tlava = this.Lavas[i];
+                Lava nlava = new Lava();
+                nlava.Color = tlava.Color;
+                nlava.LiveTime = tlava.LiveTime;
+                nlava.PlayerID = tlava.PlayerID;
+                nlava.Radius = tlava.Radius;
+                nlava.X = tlava.X;
+                nlava.Y = tlava.Y;
+                nGameBoard.Lavas.Add(nlava);
+            }
+
+
             nGameBoard.Players = new List<Player>();
 
             for (int i = 0; i < this.Players.Count; i++)
