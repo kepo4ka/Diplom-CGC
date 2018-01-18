@@ -5,18 +5,23 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
 using User_class;
 using System.IO;
+using System.Diagnostics;
+
 
 namespace Bomber_wpf
 {
     public partial class StartPage : Form
     {
+    
+
+
         public StartPage()
         {
             InitializeComponent();
@@ -24,9 +29,19 @@ namespace Bomber_wpf
 
         private void realGameButton_Click(object sender, EventArgs e)
         {
+            Compiler compiler = new Compiler();
+            compiler.ComplineAndStart();
+
+
+            compiler.UserClientStart();
+
+
             Form1 realGameForm = new Form1(this);
+           
+
             this.Hide();
             realGameForm.Show();
+
         }
 
         private void savedGameButton_Click(object sender, EventArgs e)

@@ -10,6 +10,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Drawing;
 using ClassLibrary_CGC;
 using User_class;
+using System.Threading;
 
 
 namespace User_client
@@ -24,21 +25,36 @@ namespace User_client
 
         static void Main(string[] args)
         {
-            try
-            {
-                gameBoard = new GameBoard();                
+            Console.WriteLine("test1");
+            Connect();
+            Console.WriteLine("test2");
 
-                server = new TcpClient(serverIp, 9595);
-                connected = true;
-                Connect();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            CommunicateWithServer();
+           
         }
 
         static void Connect()
+        {
+            try
+            {               
+                //  gameBoard = new GameBoard();                
+
+                server = new TcpClient(serverIp, 9595);
+                Console.WriteLine("Удалось подключиться к серверу");
+
+                connected = true;
+              
+            }
+            catch 
+            {
+                Thread.Sleep(500);
+                Console.WriteLine("Не удалось подключиться к серверу, повторная попытка");
+                Connect();
+            }
+        }
+
+
+        static void CommunicateWithServer()
         {
             while (connected)
             {
