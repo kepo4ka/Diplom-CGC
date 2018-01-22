@@ -92,7 +92,7 @@ namespace Bomber_wpf
         }
 
         /// <summary>
-        /// 
+        /// Запуск визуализации сохраннённой игры
         /// </summary>
         public void InitVisualizingGame()
         {
@@ -105,7 +105,6 @@ namespace Bomber_wpf
             game_timer.Start();
             GameTimer = savedGameBoardStates.Count;
             visualizeGameCadrNumber = 0;
-
         }
 
         public void visualizing_game_Tick(object sender, EventArgs e)
@@ -165,7 +164,6 @@ namespace Bomber_wpf
                 game_timer.Stop();
                 startPage.Show();
             }
-
         }
 
 
@@ -215,72 +213,10 @@ namespace Bomber_wpf
                 clients.Add(user, server.AcceptTcpClient());
                 MessageBox.Show("Клиент подключился");
             }
+
             SendGameInfo();
 
-            gameBoardStates.Add((GameBoard)gb.Clone());
-
-            /* Дополнительные боты
-            Player Yura = new Bot()
-            {
-                Name = "Yura_bot",
-                ID = 2,
-                BonusType = BonusType.None,
-                X = gb.W - 1,
-                Y = gb.H - 1,
-                ReloadTime = 0,
-                Health = 200,
-                Color = Color.Aqua
-            };
-
-            Player Oleg = new Bot()
-            {
-                Name = "Oleg_bot",
-                ID = 2,
-                BonusType = BonusType.Big,
-                X = 0,
-                Y = 0,
-                ReloadTime = 0,
-                Health = 350,
-                Color = Color.BlueViolet
-            };
-            gb.Players.Add(Yura);
-            gb.Players.Add(Oleg);
-             Дополнительные боты */
-
-
-
-            //players_ListBox.Items.Add(vitya.Name + vitya.ID + ":" + "bonuses: " + vitya.BonusType.ToString() + "|" + "Health: " + vitya.Health + "|" + "reloadTime: " + vitya.ReloadTime + " |" + "Points: " + gb.Players[0].Points);
-            //players_ListBox.Items.Add(yura.Name + yura.ID + ":" + "bonuses: " + yura.BonusType.ToString() + "|" + "Health: " + yura.Health + "|" + "reloadTime: " + yura.ReloadTime + " |" + "Points: " + gb.Players[0].Points);
-
-
-
-            //Bonus tmb = new Bonus_big(8, 0)
-            //{
-            //    Visible = true
-            //};
-            //Bonus tmb1 = new Bonus_fast(7, 0)
-            //{
-            //    Visible = true
-            //};
-            //gb.Bonuses.Add(tmb);
-            //gb.Bonuses.Add(tmb1);
-
-            //Cell cl = new Cell_destructible()
-            //{
-            //    X = 3,
-            //    Y = 0
-            //};
-            //gb.Cells[3, 0] = cl;
-
-            //Bomb bmb = new Bomb_big()
-            //{
-            //    X = 0,
-            //    Y = 12,
-            //    PlayerID = 0,
-            //    LiveTime = CONST.bomb_live_time               
-
-            //};
-            //gb.Bombs.Add(bmb);
+            gameBoardStates.Add((GameBoard)gb.Clone());          
 
             game_timer.Tick += game_timer_Tick;
             game_timer.Interval = 300;
@@ -288,6 +224,7 @@ namespace Bomber_wpf
 
             initListView();
         }
+
 
         /// <summary>
         /// Отправить Клиентам инофрмацию об Игровом мире (объект класса GameBoard)
@@ -322,6 +259,7 @@ namespace Bomber_wpf
             }
         }
 
+
         /// <summary>
         /// Получить информацию об Игроках (класс Player) от Клиентов
         /// </summary>
@@ -345,8 +283,6 @@ namespace Bomber_wpf
                 }
             }
         }
-
-
 
 
         /// <summary>
@@ -390,8 +326,6 @@ namespace Bomber_wpf
                 });
                 dead_players_listvView.Items.Add(item);
             }
-
-
         }
        
 
@@ -443,7 +377,6 @@ namespace Bomber_wpf
                 });
                 players_listView.Items.Add(item);
             }
-
         }
 
         private void game_timer_Tick(object sender, EventArgs e)

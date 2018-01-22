@@ -53,12 +53,14 @@ namespace Bomber_wpf
         //    userClass_dllName = source_name + ".dll";
         //}
 
-        public void ComplineAndStart()
+
+            /// <summary>
+            /// Скомпилировать файлы, необходимые для tcp-клиента пользователя
+            /// </summary>
+        public void Compile()
         {
             try
             {
-                DeleteFile("compile_log.txt");       
-
                 UserClassDLLCompile();
                 UserClientExeCompile();               
             }
@@ -68,18 +70,8 @@ namespace Bomber_wpf
             }
         }
 
-        public void UserClientStart()
-        {
-            StringBuilder sb = new StringBuilder();
-            if (!File.Exists(userClient_Path+userClientexe_Name))
-            {
-                throw new Exception("Не найден файл exe, запускающий tcp клиент");
-            }
-            sb.AppendFormat($"/K cd {userClient_Path} && {userClientexe_Name}");
-           
-            Process.Start("cmd.exe", sb.ToString());           
-        }
 
+  
 
 
         /// <summary>
@@ -110,10 +102,12 @@ namespace Bomber_wpf
             }
         }
 
-
+        /// <summary>
+        /// Скомпилировать exe tcp-клиента пользователя
+        /// </summary>
         private void UserClientExeCompile()
         {
-            DeleteFile(userClass_Path + userClientexe_Name);
+            DeleteFile(userClient_Path + userClientexe_Name);
             StringBuilder sb = new StringBuilder();
 
             sb.AppendFormat($"/C cd {userClient_Path} && " +
@@ -122,16 +116,33 @@ namespace Bomber_wpf
         }
 
 
+        /// <summary>
+        /// Запустить tcp-клиент пользователя
+        /// </summary>
+        public void UserClientStart()
+        {
+            StringBuilder sb = new StringBuilder();
+            if (!File.Exists(userClient_Path + userClientexe_Name))
+            {
+                throw new Exception("Не найден файл exe, запускающий tcp клиент");
+            }
+            sb.AppendFormat($"/C cd {userClient_Path} && {userClientexe_Name}");
 
+            Process.Start("cmd.exe", sb.ToString());
+        }
+
+
+        /// <summary>
+        /// Удалить файл, если он существует
+        /// </summary>
+        /// <param name="filePath">Путь к удаляемому файлу</param>
         private void DeleteFile(string filePath)
         {
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
-            }
+            }      
         }
-
-
 
     }
 }

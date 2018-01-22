@@ -11,7 +11,7 @@ using System.Drawing;
 using ClassLibrary_CGC;
 using User_class;
 using System.Threading;
-
+using System.Windows.Forms;
 
 namespace User_client
 {
@@ -24,10 +24,8 @@ namespace User_client
         static bool connected;
 
         static void Main(string[] args)
-        {
-            Console.WriteLine("test1");
-            Connect();
-            Console.WriteLine("test2");
+        {           
+            Connect();           
 
             CommunicateWithServer();
            

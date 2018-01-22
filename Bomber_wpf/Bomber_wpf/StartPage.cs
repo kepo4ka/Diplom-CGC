@@ -18,8 +18,7 @@ using System.Diagnostics;
 namespace Bomber_wpf
 {
     public partial class StartPage : Form
-    {
-    
+    {   
 
 
         public StartPage()
@@ -27,22 +26,22 @@ namespace Bomber_wpf
             InitializeComponent();
         }
 
+
         private void realGameButton_Click(object sender, EventArgs e)
         {
             Compiler compiler = new Compiler();
-            compiler.ComplineAndStart();
+            compiler.Compile();
 
-
+            Thread.Sleep(1000);
             compiler.UserClientStart();
 
 
-            Form1 realGameForm = new Form1(this);
-           
+            Form1 realGameForm = new Form1(this);           
 
             this.Hide();
             realGameForm.Show();
-
         }
+
 
         private void savedGameButton_Click(object sender, EventArgs e)
         {
