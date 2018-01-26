@@ -1094,7 +1094,7 @@ namespace Bomber_wpf
                     tclient.Value.Close();
                 }                
             }
-           // clients.Clear();
+            clients.Clear();
         }
 
 
