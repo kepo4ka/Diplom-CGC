@@ -484,7 +484,7 @@ namespace ClassLibrary_CGC
                 nplayer.ID = this.Players[i].ID;
                 nplayer.Name = this.Players[i].Name;
                 nplayer.Points = this.Players[i].Points;
-                nplayer.ReloadTime = this.Players[i].ReloadTime;
+                nplayer.BombsCount = this.Players[i].BombsCount;
                 nplayer.BonusType = this.Players[i].BonusType;
                 nplayer.Color = this.Players[i].Color;
                 nplayer.ACTION = this.Players[i].ACTION;
@@ -503,7 +503,7 @@ namespace ClassLibrary_CGC
                 nplayer.ID = this.DeadPlayers[i].ID;
                 nplayer.Name = this.DeadPlayers[i].Name;
                 nplayer.Points = this.DeadPlayers[i].Points;
-                nplayer.ReloadTime = this.DeadPlayers[i].ReloadTime;
+                nplayer.BombsCount = this.DeadPlayers[i].BombsCount;
                 nplayer.BonusType = this.DeadPlayers[i].BonusType;
                 nplayer.Color = this.DeadPlayers[i].Color;
                 nplayer.ACTION = this.DeadPlayers[i].ACTION;
@@ -796,14 +796,14 @@ namespace ClassLibrary_CGC
         int points;
         BonusType bonusType;
 
-        int reloadTime;
+        int bombs_count;
 
 
         public Player()
         {
             Health = 1;
             ACTION = PlayerAction.Wait;
-            ReloadTime = Config.player_reload;
+            BombsCount = Config.player_bombs_count_start;
             BonusType = BonusType.None;
         }
 
@@ -812,7 +812,7 @@ namespace ClassLibrary_CGC
             this.ID = ID;
             Health = 1;
             ACTION = PlayerAction.Wait;
-            ReloadTime = Config.player_reload;
+            BombsCount = Config.player_bombs_count_start;
             BonusType = BonusType.None;
         }
 
@@ -822,7 +822,7 @@ namespace ClassLibrary_CGC
             this.Name = NAME;
             Health = 1;
             ACTION = PlayerAction.Wait;
-            ReloadTime = Config.player_reload;
+            BombsCount = Config.player_bombs_count_start;
             BonusType = BonusType.None;
         }
 
@@ -871,17 +871,17 @@ namespace ClassLibrary_CGC
             }
         }
 
-        public int ReloadTime
+        public int BombsCount
         {
             get
             {
-                return reloadTime;
+                return bombs_count;
             }
             set
             {
                 if (value >= 0)
                 {
-                    reloadTime = value;
+                    bombs_count = value;
                 }
             }
         }
@@ -1018,10 +1018,15 @@ namespace ClassLibrary_CGC
         public static int bomb_live_time = 3;
         
         public static int player_health = 3;
-        public static int player_reload = 4;
-        public static int player_reload_fast = 3;
-        public static int player_kill_points = 10;
+        public static int player_bombs_count_start = 1;
+        public static int player_bombs_count_max = 3;
+
+        public static int player_kill_points = 20;
+        public static int player_survive_points = 20;
         public static int player_cell_destroy_points = 1;
+        public static int player_win_points = 100;
+        public static int player_bonus_find_points = 10;
+
 
         public static Color cell_destructible_color = Color.Bisque;
         public static Color cell_indestructible_color = Color.Black;

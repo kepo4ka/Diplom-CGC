@@ -30,7 +30,6 @@ namespace Bomber_wpf
 
         string serverIp = "127.0.0.1";
         TcpListener server;
-        List<Player> winners = new List<Player>();
         Dictionary<Player, TcpClient> clients = new Dictionary<Player, TcpClient>();
         List<GameBoard> gameBoardStates = new List<GameBoard>();
         List<GameBoard> savedGameBoardStates = new List<GameBoard>();
@@ -157,7 +156,6 @@ namespace Bomber_wpf
         public void InitGame()
         {        
             clients.Clear();      
-            winners.Clear();
             gameBoardStates.Clear();
 
             isGameOver = false;    
@@ -172,8 +170,8 @@ namespace Bomber_wpf
                 BonusType = BonusType.All,
                 X = gb.W-1,
                 Y = 0,
-                ReloadTime = 0,
-                Health = 10,
+                BombsCount = Config.player_bombs_count_max,
+                Health = 5,
                 Color = Color.Purple
             };
 
@@ -184,7 +182,7 @@ namespace Bomber_wpf
                 ID = 333,
                 X = 0,
                 Y = 14,
-                ReloadTime = 0,
+                BombsCount = Config.player_bombs_count_start,
                 Color = Color.Blue
             };
 
@@ -233,13 +231,14 @@ namespace Bomber_wpf
                     }
                     catch
                     {
+                        PlayerDeath(tclient.Key);
                         PlayerDisconnect(tclient.Value);
                     }
                 }
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message);
+                MessageBox.Show("SendGameInfo Error " + e.Message);
             }
         }
 
@@ -263,6 +262,7 @@ namespace Bomber_wpf
                 }
                 catch (Exception e)
                 {
+                    PlayerDeath(tclient.Key);
                     PlayerDisconnect(tclient.Value);
                 }
             }
@@ -286,7 +286,7 @@ namespace Bomber_wpf
                     tplayer.Health.ToString(),
                     tplayer.Points.ToString(),
                     tplayer.ACTION.ToString(),
-                    tplayer.ReloadTime.ToString(),
+                    tplayer.BombsCount.ToString(),
                     tplayer.BonusType.ToString(),
                     tplayer.X.ToString(),
                     tplayer.Y.ToString()
@@ -303,7 +303,7 @@ namespace Bomber_wpf
                     tplayer.Health.ToString(),
                     tplayer.Points.ToString(),
                     tplayer.ACTION.ToString(),
-                    tplayer.ReloadTime.ToString(),
+                    tplayer.BombsCount.ToString(),
                     tplayer.BonusType.ToString(),
                     tplayer.X.ToString(),
                     tplayer.Y.ToString()
@@ -329,7 +329,7 @@ namespace Bomber_wpf
             players_listView.Columns.Add("Health");
             players_listView.Columns.Add("Points");
             players_listView.Columns.Add("PlayerAction");
-            players_listView.Columns.Add("reloadTime");
+            players_listView.Columns.Add("BombsCount");
             players_listView.Columns.Add("Bonus");
             players_listView.Columns.Add("X");
             players_listView.Columns.Add("Y");
@@ -340,7 +340,7 @@ namespace Bomber_wpf
             dead_players_listvView.Columns.Add("Health");
             dead_players_listvView.Columns.Add("Points");
             dead_players_listvView.Columns.Add("PlayerAction");
-            dead_players_listvView.Columns.Add("reloadTime");
+            dead_players_listvView.Columns.Add("BombsCount");
             dead_players_listvView.Columns.Add("Bonus");
             dead_players_listvView.Columns.Add("X");
             dead_players_listvView.Columns.Add("Y");
@@ -354,7 +354,7 @@ namespace Bomber_wpf
                     tplayer.Health.ToString(),
                     tplayer.Points.ToString(),
                     tplayer.ACTION.ToString(),
-                    tplayer.ReloadTime.ToString(),
+                    tplayer.BombsCount.ToString(),
                     tplayer.BonusType.ToString(),
                     tplayer.X.ToString(),
                     tplayer.Y.ToString()
@@ -523,51 +523,59 @@ namespace Bomber_wpf
         {
 
             isGameOver = true;
+
+            Disconnect();
             server.Stop();
+
             game_timer.Stop();
             SaveGameInfoFile();
+
             var result = DialogResult.No;
             string message = "";
 
-            if (GameTimer < 1)
+
+            if (gb.Players.Count == 1)
+            {
+                gb.Players[0].Points += Config.player_win_points;
+
+                message = "Всех порешал игрок - " + gb.Players[0].Name + ", количество Очков - " + gb.Players[0].Points + ". \n";
+            }
+            else if (gb.Players.Count < 1)
+            {
+                message = "Игроки погибли одновременно. \n";
+            }
+            else if (GameTimer < 1)
             {
                 message = "Время истекло. \n";
-                message += "Живые игроки и их Очки: \n";
+                message += "Выжившие Игроки и их Очки: \n";
 
                 for (int i = 0; i < gb.Players.Count; i++)
                 {
                     var tplayer = gb.Players[i];
-                    winners.Add(tplayer);
+                    tplayer.Points += Config.player_survive_points;
+
                     message += tplayer.Name + ": " + tplayer.Points + " \n";
                 }
 
-                message += "Начать заново?";
-
-                result = MessageBox.Show(message, "GAME OVER",
-                                  MessageBoxButtons.YesNo,
-                                  MessageBoxIcon.Question);
+                message += "Мёртвые Игроки и их Очки: \n";
+                for (int i = 0; i < gb.DeadPlayers.Count; i++)
+                {
+                    var tplayer = gb.DeadPlayers[i];
+                    message += tplayer.Name + ": " + tplayer.Points + " \n";
+                }
             }
 
-            else if (gb.Players.Count == 1)
-            {  
-                message = "Всех порешал игрок - " + gb.Players[0].Name + ", количество Очков - " + gb.Players[0].Points + ". \n Начать заново?";
+            message += "Начать заново?";
 
-                result = MessageBox.Show(message, "GAME OVER",
-                                  MessageBoxButtons.YesNo,
-                                  MessageBoxIcon.Question);            
-            }
-            else if (gb.Players.Count<1)
-            {
-                message = "Игроки погибли одновременно \n Начать заново?";
-
-                 result = MessageBox.Show(message, "GAME OVER",
-                                  MessageBoxButtons.YesNo,
-                                  MessageBoxIcon.Question);
-            }
+            result = MessageBox.Show(message, "GAME OVER",
+                              MessageBoxButtons.YesNo,
+                              MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                InitGame();
+                this.Close();
+                
+                this.startPage.InitRealGame();
             }
             else
             {
@@ -588,6 +596,9 @@ namespace Bomber_wpf
                 {                
                     GameOver();
                 }
+
+
+
             }
         }
 
@@ -697,17 +708,23 @@ namespace Bomber_wpf
 
                 if(tempbonus[i,j] != null && tempbonus[i,j].Visible == true)
                 {
+
+                    tvitya.Points += Config.player_bonus_find_points;
+
                     if (tempbonus[i,j] is Bonus_big)
                     {
                         switch (tvitya.BonusType)
                         {
                             case BonusType.None:
                                 tvitya.BonusType = BonusType.BigBomb;
-                                
                                 break;
+
                             case BonusType.Ammunition:
                                 tvitya.BonusType = BonusType.All;
-                                tvitya.ReloadTime = Config.player_reload_fast;
+                                if (tvitya.BombsCount + 1 <= Config.player_bombs_count_max)
+                                {
+                                    tvitya.BombsCount++;
+                                }
                                 break;
                         }
                     }
@@ -717,11 +734,17 @@ namespace Bomber_wpf
                         {
                             case BonusType.None:
                                 tvitya.BonusType = BonusType.Ammunition;
-                                tvitya.ReloadTime = Config.player_reload_fast;
                                 break;
+
                             case BonusType.BigBomb:
                                 tvitya.BonusType = BonusType.All;
-                                tvitya.ReloadTime = Config.player_reload_fast;
+                                break;
+
+                            default:
+                                if (tvitya.BombsCount+1<=Config.player_bombs_count_max)
+                                {
+                                    tvitya.BombsCount++;
+                                }
                                 break;
                         }
                     }
@@ -885,13 +908,12 @@ namespace Bomber_wpf
         {
             if (pplayer.ACTION == PlayerAction.Bomb)
             {
-                if (pplayer.ReloadTime < 1)
+                if (pplayer.BombsCount > 0)
                 {
                     CreateBomb(pplayer);
-                    PlayerReload(pplayer);                   
-                }
+                    pplayer.BombsCount--;
+                }             
             }
-            pplayer.ReloadTime--;
         }
 
 
@@ -905,11 +927,11 @@ namespace Bomber_wpf
         {
             if (_player.BonusType == BonusType.Ammunition || _player.BonusType == BonusType.All)
             {
-                _player.ReloadTime = Config.player_reload_fast;
+                _player.BombsCount = Config.player_bombs_count_max;
             }
             else
             {
-                _player.ReloadTime = Config.player_reload;
+                _player.BombsCount = Config.player_bombs_count_start;
             }
         }
 
@@ -942,7 +964,7 @@ namespace Bomber_wpf
      
 
         /// <summary>
-        /// Нарисовать бомбы
+        /// Обработать состояния бомб
         /// </summary>
         public void BombsProccess()
         {          
@@ -951,8 +973,19 @@ namespace Bomber_wpf
                 var tbomb = gb.Bombs[i];
                 if (tbomb.LiveTime < 1)
                 {
+                   // gb.Players.Find(c => c.ID == tbomb.PlayerID).BombsCount++;
+
+                    for (int j = 0; j < gb.Players.Count; j++)
+                    {
+                        if (gb.Players[j].ID == tbomb.PlayerID)
+                        {
+                            gb.Players[j].BombsCount++;
+                            break;
+                        }
+                    }
+
                     GenerateLava(tbomb);
-                    gb.Bombs.Remove(tbomb);                    
+                    gb.Bombs.Remove(tbomb);
                     continue;
                 }
 
@@ -996,47 +1029,74 @@ namespace Bomber_wpf
             }
         }
 
-
-        public void PlayerDeath(Player pplayer, Lava plava)
+        /// <summary>
+        /// Игрок умер в лаве
+        /// </summary>
+        /// <param name="pplayer"></param>
+        /// <param name="plava"></param>
+        public void PlayerKill(Player pplayer, Lava plava)
         {
             if (plava.PlayerID != pplayer.ID)
             {
                 PlayerAddPointsKill(plava);
             }
 
-            if (pplayer is User && clients[pplayer] != null)
+            if (pplayer is User)
             {
-                clients[pplayer].Close();
+                PlayerDisconnect(clients[pplayer]);
             }
 
             clients[pplayer] = null;
 
+            PlayerDeath(pplayer);
+        }
+
+        /// <summary>
+        /// Похороны игрока
+        /// </summary>
+        /// <param name="pplayer"></param>
+        public void PlayerDeath(Player pplayer)
+        {
             gb.Players.Remove(pplayer);
             gb.DeadPlayers.Add(pplayer);
         }
 
 
-
-        public void PlayerDisconnect(TcpClient client)
+        /// <summary>
+        /// Отключение игрока-клиента
+        /// </summary>
+        /// <param name="pclient"></param>
+        public void PlayerDisconnect(TcpClient pclient)
         {
-            if (client != null)
+            if (pclient != null)
             {
-                client.Close();
+                pclient.Close();
             }
-
-            Player tplayer = new Player();
             foreach (var tclient in clients)
             {
-                if (tclient.Value == client)
+                if (tclient.Value == pclient)
                 {
-                    tplayer = tclient.Key;
-                    break;
+                    clients[tclient.Key] = null;
                 }
-            }                     
-
-            gb.Players.Remove(tplayer);
-            gb.DeadPlayers.Add(tplayer);           
+            }
         }
+
+        /// <summary>
+        /// Отключение всех игроков-клиентов
+        /// </summary>
+        /// <param name="pclient"></param>
+        public void Disconnect()
+        {          
+            foreach (var tclient in clients)
+            {                
+                 if (tclient.Value != null)
+                {
+                    tclient.Value.Close();
+                }                
+            }
+           // clients.Clear();
+        }
+
 
 
         /// <summary>
@@ -1056,7 +1116,7 @@ namespace Bomber_wpf
                         tplayer.Health--;
                         if (tplayer.Health < 1)
                         {
-                            PlayerDeath(tplayer, plava);
+                            PlayerKill(tplayer, plava);
                         }
                     }
                 }
@@ -1067,7 +1127,7 @@ namespace Bomber_wpf
                         tplayer.Health--;
                         if (tplayer.Health < 1)
                         {
-                            PlayerDeath(tplayer, plava);
+                            PlayerKill(tplayer, plava);
                         }
                     }
                 }
@@ -1163,7 +1223,7 @@ namespace Bomber_wpf
             }
 
 
-            for (int j = plava.Y; j <= plava.Y - plava.Radius; j--)
+            for (int j = plava.Y; j >= plava.Y - plava.Radius; j--)
             {
                 if (j < 0 || j > gb.H - 1 || gb.Cells[plava.X, j] is Cell_indestructible)
                 {
