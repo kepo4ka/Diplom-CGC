@@ -594,6 +594,15 @@ namespace ClassLibrary_CGC
             this.playerID = pplayer.ID;
         }
 
+        public Bomb(Player pplayer)
+        {
+            this.X = pplayer.X;
+            this.Y = pplayer.Y;
+            this.Color = Config.bomb_color;
+            this.playerID = pplayer.ID;
+        }
+
+
         public int PlayerID
         {
             get

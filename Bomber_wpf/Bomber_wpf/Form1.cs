@@ -55,7 +55,6 @@ namespace Bomber_wpf
             server = new TcpListener(ip, 9595);
             server.Start();
             startPage = pstartPage;
-         
             InitGame();            
         }
 
@@ -190,7 +189,7 @@ namespace Bomber_wpf
             };
 
             gb.Players.Add(user);
-            gb.Players.Add(vitya);        
+            gb.Players.Add(vitya);   
 
             while (clients.Count < 1)
             {
@@ -204,7 +203,7 @@ namespace Bomber_wpf
             gameBoardStates.Add((GameBoard)gb.Clone());          
 
             game_timer.Tick += game_timer_Tick;
-            game_timer.Interval = 300;
+            game_timer.Interval = 800;
             game_timer.Start();
 
             initListView();
@@ -432,24 +431,43 @@ namespace Bomber_wpf
             {
                 var tlava = gb.Lavas[k];              
 
-                for (int i = tlava.X - tlava.Radius; i <= tlava.X + tlava.Radius; i++)
+                for (int i = tlava.X; i <= tlava.X + tlava.Radius; i++)
                 {
                     if (i < 0 || i > gb.W - 1 || gb.Cells[i, tlava.Y] is Cell_indestructible)
                     {
-                        continue;
+                        break;
                     }
                     PaintRect(i, tlava.Y, Config.lava_color);
                 }
 
-                for (int j = tlava.Y - tlava.Radius; j <= tlava.Y + tlava.Radius; j++)
+                for (int i = tlava.X; i >= tlava.X - tlava.Radius; i--)
+                {
+                    if (i < 0 || i > gb.W - 1 || gb.Cells[i, tlava.Y] is Cell_indestructible)
+                    {
+                        break;
+                    }
+                    PaintRect(i, tlava.Y, Config.lava_color);
+                }
+
+                for (int j = tlava.Y; j <= tlava.Y + tlava.Radius; j++)
                 {
                     if (j < 0 || j > gb.H - 1 || gb.Cells[tlava.X, j] is Cell_indestructible)
                     {
-                        continue;
+                        break;
                     }
 
                     PaintRect(tlava.X, j, Config.lava_color);
-                }            
+                }
+
+                for (int j = tlava.Y; j >= tlava.Y - tlava.Radius; j--)
+                {
+                    if (j < 0 || j > gb.H - 1 || gb.Cells[tlava.X, j] is Cell_indestructible)
+                    {
+                        break;
+                    }
+
+                    PaintRect(tlava.X, j, Config.lava_color);
+                }
             }
         }
 
@@ -1063,15 +1081,20 @@ namespace Bomber_wpf
         public void LavaCollision(Lava plava)
         {
             Bonus[,] tbonuses_mass = ListToMass(gb.Bonuses);
-            
-            for (int i = plava.X - plava.Radius; i <= plava.X + plava.Radius; i++)
+
+            for (int i = plava.X; i <= plava.X + plava.Radius; i++)
             {
                 if (i < 0 || i > gb.W - 1 || gb.Cells[i, plava.Y] is Cell_indestructible)
                 {
-                    continue;
+                    break;
                 }
 
-                LavaPlayersCollision(plava, i, true);               
+                //if (gb.Cells[i, plava.Y] is Cell_indestructible)
+                //{
+                //    break;
+                //}
+
+                LavaPlayersCollision(plava, i, true);
 
                 if (gb.Cells[i, plava.Y] is Cell_destructible)
                 {
@@ -1080,19 +1103,45 @@ namespace Bomber_wpf
                         X = i,
                         Y = plava.Y
                     };
-                    if (tbonuses_mass[i, plava.Y] !=null)
+                    if (tbonuses_mass[i, plava.Y] != null)
                     {
                         tbonuses_mass[i, plava.Y].Visible = true;
                     }
                     PlayerAddPointsCellDestroy(plava);
-                }                
+                }
             }
 
-            for (int j = plava.Y - plava.Radius; j <= plava.Y + plava.Radius; j++)
+            for (int i = plava.X; i >= plava.X - plava.Radius; i--)
+            {
+                if (i < 0 || i > gb.W - 1 || gb.Cells[i, plava.Y] is Cell_indestructible)
+                {
+                    break;
+                }
+
+                LavaPlayersCollision(plava, i, true);
+
+                if (gb.Cells[i, plava.Y] is Cell_destructible)
+                {
+                    gb.Cells[i, plava.Y] = new Cell_free()
+                    {
+                        X = i,
+                        Y = plava.Y
+                    };
+                    if (tbonuses_mass[i, plava.Y] != null)
+                    {
+                        tbonuses_mass[i, plava.Y].Visible = true;
+                    }
+                    PlayerAddPointsCellDestroy(plava);
+                }
+            }
+
+
+
+            for (int j = plava.Y; j <= plava.Y + plava.Radius; j++)
             {
                 if (j < 0 || j > gb.H - 1 || gb.Cells[plava.X, j] is Cell_indestructible)
                 {
-                    continue;
+                    break;
                 }
 
                 LavaPlayersCollision(plava, j, false);
@@ -1111,7 +1160,33 @@ namespace Bomber_wpf
 
                     PlayerAddPointsCellDestroy(plava);
                 }
-            }  
+            }
+
+
+            for (int j = plava.Y; j <= plava.Y - plava.Radius; j--)
+            {
+                if (j < 0 || j > gb.H - 1 || gb.Cells[plava.X, j] is Cell_indestructible)
+                {
+                    break;
+                }
+
+                LavaPlayersCollision(plava, j, false);
+
+                if (gb.Cells[plava.X, j] is Cell_destructible)
+                {
+                    gb.Cells[plava.X, j] = new Cell_free()
+                    {
+                        X = plava.X,
+                        Y = j
+                    };
+                    if (tbonuses_mass[plava.X, j] != null)
+                    {
+                        tbonuses_mass[plava.X, j].Visible = true;
+                    }
+
+                    PlayerAddPointsCellDestroy(plava);
+                }
+            }
         }
 
         
