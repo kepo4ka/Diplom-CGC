@@ -14,26 +14,11 @@ using System.IO;
 using System.Globalization;
 
 namespace Bomber_wpf
-{
-    //public enum PlayerAction
-    //{
-    //    Right, Left, Up, Down, Bomb, wait
-    //}
-
-    //public enum BonusType
-    //{
-    //   Big, Fast, None, All
-    //}
+{   
 
 
     public partial class Form1 : Form
     {
-
-        //private readonly SynchronizationContext synchronizationContext;
-        //private DateTime previousTime = DateTime.Now;
-
-        //List<Player> allPlayers = new List<Player>();
-
         StartPage startPage;
 
         public int cw = 30;
