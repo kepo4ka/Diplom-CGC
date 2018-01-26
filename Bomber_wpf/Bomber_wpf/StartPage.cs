@@ -29,15 +29,28 @@ namespace Bomber_wpf
 
         private void realGameButton_Click(object sender, EventArgs e)
         {
+            InitRealGame();
+        }
+
+        public void InitRealGame()
+        {
+            CompileAndStartUserFiles();
+            OpenRealGameForm();
+        }
+
+
+        void CompileAndStartUserFiles()
+        {
             Compiler compiler = new Compiler();
             compiler.Compile();
 
             Thread.Sleep(1000);
             compiler.UserClientStart();
+        }
 
-
-            Form1 realGameForm = new Form1(this);           
-
+        void OpenRealGameForm()
+        {
+            Form1 realGameForm = new Form1(this);
             this.Hide();
             realGameForm.Show();
         }
