@@ -163,7 +163,7 @@ namespace Bomber_wpf
 
             isGameOver = false;    
             
-            GameTimer = CONST.gameTicksMax;           
+            GameTimer = Config.gameTicksMax;           
             gb = new GameBoard();
 
             Player vitya = new Bot()
@@ -438,7 +438,7 @@ namespace Bomber_wpf
                     {
                         continue;
                     }
-                    PaintRect(i, tlava.Y, CONST.lava_color);
+                    PaintRect(i, tlava.Y, Config.lava_color);
                 }
 
                 for (int j = tlava.Y - tlava.Radius; j <= tlava.Y + tlava.Radius; j++)
@@ -448,7 +448,7 @@ namespace Bomber_wpf
                         continue;
                     }
 
-                    PaintRect(tlava.X, j, CONST.lava_color);
+                    PaintRect(tlava.X, j, Config.lava_color);
                 }            
             }
         }
@@ -645,13 +645,13 @@ namespace Bomber_wpf
                     var tvitya2 = tempplayers[j];
                     if (tvitya1.X == tvitya2.X && tvitya1.Y == tvitya2.Y)
                     {
-                        gb.Players[i].ACTION = PlayerAction.wait;
-                        gb.Players[j].ACTION = PlayerAction.wait;
+                        gb.Players[i].ACTION = PlayerAction.Wait;
+                        gb.Players[j].ACTION = PlayerAction.Wait;
                     }
                     if (tvitya2.X == gb.Players[i].X  && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
                     {
-                        gb.Players[i].ACTION = PlayerAction.wait;
-                        gb.Players[j].ACTION = PlayerAction.wait;
+                        gb.Players[i].ACTION = PlayerAction.Wait;
+                        gb.Players[j].ACTION = PlayerAction.Wait;
                     }
                 }
             }
@@ -684,12 +684,12 @@ namespace Bomber_wpf
                         switch (tvitya.BonusType)
                         {
                             case BonusType.None:
-                                tvitya.BonusType = BonusType.Big;
+                                tvitya.BonusType = BonusType.BigBomb;
                                 
                                 break;
-                            case BonusType.Fast:
+                            case BonusType.Ammunition:
                                 tvitya.BonusType = BonusType.All;
-                                tvitya.ReloadTime = CONST.player_reload_fast;
+                                tvitya.ReloadTime = Config.player_reload_fast;
                                 break;
                         }
                     }
@@ -698,12 +698,12 @@ namespace Bomber_wpf
                         switch (tvitya.BonusType)
                         {
                             case BonusType.None:
-                                tvitya.BonusType = BonusType.Fast;
-                                tvitya.ReloadTime = CONST.player_reload_fast;
+                                tvitya.BonusType = BonusType.Ammunition;
+                                tvitya.ReloadTime = Config.player_reload_fast;
                                 break;
-                            case BonusType.Big:
+                            case BonusType.BigBomb:
                                 tvitya.BonusType = BonusType.All;
-                                tvitya.ReloadTime = CONST.player_reload_fast;
+                                tvitya.ReloadTime = Config.player_reload_fast;
                                 break;
                         }
                     }
@@ -854,7 +854,7 @@ namespace Bomber_wpf
 
                     pplayer.Y--;
                     break;
-                case PlayerAction.wait:
+                case PlayerAction.Wait:
                     break;
             }
         }
@@ -885,13 +885,13 @@ namespace Bomber_wpf
         /// <param name="_player"></param>
         public void PlayerReload(Player _player)
         {
-            if (_player.BonusType == BonusType.Fast || _player.BonusType == BonusType.All)
+            if (_player.BonusType == BonusType.Ammunition || _player.BonusType == BonusType.All)
             {
-                _player.ReloadTime = CONST.player_reload_fast;
+                _player.ReloadTime = Config.player_reload_fast;
             }
             else
             {
-                _player.ReloadTime = CONST.player_reload;
+                _player.ReloadTime = Config.player_reload;
             }
         }
 
@@ -904,7 +904,7 @@ namespace Bomber_wpf
         public void CreateBomb(Player _player)
         {
             Bomb tbomb;
-            if (_player.BonusType == BonusType.Big || _player.BonusType == BonusType.All)
+            if (_player.BonusType == BonusType.BigBomb || _player.BonusType == BonusType.All)
             {
                 tbomb = new Bomb_big();
             }
@@ -913,7 +913,7 @@ namespace Bomber_wpf
                 tbomb = new Bomb();                
             }
 
-            tbomb.LiveTime = CONST.bomb_live_time;
+            tbomb.LiveTime = Config.bomb_live_time;
             tbomb.PlayerID = _player.ID;
             tbomb.X = _player.X;
             tbomb.Y = _player.Y;
@@ -954,7 +954,7 @@ namespace Bomber_wpf
                 var tplayer = gb.Players[i];
                 if (tplayer.ID != plava.PlayerID)
                 {
-                    tplayer.Points += CONST.player_kill_points;
+                    tplayer.Points += Config.player_kill_points;
                     break;
                 }
             }
@@ -972,7 +972,7 @@ namespace Bomber_wpf
                 var tplayer = gb.Players[i];
                 if (tplayer.ID == plava.PlayerID)
                 {
-                    tplayer.Points += CONST.player_cell_destroy_points;
+                    tplayer.Points += Config.player_cell_destroy_points;
                     break;
                 }
             }
@@ -1165,10 +1165,10 @@ namespace Bomber_wpf
         /// <param name="_bomb"></param>
         public void GenerateLava(Bomb _bomb)
         {
-            int tradius = CONST.lava_radius;
+            int tradius = Config.lava_radius;
             if (_bomb is Bomb_big)
             {
-                tradius = CONST.lava_radius_big;
+                tradius = Config.lava_radius_big;
             }
 
             Lava tlava = new Lava()
@@ -1176,7 +1176,7 @@ namespace Bomber_wpf
                 X = _bomb.X,
                 Y = _bomb.Y,
                 Radius = tradius,
-                LiveTime = CONST.lava_livetime,
+                LiveTime = Config.lava_livetime,
                 PlayerID = _bomb.PlayerID
             };
             gb.Lavas.Add(tlava);
@@ -1194,8 +1194,8 @@ namespace Bomber_wpf
             {
                 X = x,
                 Y = y,
-                Radius = CONST.lava_radius_big,
-                LiveTime = CONST.lava_livetime
+                Radius = Config.lava_radius_big,
+                LiveTime = Config.lava_livetime
             };
             gb.Lavas.Add(tlava);
         }

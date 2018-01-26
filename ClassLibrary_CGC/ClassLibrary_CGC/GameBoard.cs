@@ -11,12 +11,12 @@ namespace ClassLibrary_CGC
 {
     public enum PlayerAction
     {
-        Right, Left, Up, Down, Bomb, wait
+        Right, Left, Up, Down, Bomb, Wait
     }
 
     public enum BonusType
     {
-        Big, Fast, None, All
+        BigBomb, Ammunition, None, All
     }
 
 
@@ -40,7 +40,7 @@ namespace ClassLibrary_CGC
             W = size;
             H = size;
             GenerateBoard(size);
-            GenerateBonuses(CONST.bonuses_count);
+            GenerateBonuses(Config.bonuses_count);
             Bombs = new List<Bomb>();
             Lavas = new List<Lava>();
             Players = new List<Player>();
@@ -52,12 +52,16 @@ namespace ClassLibrary_CGC
             W = SIZE;
             H = SIZE;
             GenerateBoard(SIZE);
-            GenerateBonuses(CONST.bonuses_count);
+            GenerateBonuses(Config.bonuses_count);
             Bombs = new List<Bomb>();
             Lavas = new List<Lava>();
             Players = new List<Player>();
             dead_players = new List<Player>();
         }
+
+
+
+
 
 
         public List<Player> DeadPlayers
@@ -548,7 +552,7 @@ namespace ClassLibrary_CGC
             this.X = x;
             this.Y = y;
             this.Visible = false;
-            this.Color = CONST.bonus_fast;
+            this.Color = Config.bonus_fast;
         }
     }
 
@@ -560,7 +564,7 @@ namespace ClassLibrary_CGC
             this.X = x;
             this.Y = y;
             this.Visible = false;
-            this.Color = CONST.bonus_big;
+            this.Color = Config.bonus_big;
         }
     }
 
@@ -572,21 +576,21 @@ namespace ClassLibrary_CGC
 
         public Bomb()
         {
-            this.Color = CONST.bomb_color;
+            this.Color = Config.bomb_color;
         }
 
         public Bomb(int x, int y)
         {
             this.X = x;
             this.Y = y;
-            this.Color = CONST.bomb_color;
+            this.Color = Config.bomb_color;
         }
 
         public Bomb(int x, int y, Player pplayer)
         {
             this.X = x;
             this.Y = y;
-            this.Color = CONST.bomb_color;
+            this.Color = Config.bomb_color;
             this.playerID = pplayer.ID;
         }
 
@@ -682,7 +686,7 @@ namespace ClassLibrary_CGC
     {
         public Cell_indestructible()
         {
-            this.Color = CONST.cell_indestructible_color;
+            this.Color = Config.cell_indestructible_color;
         }
     }
 
@@ -691,7 +695,7 @@ namespace ClassLibrary_CGC
     {
         public Cell_destructible()
         {
-            this.Color = CONST.cell_destructible_color;
+            this.Color = Config.cell_destructible_color;
         }
     }
 
@@ -714,20 +718,20 @@ namespace ClassLibrary_CGC
 
         public Lava()
         {
-            this.Color = CONST.lava_color;
-            this.LiveTime = CONST.lava_livetime;
+            this.Color = Config.lava_color;
+            this.LiveTime = Config.lava_livetime;
         }
         public Lava(Bomb pbomb)
         {
-            this.Color = CONST.lava_color;
-            this.LiveTime = CONST.lava_livetime;
+            this.Color = Config.lava_color;
+            this.LiveTime = Config.lava_livetime;
             if (pbomb is Bomb_big)
             {
-                this.Radius = CONST.lava_radius_big;
+                this.Radius = Config.lava_radius_big;
             }
             else
             {
-                this.Radius = CONST.lava_radius;
+                this.Radius = Config.lava_radius;
             }
         }
 
@@ -789,8 +793,8 @@ namespace ClassLibrary_CGC
         public Player()
         {
             Health = 1;
-            ACTION = PlayerAction.wait;
-            ReloadTime = CONST.player_reload;
+            ACTION = PlayerAction.Wait;
+            ReloadTime = Config.player_reload;
             BonusType = BonusType.None;
         }
 
@@ -798,8 +802,8 @@ namespace ClassLibrary_CGC
         {
             this.ID = ID;
             Health = 1;
-            ACTION = PlayerAction.wait;
-            ReloadTime = CONST.player_reload;
+            ACTION = PlayerAction.Wait;
+            ReloadTime = Config.player_reload;
             BonusType = BonusType.None;
         }
 
@@ -808,8 +812,8 @@ namespace ClassLibrary_CGC
             this.ID = ID;
             this.Name = NAME;
             Health = 1;
-            ACTION = PlayerAction.wait;
-            ReloadTime = CONST.player_reload;
+            ACTION = PlayerAction.Wait;
+            ReloadTime = Config.player_reload;
             BonusType = BonusType.None;
         }
 
@@ -919,12 +923,12 @@ namespace ClassLibrary_CGC
 
         public virtual PlayerAction Play()
         {
-            return PlayerAction.wait;
+            return PlayerAction.Wait;
         }
 
         public virtual PlayerAction Play(GameBoard gb)
         {
-            return PlayerAction.wait;
+            return PlayerAction.Wait;
         }
     }
 
@@ -944,11 +948,11 @@ namespace ClassLibrary_CGC
         public override PlayerAction Play()
         {
             int rnumber = rnd.Next(0, 6);
-            PlayerAction taction = PlayerAction.wait;
+            PlayerAction taction = PlayerAction.Wait;
             switch (rnumber)
             {
                 case 0:
-                    taction = PlayerAction.wait;
+                    taction = PlayerAction.Wait;
                     break;
                 case 1:
 
@@ -978,7 +982,7 @@ namespace ClassLibrary_CGC
     //{   
     //    public override PlayerAction Play()
     //    {
-    //        PlayerAction taction = PlayerAction.wait;
+    //        PlayerAction taction = PlayerAction.Wait;
 
 
     //        //Код пользователя
@@ -994,7 +998,7 @@ namespace ClassLibrary_CGC
     /// Постоянные параметры игры
     /// </summary>
     [Serializable]
-    public class CONST
+    public class Config
     {
         public static int gameTicksMax = 300;
 
