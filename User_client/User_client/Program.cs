@@ -73,7 +73,10 @@ namespace User_client
                 catch (Exception e)
                 {
                     Console.WriteLine("ERROR: " + e.Message);
-                    connected = false;                  
+                    connected = false;
+                    server.Close();
+                    Application.Exit();
+
                 }
             }
         }
