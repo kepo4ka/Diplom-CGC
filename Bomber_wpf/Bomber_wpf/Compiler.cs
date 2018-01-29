@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace Bomber_wpf
 {
@@ -27,8 +28,8 @@ namespace Bomber_wpf
 
         public Compiler()
         {
-            main_Path = "D:\\Cloudmail\\Исходники\\C#\\Diplom-CGC\\";
-            CscEXE_Path = "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe";
+            main_Path = @"\..\..\";
+            CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
             userClass_Path = main_Path + "User_class\\User_class\\";
             userClient_Path = main_Path + "User_client\\User_client\\";
 

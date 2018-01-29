@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
@@ -11,10 +9,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
 using User_class;
 using System.IO;
-using System.Globalization;
 
 namespace Bomber_wpf
-{   
+{
 
 
     public partial class Form1 : Form
