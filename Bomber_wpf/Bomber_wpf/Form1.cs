@@ -1391,7 +1391,10 @@ namespace Bomber_wpf
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            server.Stop();
+            if (server != null)
+            {
+                server.Stop();
+            }
             startPage.Show();
         }
     }    
