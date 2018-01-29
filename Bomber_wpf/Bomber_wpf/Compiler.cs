@@ -27,8 +27,10 @@ namespace Bomber_wpf
         string userClientexe_Name;
 
         public Compiler()
-        {
-            main_Path = @"\..\..\";
+        {         
+            
+            main_Path = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName + "\\";
+           
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
             userClass_Path = main_Path + "User_class\\User_class\\";
             userClient_Path = main_Path + "User_client\\User_client\\";

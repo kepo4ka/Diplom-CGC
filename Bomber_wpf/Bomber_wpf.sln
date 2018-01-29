@@ -4,24 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bomber_wpf", "Bomber_wpf\Bomber_wpf.csproj", "{5BE3ECDA-2B60-49FE-8C28-A451B4EFF5F9}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871} = {B3885C29-A7A1-4F1E-8CA6-14FD7847F871}
-		{43559C55-4FFA-45A8-9EC9-3767D7135B23} = {43559C55-4FFA-45A8-9EC9-3767D7135B23}
-		{D662A691-779D-4A78-A0CC-B1A61A77FE1E} = {D662A691-779D-4A78-A0CC-B1A61A77FE1E}
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary_CGC", "..\ClassLibrary_CGC\ClassLibrary_CGC\ClassLibrary_CGC.csproj", "{B3885C29-A7A1-4F1E-8CA6-14FD7847F871}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "User_class", "..\User_class\User_class\User_class.csproj", "{43559C55-4FFA-45A8-9EC9-3767D7135B23}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871} = {B3885C29-A7A1-4F1E-8CA6-14FD7847F871}
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "User_client", "..\User_client\User_client\User_client.csproj", "{D662A691-779D-4A78-A0CC-B1A61A77FE1E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871} = {B3885C29-A7A1-4F1E-8CA6-14FD7847F871}
-		{43559C55-4FFA-45A8-9EC9-3767D7135B23} = {43559C55-4FFA-45A8-9EC9-3767D7135B23}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,30 +21,6 @@ Global
 		{5BE3ECDA-2B60-49FE-8C28-A451B4EFF5F9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5BE3ECDA-2B60-49FE-8C28-A451B4EFF5F9}.Release|x86.ActiveCfg = Release|x86
 		{5BE3ECDA-2B60-49FE-8C28-A451B4EFF5F9}.Release|x86.Build.0 = Release|x86
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871}.Debug|x86.Build.0 = Debug|Any CPU
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871}.Release|x86.ActiveCfg = Release|Any CPU
-		{B3885C29-A7A1-4F1E-8CA6-14FD7847F871}.Release|x86.Build.0 = Release|Any CPU
-		{43559C55-4FFA-45A8-9EC9-3767D7135B23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{43559C55-4FFA-45A8-9EC9-3767D7135B23}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{43559C55-4FFA-45A8-9EC9-3767D7135B23}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{43559C55-4FFA-45A8-9EC9-3767D7135B23}.Debug|x86.Build.0 = Debug|Any CPU
-		{43559C55-4FFA-45A8-9EC9-3767D7135B23}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{43559C55-4FFA-45A8-9EC9-3767D7135B23}.Release|Any CPU.Build.0 = Release|Any CPU
-		{43559C55-4FFA-45A8-9EC9-3767D7135B23}.Release|x86.ActiveCfg = Release|Any CPU
-		{43559C55-4FFA-45A8-9EC9-3767D7135B23}.Release|x86.Build.0 = Release|Any CPU
-		{D662A691-779D-4A78-A0CC-B1A61A77FE1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D662A691-779D-4A78-A0CC-B1A61A77FE1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D662A691-779D-4A78-A0CC-B1A61A77FE1E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D662A691-779D-4A78-A0CC-B1A61A77FE1E}.Debug|x86.Build.0 = Debug|Any CPU
-		{D662A691-779D-4A78-A0CC-B1A61A77FE1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D662A691-779D-4A78-A0CC-B1A61A77FE1E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D662A691-779D-4A78-A0CC-B1A61A77FE1E}.Release|x86.ActiveCfg = Release|Any CPU
-		{D662A691-779D-4A78-A0CC-B1A61A77FE1E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
