@@ -4,7 +4,6 @@ using System.IO.Compression;
 using System.Reflection;
 using OneExeProgram.Domain;
 using OneExeProgram.Properties;
-using AutoMapper;
 using ClassLibrary_CGC;
 
 namespace OneExeProgram
@@ -27,9 +26,14 @@ namespace OneExeProgram
             {
                 Console.WriteLine();
             }
-
-            Console.WriteLine("classlibrary work???: {0}", new GameBoard().H);
-
+            try
+            {
+                Console.WriteLine("classlibrary work???: {0}", new GameBoard().H);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
 
 
             Console.ReadKey( );
@@ -40,7 +44,11 @@ namespace OneExeProgram
         /// </summary>
         private static Assembly AppDomain_AssemblyResolve( object sender, ResolveEventArgs args )
         {
-            if( args.Name.Contains( "AutoMapper" ) )
+            Console.WriteLine("--------------------");
+            Console.WriteLine(args.Name);
+            Console.WriteLine("--------------------");
+
+            if ( args.Name.Contains( "AutoMapper" ) )
             {
                 Console.WriteLine( "Resolving assembly: {0}", args.Name );
 
