@@ -18,37 +18,34 @@ using System.Diagnostics;
 namespace Bomber_wpf
 {
     public partial class StartPage : Form
-    {   
+    {
+        public string[] paths;
+        public string[] labels;
 
 
         public StartPage()
         {
             InitializeComponent();
+            paths = new string[4];
+            labels = new string[4];
+            labels[0] = path1_lab.Text;
+            labels[1] = path2_lab.Text;
+            labels[2] = path3_lab.Text;
+            labels[3] = path4_lab.Text;
+            
+
         }
 
 
         private void realGameButton_Click(object sender, EventArgs e)
         {
-            InitRealGame();
-        }
-
-        public void InitRealGame()
-        {
-            CompileAndStartUserFiles();
             OpenRealGameForm();
         }
 
 
-        void CompileAndStartUserFiles()
-        {
-            Compiler compiler = new Compiler();
-            compiler.Compile();
+     
 
-            Thread.Sleep(1000);
-            compiler.UserClientStart();
-        }
-
-        void OpenRealGameForm()
+        public void OpenRealGameForm()
         {
             Form1 realGameForm = new Form1(this);
             this.Hide();
@@ -86,6 +83,101 @@ namespace Bomber_wpf
             gameBoardStates = (List<GameBoard>)formatter.Deserialize(sr.BaseStream);
 
             return gameBoardStates;
+        }
+
+        /// <summary>
+        /// Загрузка файла исходного кода стратегии
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns>Имя файла стратегии</returns>
+        private string AddBotsFiles(int i)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Исходный код C# | *.cs";
+
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                paths[i] = ofd.FileName;
+                return ofd.FileName;
+            }
+            return "";
+        }
+
+
+        /// <summary>
+        /// Заменить тип игрока 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="btn"></param>
+        /// <param name="label"></param>
+        private void ChangeBotUser(int i, Button btn, Label label)
+        {
+            labels[0] = path1_lab.Text;
+            labels[1] = path2_lab.Text;
+            labels[2] = path3_lab.Text;
+            labels[3] = path4_lab.Text;
+
+            if (checkBot1.Checked == true)
+            {
+                paths[i] = "";
+            }
+            else
+            {
+                paths[i] = labels[i];
+            }
+
+            btn.Enabled = !btn.Enabled;
+            label.Enabled = !label.Enabled;       
+        }
+
+
+        private void path1_btn_Click(object sender, EventArgs e)
+        {
+            path1_lab.Text = AddBotsFiles(0);
+            ToolTip t = new ToolTip();
+            t.SetToolTip(path1_lab, path1_lab.Text);
+        }
+
+        private void path2_btn_Click(object sender, EventArgs e)
+        {
+           path2_lab.Text = AddBotsFiles(1);
+            ToolTip t = new ToolTip();
+            t.SetToolTip(path2_lab, path2_lab.Text);
+        }
+
+        private void path3_btn_Click(object sender, EventArgs e)
+        {
+            path3_lab.Text = AddBotsFiles(2);
+            ToolTip t = new ToolTip();
+            t.SetToolTip(path3_lab, path3_lab.Text);
+        }
+
+        private void path4_btn_Click(object sender, EventArgs e)
+        {
+            path4_lab.Text = AddBotsFiles(3);
+            ToolTip t = new ToolTip();
+            t.SetToolTip(path4_lab, path4_lab.Text);
+        }
+
+        private void checkBot1_CheckedChanged(object sender, EventArgs e)
+        {
+            ChangeBotUser(0, path1_btn, path1_lab);            
+        }
+
+        private void checkBot2_CheckedChanged(object sender, EventArgs e)
+        {
+            ChangeBotUser(1, path2_btn, path2_lab);
+        }
+
+        private void checkBot3_CheckedChanged(object sender, EventArgs e)
+        {
+            ChangeBotUser(2, path3_btn, path3_lab);
+        }
+
+        private void checkBot4_CheckedChanged(object sender, EventArgs e)
+        {
+            ChangeBotUser(3, path4_btn, path4_lab);
         }
     }
 }

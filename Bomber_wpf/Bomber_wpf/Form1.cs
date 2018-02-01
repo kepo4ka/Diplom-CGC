@@ -9,10 +9,12 @@ using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
 using User_class;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading;
 
 namespace Bomber_wpf
 {
-
 
     public partial class Form1 : Form
     {
@@ -32,6 +34,11 @@ namespace Bomber_wpf
         List<GameBoard> savedGameBoardStates = new List<GameBoard>();
         int visualizeGameCadrNumber = 0;
 
+        Color[] player_colors = new Color[4]
+        {
+            Color.PaleVioletRed, Color.Green, Color.HotPink, Color.Aqua
+        };
+
         bool isGameOver = false;
 
         bool testbool = false;
@@ -50,9 +57,119 @@ namespace Bomber_wpf
             IPAddress ip = IPAddress.Parse(serverIp);
             server = new TcpListener(ip, 9595);
             server.Start();
-            startPage = pstartPage;
+            startPage = pstartPage; 
+            
             InitGame();            
         }
+
+        void CheckUserCodeSourcesPath(out int clients_count)
+        {
+            string[] ppaths = startPage.paths;
+            clients_count = 0;
+
+            for (int i = 0; i < ppaths.Length; i++)
+            {
+                InitPlayersInfo(i);
+            }
+
+            for (int i = 0; i < ppaths.Length; i++)
+            {
+
+                if (ppaths[i] != null && ppaths[i] != "")
+                {
+                    string tfilename = SpliteEndPath(ppaths[i]);
+                    MessageBox.Show(tfilename);
+                    CompileAndStartUserFiles(tfilename);
+                    clients_count++;
+                    
+                }
+            }
+        }
+
+        /// <summary>
+        /// Выделить из Пути файла имя этого Файла
+        /// </summary>
+        /// <param name="ppath">Полный путь до файла</param>
+        /// <returns>Имя файла</returns>
+        public string SpliteEndPath(string ppath)
+        {
+            Stack<char> tsymbols = new Stack<char>();
+            string nfileName = "";
+
+            int tindex = ppath.Length - 1;
+
+            for (; tindex >=0; tindex--)
+            {
+                if (ppath[tindex]=='.')
+                {
+                    break;
+                }
+            }
+
+            tindex--;
+
+            for (; tindex >= 0; tindex--)
+            {              
+
+                if (ppath[tindex] == '\\')
+                {
+                    break;
+                }
+                tsymbols.Push(ppath[tindex]);
+            }
+
+            while (tsymbols.Count > 0)
+            {
+                nfileName += tsymbols.Pop();
+            }
+            return nfileName;
+        }
+
+
+        void InitPlayersInfo(int i)
+        {
+            string[] ppaths = startPage.paths;
+            Player pplayer;
+            if (ppaths[i] == "" || ppaths[i] == null)
+            {
+                pplayer = new Bot();
+                pplayer.Name = "bot_" + (i+1);
+            }
+            else
+            {
+                pplayer = new User();
+                pplayer.Name = "User_" + (i+1);
+            }
+
+            pplayer.ID = i;
+            pplayer.Color = player_colors[i];
+            pplayer.Points = 0;
+            pplayer.Health = Config.player_health;
+            pplayer.BonusType = BonusType.None;
+            pplayer.BombsCount = Config.player_bombs_count_start;
+
+            switch (i)
+            {
+                case 0:
+                    pplayer.X = 0;
+                    pplayer.Y = 0;
+                    break;
+                case 1:
+                    pplayer.X = gb.W - 1;
+                    pplayer.Y = 0;
+                    break;
+                case 2:
+                    pplayer.X = 0;
+                    pplayer.Y = gb.H - 1;
+                    break;
+                case 3:
+                    pplayer.X = gb.W - 1;
+                    pplayer.Y = gb.H - 1;
+                    break;
+            }
+            gb.Players.Add(pplayer);
+        }
+
 
         /// <summary>
         /// Воспроизведение сохранённой игры
@@ -159,43 +276,27 @@ namespace Bomber_wpf
             
             GameTimer = Config.gameTicksMax;           
             gb = new GameBoard();
+            int tconnected_clients_count;
 
-            Player vitya = new Bot()
+            CheckUserCodeSourcesPath(out tconnected_clients_count);
+
+
+            int tplayers_index = 0;
+
+            while (clients.Count < tconnected_clients_count)
             {
-                Name = "vitya_bot",
-                ID = 1,
-                BonusType = BonusType.All,
-                X = gb.W-1,
-                Y = 0,
-                BombsCount = Config.player_bombs_count_max,
-                Health = 5,
-                Color = Color.Purple
-            };
-
-            Player user = new User()
-            {
-                Name = "User",
-                Health = 50,
-                ID = 333,
-                X = 0,
-                Y = 14,
-                BombsCount = Config.player_bombs_count_start,
-                Color = Color.Blue
-            };
-
-            gb.Players.Add(user);
-            gb.Players.Add(vitya);   
-
-            while (clients.Count < 1)
-            {
-                MessageBox.Show("Ожидаем клиентов в фоновом режиме");
-                clients.Add(user, server.AcceptTcpClient());
+                //  MessageBox.Show("Ожидаем клиентов в фоновом режиме");
+                if (gb.Players[tplayers_index] is User)
+                {
+                    clients.Add(gb.Players[tplayers_index], server.AcceptTcpClient());
+                }
+                tplayers_index++;
                 MessageBox.Show("Клиент подключился");
             }
 
             SendGameInfo();
 
-            gameBoardStates.Add((GameBoard)gb.Clone());          
+            gameBoardStates.Add((GameBoard)gb.Clone());
 
             game_timer.Tick += game_timer_Tick;
             game_timer.Interval = 800;
@@ -259,6 +360,7 @@ namespace Bomber_wpf
                 }
                 catch (Exception e)
                 {
+                    
                     PlayerDeath(tclient.Key);
                     PlayerDisconnect(tclient.Value);
                 }
@@ -572,7 +674,7 @@ namespace Bomber_wpf
             {
                 this.Close();
                 
-                this.startPage.InitRealGame();
+                this.startPage.OpenRealGameForm();
             }
             else
             {
@@ -1069,12 +1171,19 @@ namespace Bomber_wpf
             {
                 pclient.Close();
             }
-            foreach (var tclient in clients)
+            try
             {
-                if (tclient.Value == pclient)
+                foreach (var tclient in clients)
                 {
-                    clients[tclient.Key] = null;
+                    if (tclient.Value == pclient)
+                    {
+                        clients[tclient.Key] = null;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Ошибка в функции PlayerDisconnect: " + e.Message);
             }
         }
 
@@ -1391,11 +1500,49 @@ namespace Bomber_wpf
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
+            Disconnect();
+
             if (server != null)
             {
                 server.Stop();
             }
+
             startPage.Show();
         }
+
+
+        public string CalculateMD5Hash(string input)
+
+        {
+
+            MD5 md5 = MD5.Create();
+
+            byte[] inputBytes = Encoding.ASCII.GetBytes(input);
+
+            byte[] hash = md5.ComputeHash(inputBytes);
+
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < hash.Length; i++)
+
+            {
+                sb.Append(hash[i].ToString("X2"));
+            }
+
+            return sb.ToString();
+
+        }
+
+
+
+        void CompileAndStartUserFiles(string path)
+        {          
+            Compiler compiler = new Compiler(path);
+            compiler.Compile();
+
+            Thread.Sleep(1000);
+            compiler.UserClientStart();
+        }
+
     }    
 }

@@ -22,11 +22,11 @@ namespace Bomber_wpf
         string userClass_sourceName;        
         string userClass_dllName;
         string ClassLibrary_CGC;
-
+        string user_directory_name;
         string userClient_sourceName;
         string userClientexe_Name;
 
-        public Compiler()
+        public Compiler(string _userClass_sourceName = "User")
         {         
             
             main_Path = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName + "\\";
@@ -35,8 +35,10 @@ namespace Bomber_wpf
             userClass_Path = main_Path + "User_class\\User_class\\";
             userClient_Path = main_Path + "User_client\\User_client\\";
 
-            userClass_sourceName = "User.cs";
+            userClass_sourceName = _userClass_sourceName + ".cs";
             userClass_dllName = "User_class.dll";
+
+            user_directory_name = _userClass_sourceName;
 
             userClient_sourceName = "Program.cs";
             userClientexe_Name = "Program.exe";
@@ -64,6 +66,7 @@ namespace Bomber_wpf
         {
             try
             {
+                CreateUserDirectory();
                 UserClassDLLCompile();
                 UserClientExeCompile();               
             }
@@ -73,8 +76,20 @@ namespace Bomber_wpf
             }
         }
 
+        public void CreateUserDirectory()
+        {
+         
+            foreach(FileInfo tfile in Directory.CreateDirectory(userClient_Path + user_directory_name).GetFiles())
+            {
+                tfile.Delete();
+            }
 
-  
+            File.Copy(userClient_Path + ClassLibrary_CGC, userClient_Path + user_directory_name+"\\" + ClassLibrary_CGC);
+            File.Copy(userClient_Path + userClient_sourceName, userClient_Path + user_directory_name +"\\" + userClient_sourceName);
+
+
+        }
+
 
 
         /// <summary>
@@ -83,7 +98,7 @@ namespace Bomber_wpf
         private void UserClassDLLCompile()
         {
             DeleteFile(userClass_Path + userClass_dllName);
-            DeleteFile(userClient_Path + userClass_dllName);
+          //  DeleteFile(userClient_Path + userClass_dllName);
 
             if (!File.Exists(userClass_Path + userClass_sourceName))
             {
@@ -92,12 +107,16 @@ namespace Bomber_wpf
 
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat($"/C cd {userClass_Path} && " +
-                $"{CscEXE_Path} /r:{ClassLibrary_CGC} /target:library /out:{userClass_dllName} {userClass_Path}{userClass_sourceName}");
+                $"{CscEXE_Path} " +
+                $"/r:{ClassLibrary_CGC} " +
+                $"/target:library " +
+                $"/out:{userClass_dllName} {userClass_Path}{userClass_sourceName}");
+
             Process.Start("cmd.exe", sb.ToString());
             Thread.Sleep(1000);
             if (File.Exists(userClass_Path + userClass_dllName))
             {
-                File.Move(userClass_Path + userClass_dllName, userClient_Path + userClass_dllName);
+                File.Move(userClass_Path + userClass_dllName, userClient_Path + user_directory_name + "\\" + userClass_dllName);
             }
             else
             {
@@ -110,10 +129,9 @@ namespace Bomber_wpf
         /// </summary>
         private void UserClientExeCompile()
         {
-            DeleteFile(userClient_Path + userClientexe_Name);
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendFormat($"/C cd {userClient_Path} && " +
+            sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && " +
                 $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName} {userClient_sourceName}");
             Process.Start("cmd.exe", sb.ToString());
         }
@@ -125,11 +143,11 @@ namespace Bomber_wpf
         public void UserClientStart()
         {
             StringBuilder sb = new StringBuilder();
-            if (!File.Exists(userClient_Path + userClientexe_Name))
+            if (!File.Exists(userClient_Path + user_directory_name + "\\" + userClientexe_Name))
             {
                 throw new Exception("Не найден файл exe, запускающий tcp клиент");
             }
-            sb.AppendFormat($"/C cd {userClient_Path} && {userClientexe_Name}");
+            sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && {userClientexe_Name}");
 
             Process.Start("cmd.exe", sb.ToString());
         }
