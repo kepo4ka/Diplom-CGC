@@ -29,14 +29,10 @@ namespace Bomber_wpf
         /// </summary>
         private static Assembly AppDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            Console.WriteLine("--------------------");
-            Console.WriteLine(args.Name);
-            Console.WriteLine("--------------------");
-
             if (args.Name.Contains("User_class"))
             {
                 // Console.WriteLine("Resolving assembly: {0}", args.Name);
-                MessageBox.Show("User_class");
+               
                 // Загрузка запакованной сборки из ресурсов, ее распаковка и подстановка
                 using (var resource = new MemoryStream(Resources.User_class_dll))
                 using (var deflated = new DeflateStream(resource, CompressionMode.Decompress))
@@ -50,8 +46,8 @@ namespace Bomber_wpf
 
             else if (args.Name.Contains("ClassLibrary_CGC"))
             {
-             //   Console.WriteLine("Resolving assembly: {0}", args.Name);
-
+                //   Console.WriteLine("Resolving assembly: {0}", args.Name);
+               
                 // Загрузка запакованной сборки из ресурсов, ее распаковка и подстановка
                 using (var resource = new MemoryStream(Resources.ClassLibrary_CGC_dll))
                 using (var deflated = new DeflateStream(resource, CompressionMode.Decompress))

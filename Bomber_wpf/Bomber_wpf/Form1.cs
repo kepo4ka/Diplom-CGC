@@ -78,7 +78,7 @@ namespace Bomber_wpf
                 if (ppaths[i] != null && ppaths[i] != "")
                 {
                     string tfilename = SpliteEndPath(ppaths[i]);
-                    MessageBox.Show(tfilename);
+                  //  MessageBox.Show(tfilename);
                     CompileAndStartUserFiles(tfilename);
                     clients_count++;
                     
@@ -291,7 +291,7 @@ namespace Bomber_wpf
                     clients.Add(gb.Players[tplayers_index], server.AcceptTcpClient());
                 }
                 tplayers_index++;
-                MessageBox.Show("Клиент подключился");
+              //  MessageBox.Show("Клиент подключился");
             }
 
             SendGameInfo();

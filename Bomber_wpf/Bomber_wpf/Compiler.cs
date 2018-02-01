@@ -29,7 +29,7 @@ namespace Bomber_wpf
         public Compiler(string _userClass_sourceName = "User")
         {         
             
-            main_Path = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.Parent.FullName + "\\";
+            main_Path = Directory.GetCurrentDirectory() + "\\";
            
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
             userClass_Path = main_Path + "User_class\\User_class\\";

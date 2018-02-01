@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
-using User_class;
+
 using System.IO;
 using System.Diagnostics;
 
@@ -57,6 +57,7 @@ namespace Bomber_wpf
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Serialized file | *.dat";
+            ofd.InitialDirectory = Directory.GetCurrentDirectory();
 
 
             if (ofd.ShowDialog() == DialogResult.OK)
