@@ -6,12 +6,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+
 using ClassLibrary_CGC;
 using User_class;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace Bomber_wpf
 {
@@ -64,26 +66,19 @@ namespace Bomber_wpf
 
         void CheckUserCodeSourcesPath(out int clients_count)
         {
-            string[] ppaths = startPage.paths;
             clients_count = 0;
 
-            for (int i = 0; i < ppaths.Length; i++)
+
+            for (int i = 0; i < startPage.paths.Length; i++)
             {
                 InitPlayersInfo(i);
-            }
-
-            for (int i = 0; i < ppaths.Length; i++)
-            {
-
-                if (ppaths[i] != null && ppaths[i] != "")
+                if (startPage.paths[i] != null && startPage.paths[i] != "")
                 {
-                    string tfilename = SpliteEndPath(ppaths[i]);
-                  //  MessageBox.Show(tfilename);
+                    string tfilename = SpliteEndPath(startPage.paths[i]);
                     CompileAndStartUserFiles(tfilename);
                     clients_count++;
-                    
-                }
-            }
+                }               
+            }        
         }
 
         /// <summary>
@@ -130,16 +125,23 @@ namespace Bomber_wpf
         {
             string[] ppaths = startPage.paths;
             Player pplayer;
-            if (ppaths[i] == "" || ppaths[i] == null)
+
+            if (ppaths[i] == null)
+            {
+                return;
+            }
+
+            if (ppaths[i] == "")
             {
                 pplayer = new Bot();
-                pplayer.Name = "bot_" + (i+1);
+                pplayer.Name = "bot_" + (i + 1);
             }
             else
             {
-                pplayer = new User();
-                pplayer.Name = "User_" + (i+1);
+                pplayer = new User();                
+                pplayer.Name = "User_" + (i + 1);
             }
+            
 
             pplayer.ID = i;
             pplayer.Color = player_colors[i];
@@ -627,7 +629,10 @@ namespace Bomber_wpf
             server.Stop();
 
             game_timer.Stop();
-            SaveGameInfoFile();
+
+           
+
+            Compiler.DeleteComppiledFiles();
 
             var result = DialogResult.No;
             string message = "";
@@ -664,6 +669,12 @@ namespace Bomber_wpf
                 }
             }
 
+            gameBoardStates.Add(gb);
+
+
+            SaveGameInfoFile();
+
+
             message += "Начать заново?";
 
             result = MessageBox.Show(message, "GAME OVER",
@@ -684,6 +695,8 @@ namespace Bomber_wpf
         }
 
 
+
+       
         /// <summary>
         /// Проверить наступили ли условия для наступления Конца игры
         /// </summary>
@@ -695,9 +708,6 @@ namespace Bomber_wpf
                 {                
                     GameOver();
                 }
-
-
-
             }
         }
 
@@ -708,35 +718,96 @@ namespace Bomber_wpf
         {
             //try
             //{
-                DateTime time = DateTime.Now;
-                string time_str = time.ToString("dd-MM-yyyy H-mm-ss");
+            string gameResultDirectoryName = Directory.GetCurrentDirectory() + "\\" + GetInfoAboutThisGame() + "\\";
 
-                string gameStatesFileName = "Game - (";
-                if (gameBoardStates[0].Players.Count > 1)
-                {
-                    for (int i = 0; i < gameBoardStates[0].Players.Count - 1; i++)
-                    {
-                        var tplayer = gameBoardStates[0].Players[i];
-                        gameStatesFileName += tplayer.Name + " vs ";
-                    }
-                }
-                gameStatesFileName += gameBoardStates[0].Players[gameBoardStates[0].Players.Count-1].Name + ")";
+            Compiler.DeleteDirectory(gameResultDirectoryName);
+
+            Directory.CreateDirectory(gameResultDirectoryName);
 
 
-                gameStatesFileName += " " + time_str;
-                gameStatesFileName += ".dat";
+            string gameStaterVisualizerFileName = "Visualizer.dat";
+            string gameResultsFileName = "gameResults.json";
 
-                BinaryFormatter form = new BinaryFormatter();
-                using (FileStream fs = new FileStream(gameStatesFileName, FileMode.OpenOrCreate))
-                {
-                    form.Serialize(fs, gameBoardStates);
-                }
+            BinaryFormatter form = new BinaryFormatter();
+            using (FileStream fs = new FileStream(gameResultDirectoryName + gameStaterVisualizerFileName, FileMode.OpenOrCreate))
+            {
+                form.Serialize(fs, gameBoardStates);
+            }
+
+            StreamWriter sw = new StreamWriter(gameResultDirectoryName + gameStaterVisualizerFileName + ".json", false);
+            string gameStatesJson = JsonConvert.SerializeObject(gameBoardStates);
+            sw.Write(gameStatesJson);
+
+            sw = new StreamWriter(gameResultDirectoryName + gameResultsFileName, false);
+            string GameResultsJson = JsonConvert.SerializeObject(GetPlayerResult());
+            sw.Write(GameResultsJson);
+            sw.Close();
+
             //}
             //catch (Exception e)
             //{
             //    MessageBox.Show("Ошибка при сохранении информации об игре в файл: " + e.Message);
             //}
         }
+
+
+        /// <summary>
+        /// Получить информацию о результатах игроков
+        /// </summary>
+        /// <returns></returns>
+        private List<Player> GetPlayerResult()
+        {
+            if (gameBoardStates.Count<1)
+            {
+                return null;
+            }
+
+            List<Player> players = new List<Player>();
+
+            GameBoard lastGameBoardState = gameBoardStates[gameBoardStates.Count - 1];
+
+            for (int i = 0; i < lastGameBoardState.Players.Count; i++)
+            {
+                var tplayer = lastGameBoardState.Players[i];
+                players.Add(tplayer);
+            }
+
+            for (int i = 0; i < lastGameBoardState.DeadPlayers.Count; i++)
+            {
+                var tplayer = lastGameBoardState.DeadPlayers[i];
+                players.Add(tplayer);
+            }
+
+            return players;
+        }
+
+
+        /// <summary>
+        /// Получить информацию о текущей игры для последующего создания сохранений и т.п.
+        /// </summary>
+        /// <returns></returns>
+        public string GetInfoAboutThisGame()
+        {
+            DateTime time = DateTime.Now;
+            string time_str = time.ToString("dd-MM-yyyy H-mm-ss");
+
+            string gameStatesFileName = "Game - (";
+            if (gameBoardStates[0].Players.Count > 1)
+            {
+                for (int i = 0; i < gameBoardStates[0].Players.Count - 1; i++)
+                {
+                    var tplayer = gameBoardStates[0].Players[i];
+                    gameStatesFileName += tplayer.Name + " vs ";
+                }
+            }
+            gameStatesFileName += gameBoardStates[0].Players[gameBoardStates[0].Players.Count - 1].Name + ")";
+
+
+            gameStatesFileName += " " + time_str;
+
+            return gameStatesFileName;
+        }
+
 
 
         /// <summary>
@@ -1501,6 +1572,7 @@ namespace Bomber_wpf
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             Disconnect();
+            Compiler.DeleteComppiledFiles();
 
             if (server != null)
             {
@@ -1512,7 +1584,6 @@ namespace Bomber_wpf
 
 
         public string CalculateMD5Hash(string input)
-
         {
 
             MD5 md5 = MD5.Create();
@@ -1530,7 +1601,6 @@ namespace Bomber_wpf
             }
 
             return sb.ToString();
-
         }
 
 
@@ -1544,5 +1614,9 @@ namespace Bomber_wpf
             compiler.UserClientStart();
         }
 
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }    
 }

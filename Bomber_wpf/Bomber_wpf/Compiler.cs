@@ -26,10 +26,19 @@ namespace Bomber_wpf
         string userClient_sourceName;
         string userClientexe_Name;
 
-        public Compiler(string _userClass_sourceName = "User")
-        {         
+        public static List<string> compileDirectories = new List<string>();
+
+        public Compiler(string _userClass_sourceName)
+        {           
+
+            main_Path = Directory.GetCurrentDirectory();
+            if (main_Path.Contains("\\bin\\"))
+            {
+                main_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\.."));
+            }
+           
+                main_Path += "\\";
             
-            main_Path = Directory.GetCurrentDirectory() + "\\";
            
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
             userClass_Path = main_Path + "User_class\\User_class\\";
@@ -78,7 +87,8 @@ namespace Bomber_wpf
 
         public void CreateUserDirectory()
         {
-         
+            compileDirectories.Add(userClient_Path + user_directory_name);
+
             foreach(FileInfo tfile in Directory.CreateDirectory(userClient_Path + user_directory_name).GetFiles())
             {
                 tfile.Delete();
@@ -154,16 +164,46 @@ namespace Bomber_wpf
 
 
         /// <summary>
+        /// Удалить папки, содержащие скомпилированные коды стратегий пользователей
+        /// </summary>
+        public static void DeleteComppiledFiles()
+        {
+            for (int i = 0; i < compileDirectories.Count; i++)
+            {
+                DeleteDirectory(compileDirectories[i]);
+            }
+            compileDirectories.Clear();
+        }
+
+
+
+        /// <summary>
         /// Удалить файл, если он существует
         /// </summary>
         /// <param name="filePath">Путь к удаляемому файлу</param>
-        private void DeleteFile(string filePath)
+        public static void DeleteFile(string filePath)
         {
             if (File.Exists(filePath))
             {
-                File.Delete(filePath);
+                File.Delete(filePath);               
             }      
         }
 
+        /// <summary>
+        ///  Удалить папку, если она существует
+        /// </summary>
+        /// <param name="DirectoryPath"></param>
+        public static void DeleteDirectory(string DirectoryPath)
+        {
+            if (Directory.Exists(DirectoryPath))
+            {
+                DirectoryInfo di = new DirectoryInfo(DirectoryPath);
+                foreach (FileInfo tfile in di.GetFiles())
+                {
+                    tfile.Delete();
+                }
+                Directory.Delete(DirectoryPath);
+            }
+        }
     }
 }

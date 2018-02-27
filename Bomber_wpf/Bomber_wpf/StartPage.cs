@@ -112,20 +112,24 @@ namespace Bomber_wpf
         /// <param name="i"></param>
         /// <param name="btn"></param>
         /// <param name="label"></param>
-        private void ChangeBotUser(int i, Button btn, Label label)
+        private void ChangeBotUser(int i, Button btn, Label label, CheckBox check)
         {
             labels[0] = path1_lab.Text;
             labels[1] = path2_lab.Text;
             labels[2] = path3_lab.Text;
             labels[3] = path4_lab.Text;
 
-            if (checkBot1.Checked == true)
+            if (check.Checked == false && labels[i]=="")
             {
-                paths[i] = "";
+                paths[i] = null;
+            }
+            else if (check.Checked == false && labels[i]!="")
+            {
+                paths[i] = labels[i];
             }
             else
             {
-                paths[i] = labels[i];
+                paths[i] = "";
             }
 
             btn.Enabled = !btn.Enabled;
@@ -163,22 +167,22 @@ namespace Bomber_wpf
 
         private void checkBot1_CheckedChanged(object sender, EventArgs e)
         {
-            ChangeBotUser(0, path1_btn, path1_lab);            
+            ChangeBotUser(0, path1_btn, path1_lab, checkBot1);            
         }
 
         private void checkBot2_CheckedChanged(object sender, EventArgs e)
         {
-            ChangeBotUser(1, path2_btn, path2_lab);
+            ChangeBotUser(1, path2_btn, path2_lab, checkBot2);
         }
 
         private void checkBot3_CheckedChanged(object sender, EventArgs e)
         {
-            ChangeBotUser(2, path3_btn, path3_lab);
+            ChangeBotUser(2, path3_btn, path3_lab, checkBot3);
         }
 
         private void checkBot4_CheckedChanged(object sender, EventArgs e)
         {
-            ChangeBotUser(3, path4_btn, path4_lab);
+            ChangeBotUser(3, path4_btn, path4_lab, checkBot3);
         }
     }
 }
