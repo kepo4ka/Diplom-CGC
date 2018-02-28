@@ -194,7 +194,7 @@ namespace Bomber_wpf
         /// </summary>
         /// <param name="DirectoryPath"></param>
         public static void DeleteDirectory(string DirectoryPath)
-        {
+        {           
             if (Directory.Exists(DirectoryPath))
             {
                 DirectoryInfo di = new DirectoryInfo(DirectoryPath);
