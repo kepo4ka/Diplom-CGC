@@ -622,7 +622,6 @@ namespace Bomber_wpf
         /// </summary>
         public void GameOver()
         {
-
             isGameOver = true;
 
             Disconnect();
@@ -630,8 +629,7 @@ namespace Bomber_wpf
 
             game_timer.Stop();
 
-           
-
+            Thread.Sleep(100);
             Compiler.DeleteComppiledFiles();
 
             var result = DialogResult.No;
@@ -671,8 +669,8 @@ namespace Bomber_wpf
 
             gameBoardStates.Add(gb);
 
-
             SaveGameInfoFile();
+
 
 
             message += "Начать заново?";
@@ -691,8 +689,9 @@ namespace Bomber_wpf
             {
                 this.Hide();
                 startPage.Show();                
-            }
+            }          
         }
+
 
 
 
@@ -734,11 +733,7 @@ namespace Bomber_wpf
                 form.Serialize(fs, gameBoardStates);
             }
 
-            StreamWriter sw = new StreamWriter(gameResultDirectoryName + gameStaterVisualizerFileName + ".json", false);
-            string gameStatesJson = JsonConvert.SerializeObject(gameBoardStates);
-            sw.Write(gameStatesJson);
-
-            sw = new StreamWriter(gameResultDirectoryName + gameResultsFileName, false);
+            StreamWriter sw = new StreamWriter(gameResultDirectoryName + gameResultsFileName, false);
             string GameResultsJson = JsonConvert.SerializeObject(GetPlayerResult());
             sw.Write(GameResultsJson);
             sw.Close();
@@ -749,6 +744,8 @@ namespace Bomber_wpf
             //    MessageBox.Show("Ошибка при сохранении информации об игре в файл: " + e.Message);
             //}
         }
+
+
 
 
         /// <summary>
@@ -1569,9 +1566,21 @@ namespace Bomber_wpf
             }
         }
 
+
+
+
+
+
+
+
+
+
+
+
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             Disconnect();
+            Thread.Sleep(100);
             Compiler.DeleteComppiledFiles();
 
             if (server != null)
@@ -1617,6 +1626,71 @@ namespace Bomber_wpf
         private void Form1_Load(object sender, EventArgs e)
         {
 
+        }
+
+
+
+        /// <summary>
+        /// Пауза
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void control_btn_Click(object sender, EventArgs e)
+        {
+            game_timer.Enabled = !game_timer.Enabled;
+            if (game_timer.Enabled)
+            {
+                control_btn.Text = "Пауза";
+            }
+            else
+            {
+                control_btn.Text = "Продолжить";
+            }
+
+        }
+
+        /// <summary>
+        /// Увеличение скорости игры 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void fast_btn_Click(object sender, EventArgs e)
+        {
+            game_timer.Interval = game_timer.Interval / 2;
+            slow_btn.Enabled = true;
+
+            if (game_timer.Interval<100)
+            {
+                fast_btn.Enabled = false;
+                game_timer.Interval = 100;
+            }
+            else
+            {
+                fast_btn.Enabled = true;              
+            }
+        }
+
+
+        /// <summary>
+        /// Замедление скорости игры
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void slow_btn_Click(object sender, EventArgs e)
+        {
+            game_timer.Interval = game_timer.Interval * 2;
+
+            fast_btn.Enabled = true;
+
+            if (game_timer.Interval > 6000)
+            {
+                slow_btn.Enabled = false;
+                game_timer.Interval = 6000;
+            }
+            else
+            {
+                slow_btn.Enabled = true;
+            }
         }
     }    
 }
