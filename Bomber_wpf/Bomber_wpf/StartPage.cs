@@ -10,7 +10,6 @@ using System.Windows.Forms;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
-
 using System.IO;
 using System.Diagnostics;
 
@@ -44,19 +43,34 @@ namespace Bomber_wpf
 
 
      
-
+        /// <summary>
+        /// Запустить форму симуляции
+        /// </summary>
         public void OpenRealGameForm()
         {
-            Form1 realGameForm = new Form1(this);
-            this.Hide();
-            realGameForm.Show();
+            byte havePlayers = 0;
+            for (int i = 0; i < paths.Length; i++)
+            {
+                if (paths[i]!= null)
+                {
+                    havePlayers++;                    
+                }
+            }
+
+            //Если хотя бы два игрока (пользователь или бот)
+            if (havePlayers>1)
+            {
+                Form1 realGameForm = new Form1(this);
+                this.Hide();
+                realGameForm.Show();
+            }          
         }
 
 
         private void savedGameButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Serialized file | *.dat";
+            ofd.Filter = "Serialized file | *.dat; *.json";
             ofd.InitialDirectory = Directory.GetCurrentDirectory();
 
 
@@ -80,6 +94,7 @@ namespace Bomber_wpf
         {
             List<GameBoard> gameBoardStates = new List<GameBoard>();
             StreamReader sr = new StreamReader(psource);
+
             IFormatter formatter = new BinaryFormatter();
             gameBoardStates = (List<GameBoard>)formatter.Deserialize(sr.BaseStream);
 
