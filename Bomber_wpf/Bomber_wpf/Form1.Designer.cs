@@ -35,6 +35,9 @@
             this.dead_players_listvView = new System.Windows.Forms.ListView();
             this.game_timer = new System.Windows.Forms.Timer(this.components);
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.fast_btn = new System.Windows.Forms.Button();
+            this.control_btn = new System.Windows.Forms.Button();
+            this.slow_btn = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -75,7 +78,7 @@
             this.dead_players_listvView.GridLines = true;
             this.dead_players_listvView.Location = new System.Drawing.Point(6, 19);
             this.dead_players_listvView.Name = "dead_players_listvView";
-            this.dead_players_listvView.Size = new System.Drawing.Size(552, 196);
+            this.dead_players_listvView.Size = new System.Drawing.Size(552, 159);
             this.dead_players_listvView.TabIndex = 1;
             this.dead_players_listvView.UseCompatibleStateImageBehavior = false;
             // 
@@ -84,16 +87,49 @@
             this.groupBox2.Controls.Add(this.dead_players_listvView);
             this.groupBox2.Location = new System.Drawing.Point(456, 221);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(564, 221);
+            this.groupBox2.Size = new System.Drawing.Size(564, 184);
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Погибшие игроки";
+            // 
+            // fast_btn
+            // 
+            this.fast_btn.Location = new System.Drawing.Point(851, 411);
+            this.fast_btn.Name = "fast_btn";
+            this.fast_btn.Size = new System.Drawing.Size(169, 29);
+            this.fast_btn.TabIndex = 3;
+            this.fast_btn.Text = "Ускорить x2";
+            this.fast_btn.UseVisualStyleBackColor = true;
+            this.fast_btn.Click += new System.EventHandler(this.fast_btn_Click);
+            // 
+            // control_btn
+            // 
+            this.control_btn.Location = new System.Drawing.Point(631, 411);
+            this.control_btn.Name = "control_btn";
+            this.control_btn.Size = new System.Drawing.Size(214, 29);
+            this.control_btn.TabIndex = 4;
+            this.control_btn.Text = "Пауза";
+            this.control_btn.UseVisualStyleBackColor = true;
+            this.control_btn.Click += new System.EventHandler(this.control_btn_Click);
+            // 
+            // slow_btn
+            // 
+            this.slow_btn.Location = new System.Drawing.Point(456, 411);
+            this.slow_btn.Name = "slow_btn";
+            this.slow_btn.Size = new System.Drawing.Size(169, 29);
+            this.slow_btn.TabIndex = 5;
+            this.slow_btn.Text = "Замедлить x2";
+            this.slow_btn.UseVisualStyleBackColor = true;
+            this.slow_btn.Click += new System.EventHandler(this.slow_btn_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1032, 452);
+            this.Controls.Add(this.slow_btn);
+            this.Controls.Add(this.control_btn);
+            this.Controls.Add(this.fast_btn);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.panel1);
@@ -115,6 +151,9 @@
         private System.Windows.Forms.ListView players_listView;
         private System.Windows.Forms.ListView dead_players_listvView;
         private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Button fast_btn;
+        private System.Windows.Forms.Button control_btn;
+        private System.Windows.Forms.Button slow_btn;
     }
 }
 
