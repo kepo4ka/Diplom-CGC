@@ -64,6 +64,25 @@ namespace Bomber_wpf
             InitGame();            
         }
 
+
+        /// <summary>
+        /// Воспроизведение сохранённой игры
+        /// </summary>
+        /// <param name="pstartPage"></param>
+        /// <param name="pgameBoardStatates"></param>
+        public Form1(StartPage pstartPage, List<GameBoard> pgameBoardStatates)
+        {
+            InitializeComponent();
+            g = panel1.CreateGraphics();
+            p = new Pen(Color.Black);
+            sb = new SolidBrush(Color.DimGray);
+            startPage = pstartPage;
+
+            savedGameBoardStates = pgameBoardStatates;
+            InitVisualizingGame();
+        }
+
+
         void CheckUserCodeSourcesPath(out int clients_count)
         {
             clients_count = 0;
@@ -173,23 +192,7 @@ namespace Bomber_wpf
         }
 
 
-        /// <summary>
-        /// Воспроизведение сохранённой игры
-        /// </summary>
-        /// <param name="pstartPage"></param>
-        /// <param name="pgameBoardStatates"></param>
-        public Form1(StartPage pstartPage, List<GameBoard> pgameBoardStatates)
-        {
-            InitializeComponent();
-            g = panel1.CreateGraphics();
-            p = new Pen(Color.Black);
-            sb = new SolidBrush(Color.DimGray);
-            startPage = pstartPage;
-
-            savedGameBoardStates = pgameBoardStatates;
-            InitVisualizingGame();
-        }
-
+ 
         /// <summary>
         /// Запуск визуализации сохраннённой игры
         /// </summary>
@@ -361,14 +364,15 @@ namespace Bomber_wpf
                     }
                 }
                 catch (Exception e)
-                {
-                    
+                {                    
                     PlayerDeath(tclient.Key);
                     PlayerDisconnect(tclient.Value);
                 }
             }
         }
 
+
+        
 
         /// <summary>
         /// Обновить информацию о живых игроках
