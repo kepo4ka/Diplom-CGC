@@ -60,11 +60,9 @@ namespace User_client
                 {
                     IFormatter formatter = new BinaryFormatter();
                     NetworkStream stream = server.GetStream();
-                    int res = 0;
-
                
 
-                    Thread.Sleep(3000);
+                    Thread.Sleep(2000);
 
                   //  formatter.Serialize(stream, res);
 
