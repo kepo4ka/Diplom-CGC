@@ -41,10 +41,6 @@ namespace WindowsFormsApplication1
             cl = server.AcceptTcpClient();
 
            readMessage();
-            //timer.Interval = 1000;
-            //timer.Tick += Timer_Tick;
-            //timer.Start();
-         //   textBox1.Text = value + "!";
 
         }
 
@@ -61,13 +57,13 @@ namespace WindowsFormsApplication1
             //      BinaryFormatter fr = new BinaryFormatter();
             string message = "";
             NetworkStream stream = cl.GetStream();
-            //   stream.ReadTimeout = 1000;
 
             string[] res_array = new string[4];
 
 
             for (int i = 0; i < res_array.Length; i++)
             {
+                WriteStream(stream);
                 res_array[i] = "";
                 Thread thr = new Thread(() =>
                 {
@@ -77,18 +73,28 @@ namespace WindowsFormsApplication1
                 thr.Start();
                 Thread.Sleep(1000);
 
-                if (res_array[i] == "" && thr.IsAlive)
+                if (thr.ThreadState != System.Threading.ThreadState.Stopped)
                 {
-                    message += (i + 1) + " - долго " + thr.ManagedThreadId + "\n";
+                    message += (i + 1) + " - долго " + thr.ThreadState.ToString() + "\n";
+                    thr.Abort();
+                    while(true)
+                    {
+                        if (thr.ThreadState == System.Threading.ThreadState.Stopped)
+                        {
+                            break;
+                        }
+                    }
                 }
                 else
                 {
-                    message += (i + 1) + " - быстро " + thr.ManagedThreadId + "\n";
-                }
+                    message += (i + 1) + " - быстро " + res_array[i] + ", " + thr.ThreadState.ToString() + "\n";
+                  //  message += (i + 1) + " - быстро " + ", " + thr.ThreadState.ToString() + "\n";
+
+                }                 
             }
+
             MessageBox.Show(message);
         }
-
 
 
         public string ReadStream(NetworkStream str)
@@ -98,9 +104,17 @@ namespace WindowsFormsApplication1
             
             Int32 bytes = str.Read(data, 0, data.Length);           
 
-            string result = Encoding.Unicode.GetString(data, 0, data.Length);
+            string result = Encoding.Default.GetString(data, 0, bytes);
 
             return result;
         }
+
+        public void WriteStream(NetworkStream str)
+        {
+            byte[] data = Encoding.Default.GetBytes("next");
+
+            str.Write(data, 0, data.Length);            
+        }
+
     }
 }

@@ -7,9 +7,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Drawing;
-using ClassLibrary_CGC;
-using User_class;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -19,29 +16,22 @@ namespace User_client
     {
         static string serverIp = "127.0.0.1";
         static TcpClient server;
-        static User myUser;
-        static GameBoard gameBoard;
         static bool connected;
 
         static void Main(string[] args)
         {           
-            Connect();           
-
-            CommunicateWithServer();
-           
+            Connect();
+           // test();
+            CommunicateWithServer();           
         }
 
         static void Connect()
         {
             try
-            {               
-                //  gameBoard = new GameBoard();                
-
+            {                 
                 server = new TcpClient(serverIp, 9595);
                 Console.WriteLine("Удалось подключиться к серверу");
-
-                connected = true;
-              
+                connected = true;              
             }
             catch 
             {
@@ -54,28 +44,41 @@ namespace User_client
 
         static void CommunicateWithServer()
         {
+
+            Random rn = new Random();
+            int i = 4;
+
             while (connected)
             {
                 try
                 {
-                    IFormatter formatter = new BinaryFormatter();
-                    NetworkStream stream = server.GetStream();
-               
+                    string serverMessage = readStream();
 
-                    Thread.Sleep(2000);
+                    if (serverMessage != "next")
+                    {
+                        continue;
+                    }
 
-                  //  formatter.Serialize(stream, res);
+                    int rnumber = 0;
+                    if (i >2)
+                    {
+                        rnumber = 990;
+                    }
+                    else
+                    {
+                        rnumber = 1050;
+                    }
+                    i--;
+                    //     Console.WriteLine(rnumber);
+                    //      Thread.Sleep(rnumber);
+                   
 
+                    writeStream("start");
 
-                    Byte[] data = Encoding.Unicode.GetBytes("123");
+                    Thread.Sleep(rnumber);
 
-                    stream.Write(data, 0, data.Length);
-
-                //    stream.WriteTimeout = 1000; //  <------- 1 second timeout
-                //    stream.ReadTimeout = 1000; //  <------- 1 second timeout
-                    stream.Write(data, 0, data.Length);
-
-                    //   gameBoard = (GameBoard) formatter.Deserialize(strm);
+                    writeStream(rnumber.ToString());
+                              
 
                 }
                 catch (Exception e)
@@ -83,10 +86,30 @@ namespace User_client
                     Console.WriteLine("ERROR: " + e.Message);
                     connected = false;
                     server.Close();
-                    Application.Exit();
+               //     Application.Exit();
 
                 }
             }
+        }
+
+
+        static void writeStream(string message)
+        {
+            NetworkStream stream = server.GetStream();
+            Byte[] data = Encoding.Default.GetBytes(message);
+
+            stream.Write(data, 0, data.Length);
+        }
+
+        static string readStream()
+        {
+            NetworkStream stream = server.GetStream();
+
+            Byte[] serverData = new Byte[512];
+            Int32 bytes = stream.Read(serverData, 0, serverData.Length);
+
+            string serverMessage = Encoding.Default.GetString(serverData, 0, bytes);
+            return serverMessage;
         }
     }
 }
