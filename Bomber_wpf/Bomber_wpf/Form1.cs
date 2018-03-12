@@ -613,6 +613,8 @@ namespace Bomber_wpf
                 gameBoardStates.Add((GameBoard)gb.Clone());
 
                 CheckGameOver();
+
+                SetXYInfo();
                 SendGameInfo();
             }
         }
@@ -621,6 +623,67 @@ namespace Bomber_wpf
         public void panel1_Paint(object sender, PaintEventArgs e)
         {     
 
+        }
+
+
+
+        /// <summary>
+        /// Получить информацию о каждой клетке: какие объекты в ней сейчас расположены (Игроки, Бомбы, Видимые Бонусы, Лава (с наибольшим LiveTime)
+        /// </summary>
+        public void SetXYInfo()
+        {
+            for (int i = 0; i < gb.XYinfo.GetLength(0); i++)
+            {
+                for (int j = 0; j < gb.XYinfo.GetLength(1); j++)
+                {
+                    var tXYInfo = gb.XYinfo[i, j];
+
+                    for (int ii = 0; ii < gb.Players.Count; ii++)
+                    {
+                        if (gb.Players[ii].X == i && gb.Players[ii].Y ==j)
+                        {
+                            tXYInfo.Player = gb.Players[ii];
+                            break;
+                        }
+                    }
+
+
+                    int tmaxLiveTime = 0;
+
+                    for (int ii = 0; ii < gb.Lavas.Count; ii++)
+                    {
+                        if (gb.Lavas[ii].X == i && gb.Lavas[ii].Y == j)
+                        {
+                            if (gb.Lavas[ii].LiveTime >= tmaxLiveTime)
+                            {
+                                tmaxLiveTime = gb.Lavas[ii].LiveTime;
+                                tXYInfo.Lava = gb.Lavas[ii];                                
+                            }
+                        }
+                    }
+
+
+                    for (int ii = 0; ii < gb.Bonuses.Count; ii++)
+                    {
+                        if (gb.Bonuses[ii].X == i && gb.Bonuses[ii].Y ==j)
+                        {
+                            tXYInfo.Bonus = gb.Bonuses[ii];
+                            break;
+                        }
+                    }
+
+                    for (int ii = 0; ii < gb.Bombs.Count; ii++)
+                    {
+                        if (gb.Bombs[ii].X == i && gb.Bombs[ii].Y == j)
+                        {
+                            tXYInfo.Bomb = gb.Bombs[ii];
+                            break;
+                        }
+                    }
+
+
+                }
+            }
         }
 
         /// <summary>

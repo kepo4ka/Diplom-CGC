@@ -31,9 +31,10 @@ namespace ClassLibrary_CGC
         List<Bonus> bonuses;
         List<Bomb> bombs;
         List<Lava> lavas;
+        public XYInfo[,] XYinfo = new XYInfo[15,15];
+        
 
         Random rn = new Random();
-        public int bonusCount = -1;
 
         public GameBoard()
         {
@@ -41,6 +42,7 @@ namespace ClassLibrary_CGC
             W = size;
             H = size;
             GenerateBoard(size);
+           
             Bonuses = new List<Bonus>();
             Bombs = new List<Bomb>();
             Lavas = new List<Lava>();
@@ -49,7 +51,14 @@ namespace ClassLibrary_CGC
 
             GenerateBonuses(Config.bonuses_count);
 
-            bonusCount = Bonuses.Count;
+
+            for (int i = 0; i < XYinfo.GetLength(0); i++)
+            {
+                for (int j = 0; j < XYinfo.GetLength(1); j++)
+                {
+                    XYinfo[i, j] = new XYInfo();
+                }
+            }
         }
 
         public GameBoard(int SIZE)
@@ -972,20 +981,64 @@ namespace ClassLibrary_CGC
     }
 
 
-    //[Serializable]
-    //public class User : Player
-    //{   
-    //    public override PlayerAction Play()
-    //    {
-    //        PlayerAction taction = PlayerAction.Wait;
+
+    [Serializable]
+    public class XYInfo
+    {
+        Player player = null;
+        Bonus bonus = null;
+        Lava lava = null;
+        Bomb bomb = null;
 
 
-    //        //Код пользователя
+        public Player Player
+        {
+            get
+            {
+                return player;
+            }
+            set
+            {
+                player = value;
+            }
+        }
 
+        public Bonus Bonus
+        {
+            get
+            {
+                return bonus;
+            }
+            set
+            {
+                bonus = value;
+            }
+        }
 
-    //        return taction;
-    //    }
-    //}
+        public Lava Lava
+        {
+            get
+            {
+                return lava;
+            }
+            set
+            {
+                lava = value;
+            }
+        }
+
+        public Bomb Bomb
+        {
+            get
+            {
+                return bomb;
+            }
+            set
+            {
+                bomb = value;
+            }
+        }
+    }
 
 
 
