@@ -165,7 +165,8 @@ namespace Bomber_wpf
             pplayer.ID = i;
             pplayer.Color = player_colors[i];
             pplayer.Points = 0;
-            pplayer.Health = Config.player_health;
+            //    pplayer.Health = Config.player_health;
+            pplayer.Health = 15;
             pplayer.BonusType = BonusType.None;
             pplayer.BombsCount = Config.player_bombs_count_start;
 
@@ -285,6 +286,15 @@ namespace Bomber_wpf
 
             CheckUserCodeSourcesPath(out tconnected_clients_count);
 
+            //Bomb test = new Bomb_big
+            //{
+            //    X = 0,
+            //    Y = 1,                
+            //    Color = Color.Red,
+            //    LiveTime = 3,
+            //    PlayerID = 1
+            //};
+            //gb.Bombs.Add(test);
 
             int tplayers_index = 0;
 
@@ -351,23 +361,30 @@ namespace Bomber_wpf
         /// </summary>
         public void ReceiveUserInfo()
         {
-            foreach (var tclient in clients)
+            try
             {
-                try
+                foreach (var tclient in clients)
                 {
-                    if (tclient.Value != null)
+                    try
                     {
-                        NetworkStream strm = tclient.Value.GetStream();
-                        IFormatter formatter = new BinaryFormatter();
-                        Player nplayer = (Player)formatter.Deserialize(strm);
-                        gb.Players.Find(c => c.ID == nplayer.ID).ACTION = nplayer.ACTION;
+                        if (tclient.Value != null)
+                        {
+                            NetworkStream strm = tclient.Value.GetStream();
+                            IFormatter formatter = new BinaryFormatter();
+                            Player nplayer = (Player)formatter.Deserialize(strm);
+                            gb.Players.Find(c => c.ID == nplayer.ID).ACTION = nplayer.ACTION;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        PlayerDeath(tclient.Key);
+                        PlayerDisconnect(tclient.Value);
                     }
                 }
-                catch (Exception e)
-                {                    
-                    PlayerDeath(tclient.Key);
-                    PlayerDisconnect(tclient.Value);
-                }
+            }
+            catch 
+            {
+                LogUpdate("ОШИБКА при перечислении списка Юзеров");
             }
         }
 
@@ -483,7 +500,7 @@ namespace Bomber_wpf
             DrawBonuses();
             DrawPlayers();
             DrawBombs();
-            DrawGrid();
+            DrawGrid();           
         }
 
         /// <summary>
@@ -582,11 +599,12 @@ namespace Bomber_wpf
         public void GameProccess()
         {
             GameTimer--;
-
-            LavasProccess();
             PlayerProcess();
             PlayerBonusCollision();
+
             BombsProccess();
+            LavasProccess();
+            LavaCollision();                        
         }
 
 
@@ -822,7 +840,7 @@ namespace Bomber_wpf
                 var tvitya = gb.Players[i];
                 if (tvitya is Bot)
                 {
-                    tvitya.ACTION = tvitya.Play();
+                     tvitya.ACTION = tvitya.Play();                   
                 }
 
                 PlayerFire(tvitya);
@@ -1282,157 +1300,75 @@ namespace Bomber_wpf
         /// </summary>
         /// <param name="plava"></param>
         /// <param name="i"></param>
-        public void LavaPlayersCollision(Lava plava, int i, bool _k)
+        public void LavaPlayersCollision(Lava plava)
         {
             for (int k = 0; k < gb.Players.Count; k++)
-            {                
+            {
                 var tplayer = gb.Players[k];
-                if (_k)
+
+                if (tplayer.X == plava.X && tplayer.Y == plava.Y)
                 {
-                    if (tplayer.X == i && tplayer.Y == plava.Y)
+                    tplayer.Health--;
+                    if (tplayer.Health < 1)
                     {
-                        tplayer.Health--;
-                        if (tplayer.Health < 1)
-                        {
-                            PlayerKill(tplayer, plava);
-                        }
-                    }
-                }
-                else
-                {
-                    if (tplayer.X == plava.X && tplayer.Y == i)
-                    {
-                        tplayer.Health--;
-                        if (tplayer.Health < 1)
-                        {
-                            PlayerKill(tplayer, plava);
-                        }
+                        PlayerKill(tplayer, plava);
                     }
                 }
             }
         }
+
 
         /// <summary>
         /// Взаимодействие лавы с остальными объектами
         /// </summary>
         /// <param name="plava">Лава</param>
-        public void LavaCollision(Lava plava)
+        public void LavaCollision()
         {
-            Bonus[,] tbonuses_mass = ListToMass(gb.Bonuses);
 
-            for (int i = plava.X; i <= plava.X + plava.Radius; i++)
+            for (int i = 0; i < gb.Lavas.Count; i++)
             {
-                if (i < 0 || i > gb.W - 1 || gb.Cells[i, plava.Y] is Cell_indestructible)
-                {
-                    break;
-                }
+                var tlava = gb.Lavas[i];
 
-                //if (gb.Cells[i, plava.Y] is Cell_indestructible)
-                //{
-                //    break;
-                //}
-
-                LavaPlayersCollision(plava, i, true);
-
-                if (gb.Cells[i, plava.Y] is Cell_destructible)
-                {
-                    gb.Cells[i, plava.Y] = new Cell_free()
-                    {
-                        X = i,
-                        Y = plava.Y
-                    };
-                    if (tbonuses_mass[i, plava.Y] != null)
-                    {
-                        tbonuses_mass[i, plava.Y].Visible = true;
-                    }
-                    PlayerAddPointsCellDestroy(plava);
-                }
-            }
-
-            for (int i = plava.X; i >= plava.X - plava.Radius; i--)
-            {
-                if (i < 0 || i > gb.W - 1 || gb.Cells[i, plava.Y] is Cell_indestructible)
-                {
-                    break;
-                }
-
-                LavaPlayersCollision(plava, i, true);
-
-                if (gb.Cells[i, plava.Y] is Cell_destructible)
-                {
-                    gb.Cells[i, plava.Y] = new Cell_free()
-                    {
-                        X = i,
-                        Y = plava.Y
-                    };
-                    if (tbonuses_mass[i, plava.Y] != null)
-                    {
-                        tbonuses_mass[i, plava.Y].Visible = true;
-                    }
-                    PlayerAddPointsCellDestroy(plava);
-                }
-            }
-
-
-
-            for (int j = plava.Y; j <= plava.Y + plava.Radius; j++)
-            {
-                if (j < 0 || j > gb.H - 1 || gb.Cells[plava.X, j] is Cell_indestructible)
-                {
-                    break;
-                }
-
-                LavaPlayersCollision(plava, j, false);
-
-                if (gb.Cells[plava.X, j] is Cell_destructible)
-                {
-                    gb.Cells[plava.X, j] = new Cell_free()
-                    {
-                        X = plava.X,
-                        Y = j
-                    };
-                    if (tbonuses_mass[plava.X, j] != null)
-                    {
-                        tbonuses_mass[plava.X, j].Visible = true;
-                    }
-
-                    PlayerAddPointsCellDestroy(plava);
-                }
-            }
-
-
-            for (int j = plava.Y; j >= plava.Y - plava.Radius; j--)
-            {
-                if (j < 0 || j > gb.H - 1 || gb.Cells[plava.X, j] is Cell_indestructible)
-                {
-                    break;
-                }
-
-                LavaPlayersCollision(plava, j, false);
-
-                if (gb.Cells[plava.X, j] is Cell_destructible)
-                {
-                    gb.Cells[plava.X, j] = new Cell_free()
-                    {
-                        X = plava.X,
-                        Y = j
-                    };
-                    if (tbonuses_mass[plava.X, j] != null)
-                    {
-                        tbonuses_mass[plava.X, j].Visible = true;
-                    }
-
-                    PlayerAddPointsCellDestroy(plava);
-                }
+                LavaPlayersCollision(tlava);
+                LavaCellsBonusesCollision(tlava);
             }
         }
 
-        
+
+        /// <summary>
+        /// Взаимодействие лавы со стенами и бонусами под стенами
+        /// </summary>
+        /// <param name="plava">Объект Лава</param>
+        public void LavaCellsBonusesCollision(Lava plava)
+        {
+            Bonus[,] tbonuses_mass = ListToMass(gb.Bonuses);
+
+            if (gb.Cells[plava.X, plava.Y] is Cell_destructible)
+            {
+                gb.Cells[plava.X, plava.Y] = new Cell_free()
+                {
+                    X = plava.X,
+                    Y = plava.Y
+                };
+
+                if (tbonuses_mass[plava.X, plava.Y] != null)
+                {
+                    tbonuses_mass[plava.X, plava.Y].Visible = true;
+                }
+
+                PlayerAddPointsCellDestroy(plava);
+            }
+        }
+
+
         /// <summary>
         /// Обработка состояния лавы
         /// </summary>
         public void LavasProccess()
         {
+
+            LogUpdate("LavasProccess, lavasCount перед проверкой " + gb.Lavas.Count);
+
             for (int k = 0; k < gb.Lavas.Count; k++)
             {
                 var tlava = gb.Lavas[k];
@@ -1440,12 +1376,13 @@ namespace Bomber_wpf
                 if (tlava.LiveTime<1)
                 {
                     gb.Lavas.Remove(tlava);
-                    continue;
-                }
-
-                LavaCollision(tlava);               
+                    k--;
+                }                     
                 tlava.LiveTime--;
             }
+
+            LogUpdate("LavasProccess, lavasCountпосле проверки " + gb.Lavas.Count);
+
         }
 
         /// <summary>
@@ -1479,39 +1416,101 @@ namespace Bomber_wpf
         public void GenerateLava(Bomb _bomb)
         {
             int tradius = Config.lava_radius;
+
             if (_bomb is Bomb_big)
             {
                 tradius = Config.lava_radius_big;
             }
 
-            Lava tlava = new Lava()
+            for (int i = _bomb.X+1; i <= _bomb.X + tradius; i++)
             {
-                X = _bomb.X,
-                Y = _bomb.Y,
-                Radius = tradius,
-                LiveTime = Config.lava_livetime,
-                PlayerID = _bomb.PlayerID
-            };
-            gb.Lavas.Add(tlava);
+                if (i < 0 || i > gb.W - 1 || gb.Cells[i, _bomb.Y] is Cell_indestructible)
+                {
+                    break;
+                }
+
+                Lava tlava = new Lava()
+                {
+                    X = i,
+                    Y = _bomb.Y,
+                    LiveTime = Config.lava_livetime,
+                    PlayerID = _bomb.PlayerID
+                };
+                gb.Lavas.Add(tlava);
+            }
+
+
+            for (int i = _bomb.X; i >= _bomb.X - tradius; i--)
+           { 
+                if (i < 0 || i > gb.W - 1 || gb.Cells[i, _bomb.Y] is Cell_indestructible)
+                {
+                    break;
+                }
+
+                Lava tlava = new Lava()
+                {
+                    X = i,
+                    Y = _bomb.Y,
+                    LiveTime = Config.lava_livetime,
+                    PlayerID = _bomb.PlayerID
+                };
+                gb.Lavas.Add(tlava);
+            }
+
+
+            for (int j = _bomb.Y+1; j <= _bomb.Y + tradius; j++)
+            {
+                if (j < 0 || j > gb.H - 1 || gb.Cells[_bomb.X, j] is Cell_indestructible)
+                {
+                    break;
+                }
+
+                Lava tlava = new Lava()
+                {
+                    X = _bomb.X,
+                    Y = j,
+                    LiveTime = Config.lava_livetime,
+                    PlayerID = _bomb.PlayerID
+                };
+                gb.Lavas.Add(tlava);
+            }
+
+
+            for (int j = _bomb.Y-1; j >= _bomb.Y - tradius; j--)
+            {
+                if (j < 0 || j > gb.H - 1 || gb.Cells[_bomb.X, j] is Cell_indestructible)
+                {
+                    break;
+                }
+
+                Lava tlava = new Lava()
+                {
+                    X = _bomb.X,
+                    Y = j,
+                    LiveTime = Config.lava_livetime,
+                    PlayerID = _bomb.PlayerID
+                };
+                gb.Lavas.Add(tlava);
+            }
         }
 
 
-        /// <summary>
-        /// Создать лаву, на месте взрыва бомбы
-        /// </summary>
-        /// <param name="x">Координата бомбы</param>
-        /// <param name="y">Координата бомбы</param>
-        public void GenerateLava(int x, int y)
-        {
-            Lava tlava = new Lava()
-            {
-                X = x,
-                Y = y,
-                Radius = Config.lava_radius_big,
-                LiveTime = Config.lava_livetime
-            };
-            gb.Lavas.Add(tlava);
-        }
+        ///// <summary>
+        ///// Создать лаву, на месте взрыва бомбы
+        ///// </summary>
+        ///// <param name="x">Координата бомбы</param>
+        ///// <param name="y">Координата бомбы</param>
+        //public void GenerateLava(int x, int y)
+        //{
+        //    Lava tlava = new Lava()
+        //    {
+        //        X = x,
+        //        Y = y,
+        //        Radius = Config.lava_radius_big,
+        //        LiveTime = Config.lava_livetime
+        //    };
+        //    gb.Lavas.Add(tlava);
+        //}
 
 
         /// <summary>
@@ -1574,11 +1573,21 @@ namespace Bomber_wpf
 
 
 
+        /// <summary>
+        /// Добавить информацию в лог
+        /// </summary>
+        /// <param name="message"></param>
+        public void LogUpdate(string message)
+        {
+            log_box.Text += message + Environment.NewLine;
+        }
 
 
-
-
-
+        private void log_box_TextChanged(object sender, EventArgs e)
+        {
+            log_box.SelectionStart = log_box.Text.Length;
+            log_box.ScrollToCaret();
+        }
 
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -1695,6 +1704,13 @@ namespace Bomber_wpf
             {
                 slow_btn.Enabled = true;
             }
+        }
+
+       
+
+        private void log_box_DoubleClick(object sender, EventArgs e)
+        {
+            log_box.Clear();
         }
     }    
 }
