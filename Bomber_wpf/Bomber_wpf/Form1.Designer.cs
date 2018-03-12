@@ -38,6 +38,7 @@
             this.fast_btn = new System.Windows.Forms.Button();
             this.control_btn = new System.Windows.Forms.Button();
             this.slow_btn = new System.Windows.Forms.Button();
+            this.log_box = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -96,7 +97,7 @@
             // 
             this.fast_btn.Location = new System.Drawing.Point(851, 411);
             this.fast_btn.Name = "fast_btn";
-            this.fast_btn.Size = new System.Drawing.Size(169, 29);
+            this.fast_btn.Size = new System.Drawing.Size(169, 39);
             this.fast_btn.TabIndex = 3;
             this.fast_btn.Text = "Ускорить x2";
             this.fast_btn.UseVisualStyleBackColor = true;
@@ -106,7 +107,7 @@
             // 
             this.control_btn.Location = new System.Drawing.Point(631, 411);
             this.control_btn.Name = "control_btn";
-            this.control_btn.Size = new System.Drawing.Size(214, 29);
+            this.control_btn.Size = new System.Drawing.Size(214, 39);
             this.control_btn.TabIndex = 4;
             this.control_btn.Text = "Пауза";
             this.control_btn.UseVisualStyleBackColor = true;
@@ -116,17 +117,29 @@
             // 
             this.slow_btn.Location = new System.Drawing.Point(456, 411);
             this.slow_btn.Name = "slow_btn";
-            this.slow_btn.Size = new System.Drawing.Size(169, 29);
+            this.slow_btn.Size = new System.Drawing.Size(169, 39);
             this.slow_btn.TabIndex = 5;
             this.slow_btn.Text = "Замедлить x2";
             this.slow_btn.UseVisualStyleBackColor = true;
             this.slow_btn.Click += new System.EventHandler(this.slow_btn_Click);
             // 
+            // log_box
+            // 
+            this.log_box.Location = new System.Drawing.Point(12, 456);
+            this.log_box.Multiline = true;
+            this.log_box.Name = "log_box";
+            this.log_box.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.log_box.Size = new System.Drawing.Size(1002, 173);
+            this.log_box.TabIndex = 6;
+            this.log_box.TextChanged += new System.EventHandler(this.log_box_TextChanged);
+            this.log_box.DoubleClick += new System.EventHandler(this.log_box_DoubleClick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1032, 452);
+            this.ClientSize = new System.Drawing.Size(1032, 641);
+            this.Controls.Add(this.log_box);
             this.Controls.Add(this.slow_btn);
             this.Controls.Add(this.control_btn);
             this.Controls.Add(this.fast_btn);
@@ -140,6 +153,7 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -154,6 +168,7 @@
         private System.Windows.Forms.Button fast_btn;
         private System.Windows.Forms.Button control_btn;
         private System.Windows.Forms.Button slow_btn;
+        private System.Windows.Forms.TextBox log_box;
     }
 }
 
