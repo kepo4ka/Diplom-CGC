@@ -1173,10 +1173,10 @@ namespace Bomber_wpf
         /// <param name="plava"></param>
         public void PlayerKill(Player pplayer, Lava plava)
         {
-            if (plava.PlayerID != pplayer.ID)
-            {
-                PlayerAddPointsKill(plava);
-            }
+            //if (plava.PlayerID != pplayer.ID)
+            //{
+            //    PlayerAddPointsKill(plava);
+            //}
 
             if (pplayer is User)
             {
