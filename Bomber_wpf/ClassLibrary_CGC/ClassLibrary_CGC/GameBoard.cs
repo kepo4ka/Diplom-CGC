@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
 
+
 namespace ClassLibrary_CGC
 {
     public enum PlayerAction
@@ -31,8 +32,8 @@ namespace ClassLibrary_CGC
         List<Bomb> bombs;
         List<Lava> lavas;
 
-        public Random rn = new Random();
-
+        Random rn = new Random();
+        public int bonusCount = -1;
 
         public GameBoard()
         {
@@ -40,11 +41,15 @@ namespace ClassLibrary_CGC
             W = size;
             H = size;
             GenerateBoard(size);
-            GenerateBonuses(Config.bonuses_count);
+            Bonuses = new List<Bonus>();
             Bombs = new List<Bomb>();
             Lavas = new List<Lava>();
             Players = new List<Player>();
             dead_players = new List<Player>();
+
+            GenerateBonuses(Config.bonuses_count);
+
+            bonusCount = Bonuses.Count;
         }
 
         public GameBoard(int SIZE)
@@ -52,14 +57,14 @@ namespace ClassLibrary_CGC
             W = SIZE;
             H = SIZE;
             GenerateBoard(SIZE);
-            GenerateBonuses(Config.bonuses_count);
+            Bonuses = new List<Bonus>();
             Bombs = new List<Bomb>();
             Lavas = new List<Lava>();
             Players = new List<Player>();
             dead_players = new List<Player>();
+
+            GenerateBonuses(Config.bonuses_count);
         }
-
-
 
 
 
@@ -75,6 +80,7 @@ namespace ClassLibrary_CGC
                 this.dead_players = value;
             }
         }
+
 
         /// <summary>
         /// Сгенерировать стенки на квадратном поле
@@ -191,14 +197,12 @@ namespace ClassLibrary_CGC
 
 
 
-
         /// <summary>
         /// Сгенерировать бонусы внутри разрушаемых стен
         /// </summary>
         /// <param name="bonuses_count">Количество бонусов (будет умножено в 4 раза)</param>
         private void GenerateBonuses(int bonuses_count)
         {
-            bonuses = new List<Bonus>();
 
             List<Cell> cells_dest = new List<Cell>();
 
@@ -231,32 +235,32 @@ namespace ClassLibrary_CGC
                 if (rtype % 2 == 0)
                 {
                     tbonus = new Bonus_fast(cells_dest[rpoint].X, cells_dest[rpoint].Y);
-                    bonuses.Add(tbonus);
+                    Bonuses.Add(tbonus);
 
                     tbonus = new Bonus_fast(W - cells_dest[rpoint].X - 1, cells_dest[rpoint].Y);
-                    bonuses.Add(tbonus);
+                    Bonuses.Add(tbonus);
 
                     tbonus = new Bonus_fast(cells_dest[rpoint].X, H - cells_dest[rpoint].Y - 1);
-                    bonuses.Add(tbonus);
+                    Bonuses.Add(tbonus);
 
                     tbonus = new Bonus_fast(W - cells_dest[rpoint].X - 1, H - cells_dest[rpoint].Y - 1);
-                    bonuses.Add(tbonus);
+                    Bonuses.Add(tbonus);
                 }
                 else
                 {
                     tbonus = new Bonus_big(cells_dest[rpoint].X, cells_dest[rpoint].Y);
-                    bonuses.Add(tbonus);
+                    Bonuses.Add(tbonus);
 
                     tbonus = new Bonus_big(W - cells_dest[rpoint].X - 1, cells_dest[rpoint].Y);
-                    bonuses.Add(tbonus);
+                    Bonuses.Add(tbonus);
 
                     tbonus = new Bonus_big(cells_dest[rpoint].X, H - cells_dest[rpoint].Y - 1);
-                    bonuses.Add(tbonus);
+                    Bonuses.Add(tbonus);
 
                     tbonus = new Bonus_big(W - cells_dest[rpoint].X - 1, H - cells_dest[rpoint].Y - 1);
-                    bonuses.Add(tbonus);
+                    Bonuses.Add(tbonus);
                 }
-            }
+            }   
         }
 
 
@@ -339,16 +343,16 @@ namespace ClassLibrary_CGC
             {
                 List<Bonus> visible_bombs = new List<Bonus>();
 
-                for (int k = 0; k < bonuses.Count; k++)
-                {
-                    if (bonuses[k].Visible == true)
-                    {
-                        visible_bombs.Add(bonuses[k]);
-                    }
-                }
-                return visible_bombs;
+                //for (int k = 0; k < bonuses.Count; k++)
+                //{
+                //    if (bonuses[k].Visible == true)
+                //    {
+                //        visible_bombs.Add(bonuses[k]);
+                //    }
+                //}
+                //return visible_bombs;
 
-              //  return bonuses;
+                return bonuses;
             }
             set
             {
@@ -430,7 +434,7 @@ namespace ClassLibrary_CGC
                     nbonus = new Bonus_fast(this.Bonuses[i].X, this.Bonuses[i].Y);
                 }
                 nbonus.Visible = this.Bonuses[i].Visible;
-                nbonus.Color = this.Bonuses[i].Color;
+                nbonus.Color = this.Bonuses[i].Color;                
                 nGameBoard.Bonuses.Add(nbonus);
             }
 
@@ -438,20 +442,14 @@ namespace ClassLibrary_CGC
 
             for (int i = 0; i < this.Bombs.Count; i++)
             {
-                Bomb nbomb;
-                if (this.Bombs[i] is Bomb_big)
-                {
-                    nbomb = new Bomb_big();
-                }
-                else
-                {
-                    nbomb = new Bomb();
-                }
+                Bomb nbomb  = new Bomb();
+                
                 nbomb.X = this.Bombs[i].X;
                 nbomb.Y = this.Bombs[i].Y;
                 nbomb.Color = this.Bombs[i].Color;
                 nbomb.PlayerID = this.Bombs[i].PlayerID;
                 nbomb.LiveTime = this.Bombs[i].LiveTime;
+                nbomb.Bang_radius = this.Bombs[i].Bang_radius;                
 
                 nGameBoard.Bombs.Add(nbomb);
             }
@@ -465,7 +463,6 @@ namespace ClassLibrary_CGC
                 nlava.Color = tlava.Color;
                 nlava.LiveTime = tlava.LiveTime;
                 nlava.PlayerID = tlava.PlayerID;
-                nlava.Radius = tlava.Radius;
                 nlava.X = tlava.X;
                 nlava.Y = tlava.Y;
                 nGameBoard.Lavas.Add(nlava);
@@ -485,7 +482,7 @@ namespace ClassLibrary_CGC
                 nplayer.Name = this.Players[i].Name;
                 nplayer.Points = this.Players[i].Points;
                 nplayer.BombsCount = this.Players[i].BombsCount;
-                nplayer.BonusType = this.Players[i].BonusType;
+                nplayer.Bang_radius = this.Players[i].Bang_radius;
                 nplayer.Color = this.Players[i].Color;
                 nplayer.ACTION = this.Players[i].ACTION;
 
@@ -497,6 +494,7 @@ namespace ClassLibrary_CGC
             for (int i = 0; i < this.DeadPlayers.Count; i++)
             {
                 Player nplayer = new Player();
+
                 nplayer.X = this.DeadPlayers[i].X;
                 nplayer.Y = this.DeadPlayers[i].Y;
                 nplayer.Health = this.DeadPlayers[i].Health;
@@ -504,7 +502,7 @@ namespace ClassLibrary_CGC
                 nplayer.Name = this.DeadPlayers[i].Name;
                 nplayer.Points = this.DeadPlayers[i].Points;
                 nplayer.BombsCount = this.DeadPlayers[i].BombsCount;
-                nplayer.BonusType = this.DeadPlayers[i].BonusType;
+                nplayer.Bang_radius = this.DeadPlayers[i].Bang_radius;
                 nplayer.Color = this.DeadPlayers[i].Color;
                 nplayer.ACTION = this.DeadPlayers[i].ACTION;
 
@@ -512,15 +510,9 @@ namespace ClassLibrary_CGC
             }
 
             return nGameBoard;
-
         } 
 
-
     }
-
-
-
-
 
 
 
@@ -573,6 +565,7 @@ namespace ClassLibrary_CGC
     {
         int liveTime;
         int playerID;
+        int bang_radius;
 
         public Bomb()
         {
@@ -592,6 +585,7 @@ namespace ClassLibrary_CGC
             this.Y = y;
             this.Color = Config.bomb_color;
             this.playerID = pplayer.ID;
+            this.Bang_radius = pplayer.Bang_radius;
         }
 
         public Bomb(Player pplayer)
@@ -600,6 +594,7 @@ namespace ClassLibrary_CGC
             this.Y = pplayer.Y;
             this.Color = Config.bomb_color;
             this.playerID = pplayer.ID;
+            this.Bang_radius = pplayer.Bang_radius;
         }
 
 
@@ -630,13 +625,22 @@ namespace ClassLibrary_CGC
                     liveTime = (int)value;
             }
         }
-    }
 
-    [Serializable]
-    public class Bomb_big : Bomb
-    {
-
-    }
+        public int Bang_radius
+        {
+            get
+            {
+                return bang_radius;
+            }
+            set
+            {
+                if (value>0)
+                {
+                    bang_radius = value;
+                }
+            }
+        }
+    }  
 
 
     [Serializable]
@@ -722,41 +726,22 @@ namespace ClassLibrary_CGC
     public class Lava : GameObject
     {
         int liveTime;
-        int playerID;
-        int radius;
+        int playerID;       
 
         public Lava()
         {
             this.Color = Config.lava_color;
             this.LiveTime = Config.lava_livetime;
         }
+
         public Lava(Bomb pbomb)
         {
             this.Color = Config.lava_color;
             this.LiveTime = Config.lava_livetime;
-            if (pbomb is Bomb_big)
-            {
-                this.Radius = Config.lava_radius_big;
-            }
-            else
-            {
-                this.Radius = Config.lava_radius;
-            }
+            this.PlayerID = pbomb.PlayerID;                       
         }
 
-
-        public int Radius
-        {
-            get
-            {
-                return radius;
-            }
-            set
-            {
-                if (value >= 0)
-                    radius = (int)value;
-            }
-        }
+       
 
         public int PlayerID
         {
@@ -794,7 +779,7 @@ namespace ClassLibrary_CGC
         string name;
         PlayerAction action;
         int points;
-        BonusType bonusType;
+        int bang_radius;
 
         int bombs_count;
 
@@ -804,7 +789,7 @@ namespace ClassLibrary_CGC
             Health = 1;
             ACTION = PlayerAction.Wait;
             BombsCount = Config.player_bombs_count_start;
-            BonusType = BonusType.None;
+            
         }
 
         public Player(int ID)
@@ -813,8 +798,9 @@ namespace ClassLibrary_CGC
             Health = 1;
             ACTION = PlayerAction.Wait;
             BombsCount = Config.player_bombs_count_start;
-            BonusType = BonusType.None;
+            Bang_radius = Config.bang_start_radius;
         }
+
 
         public Player(int ID, string NAME)
         {
@@ -823,7 +809,7 @@ namespace ClassLibrary_CGC
             Health = 1;
             ACTION = PlayerAction.Wait;
             BombsCount = Config.player_bombs_count_start;
-            BonusType = BonusType.None;
+            Bang_radius = Config.bang_start_radius;
         }
 
         public string Name
@@ -856,17 +842,17 @@ namespace ClassLibrary_CGC
             }
         }
 
-        public BonusType BonusType
+        public int Bang_radius
         {
             get
             {
-                return bonusType;
+                return bang_radius;
             }
             set
             {
-                if (value >= 0)
+                if (value > 0)
                 {
-                    bonusType = value;
+                    bang_radius = value;
                 }
             }
         }
@@ -1012,14 +998,12 @@ namespace ClassLibrary_CGC
         public static int gameTicksMax = 300;
 
         public static int bonuses_count = 3;
-        public static int lava_radius = 1;
-        public static int lava_radius_big = 2;
+        public static int bang_start_radius = 1;
         public static int lava_livetime = 2;
         public static int bomb_live_time = 3;
         
         public static int player_health = 3;
         public static int player_bombs_count_start = 1;
-        public static int player_bombs_count_max = 3;
 
         public static int player_kill_points = 20;
         public static int player_survive_points = 20;

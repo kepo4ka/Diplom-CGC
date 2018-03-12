@@ -167,8 +167,9 @@ namespace Bomber_wpf
             pplayer.Points = 0;
             //    pplayer.Health = Config.player_health;
             pplayer.Health = 15;
-            pplayer.BonusType = BonusType.None;
+            pplayer.Bang_radius = Config.bang_start_radius;
             pplayer.BombsCount = Config.player_bombs_count_start;
+            pplayer.Bang_radius = 3;
 
             switch (i)
             {
@@ -296,6 +297,25 @@ namespace Bomber_wpf
             //};
             //gb.Bombs.Add(test);
 
+            Bonus_big test = new Bonus_big(0, 1);
+            test.Visible = true;
+            Bonus_big test1 = new Bonus_big(1, 0);
+            test1.Visible = true;
+
+            
+
+            gb.Bonuses.Add(test);
+            gb.Bonuses.Add(test1);
+
+            LogUpdate(gb.Bonuses.Count + "");
+
+
+
+
+
+
+
+
             int tplayers_index = 0;
 
             while (clients.Count < tconnected_clients_count)
@@ -308,6 +328,7 @@ namespace Bomber_wpf
                 tplayers_index++;
               //  MessageBox.Show("Клиент подключился");
             }
+            
 
             SendGameInfo();
 
@@ -409,7 +430,7 @@ namespace Bomber_wpf
                     tplayer.Points.ToString(),
                     tplayer.ACTION.ToString(),
                     tplayer.BombsCount.ToString(),
-                    tplayer.BonusType.ToString(),
+                    tplayer.Bang_radius.ToString(),
                     tplayer.X.ToString(),
                     tplayer.Y.ToString()
                 });
@@ -426,7 +447,7 @@ namespace Bomber_wpf
                     tplayer.Points.ToString(),
                     tplayer.ACTION.ToString(),
                     tplayer.BombsCount.ToString(),
-                    tplayer.BonusType.ToString(),
+                    tplayer.Bang_radius.ToString(),
                     tplayer.X.ToString(),
                     tplayer.Y.ToString()
                 });
@@ -452,7 +473,7 @@ namespace Bomber_wpf
             players_listView.Columns.Add("Points");
             players_listView.Columns.Add("PlayerAction");
             players_listView.Columns.Add("BombsCount");
-            players_listView.Columns.Add("Bonus");
+            players_listView.Columns.Add("BangRadius");
             players_listView.Columns.Add("X");
             players_listView.Columns.Add("Y");
 
@@ -463,7 +484,7 @@ namespace Bomber_wpf
             dead_players_listvView.Columns.Add("Points");
             dead_players_listvView.Columns.Add("PlayerAction");
             dead_players_listvView.Columns.Add("BombsCount");
-            dead_players_listvView.Columns.Add("Bonus");
+            dead_players_listvView.Columns.Add("BangRadius");
             dead_players_listvView.Columns.Add("X");
             dead_players_listvView.Columns.Add("Y");
 
@@ -477,7 +498,7 @@ namespace Bomber_wpf
                     tplayer.Points.ToString(),
                     tplayer.ACTION.ToString(),
                     tplayer.BombsCount.ToString(),
-                    tplayer.BonusType.ToString(),
+                    tplayer.Bang_radius.ToString(),
                     tplayer.X.ToString(),
                     tplayer.Y.ToString()
                 });
@@ -528,7 +549,7 @@ namespace Bomber_wpf
             for (int i = 0; i < gb.Players.Count; i++)
             {
                 var tplayer = gb.Players[i];
-                PaintEllipse(tplayer.X, tplayer.Y, tplayer.Color);
+                PaintPlayer(tplayer.X, tplayer.Y, tplayer.Color);
             }
         }
 
@@ -551,45 +572,8 @@ namespace Bomber_wpf
         {
             for (int k = 0; k < gb.Lavas.Count; k++)
             {
-                var tlava = gb.Lavas[k];              
-
-                for (int i = tlava.X; i <= tlava.X + tlava.Radius; i++)
-                {
-                    if (i < 0 || i > gb.W - 1 || gb.Cells[i, tlava.Y] is Cell_indestructible)
-                    {
-                        break;
-                    }
-                    PaintRect(i, tlava.Y, Config.lava_color);
-                }
-
-                for (int i = tlava.X; i >= tlava.X - tlava.Radius; i--)
-                {
-                    if (i < 0 || i > gb.W - 1 || gb.Cells[i, tlava.Y] is Cell_indestructible)
-                    {
-                        break;
-                    }
-                    PaintRect(i, tlava.Y, Config.lava_color);
-                }
-
-                for (int j = tlava.Y; j <= tlava.Y + tlava.Radius; j++)
-                {
-                    if (j < 0 || j > gb.H - 1 || gb.Cells[tlava.X, j] is Cell_indestructible)
-                    {
-                        break;
-                    }
-
-                    PaintRect(tlava.X, j, Config.lava_color);
-                }
-
-                for (int j = tlava.Y; j >= tlava.Y - tlava.Radius; j--)
-                {
-                    if (j < 0 || j > gb.H - 1 || gb.Cells[tlava.X, j] is Cell_indestructible)
-                    {
-                        break;
-                    }
-
-                    PaintRect(tlava.X, j, Config.lava_color);
-                }
+                var tlava = gb.Lavas[k];
+                PaintRect(tlava.X, tlava.Y, Config.lava_color);               
             }
         }
 
@@ -902,40 +886,11 @@ namespace Bomber_wpf
 
                     if (tempbonus[i,j] is Bonus_big)
                     {
-                        switch (tvitya.BonusType)
-                        {
-                            case BonusType.None:
-                                tvitya.BonusType = BonusType.BigBomb;
-                                break;
-
-                            case BonusType.Ammunition:
-                                tvitya.BonusType = BonusType.All;
-                                if (tvitya.BombsCount + 1 <= Config.player_bombs_count_max)
-                                {
-                                    tvitya.BombsCount++;
-                                }
-                                break;
-                        }
+                        tvitya.Bang_radius++;
                     }
                     else if (tempbonus[i,j] is Bonus_fast)
                     {
-                        switch (tvitya.BonusType)
-                        {
-                            case BonusType.None:
-                                tvitya.BonusType = BonusType.Ammunition;
-                                break;
-
-                            case BonusType.BigBomb:
-                                tvitya.BonusType = BonusType.All;
-                                break;
-
-                            default:
-                                if (tvitya.BombsCount+1<=Config.player_bombs_count_max)
-                                {
-                                    tvitya.BombsCount++;
-                                }
-                                break;
-                        }
+                        tvitya.BombsCount++;
                     }
                     gb.Bonuses.Remove(tempbonus[i, j]);
                     tempbonus[i, j] = null;
@@ -1108,21 +1063,21 @@ namespace Bomber_wpf
 
   
 
-        /// <summary>
-        /// Перезарядка игроков
-        /// </summary>
-        /// <param name="_player"></param>
-        public void PlayerReload(Player _player)
-        {
-            if (_player.BonusType == BonusType.Ammunition || _player.BonusType == BonusType.All)
-            {
-                _player.BombsCount = Config.player_bombs_count_max;
-            }
-            else
-            {
-                _player.BombsCount = Config.player_bombs_count_start;
-            }
-        }
+        ///// <summary>
+        ///// Перезарядка игроков
+        ///// </summary>
+        ///// <param name="_player"></param>
+        //public void PlayerReload(Player _player)
+        //{
+        //    if (_player.BonusType == BonusType.Ammunition || _player.BonusType == BonusType.All)
+        //    {
+        //        _player.BombsCount = Config.player_bombs_count_max;
+        //    }
+        //    else
+        //    {
+        //        _player.BombsCount = Config.player_bombs_count_start;
+        //    }
+        //}
 
    
 
@@ -1132,20 +1087,13 @@ namespace Bomber_wpf
         /// <param name="_player">Игрок, создающий бомбу</param>
         public void CreateBomb(Player _player)
         {
-            Bomb tbomb;
-            if (_player.BonusType == BonusType.BigBomb || _player.BonusType == BonusType.All)
-            {
-                tbomb = new Bomb_big();
-            }
-            else
-            {
-                tbomb = new Bomb();                
-            }
+            Bomb tbomb= new Bomb();              
 
             tbomb.LiveTime = Config.bomb_live_time;
             tbomb.PlayerID = _player.ID;
             tbomb.X = _player.X;
             tbomb.Y = _player.Y;
+            tbomb.Bang_radius = _player.Bang_radius;
 
             gb.Bombs.Add(tbomb);
         }
@@ -1367,7 +1315,6 @@ namespace Bomber_wpf
         public void LavasProccess()
         {
 
-            LogUpdate("LavasProccess, lavasCount перед проверкой " + gb.Lavas.Count);
 
             for (int k = 0; k < gb.Lavas.Count; k++)
             {
@@ -1381,7 +1328,6 @@ namespace Bomber_wpf
                 tlava.LiveTime--;
             }
 
-            LogUpdate("LavasProccess, lavasCountпосле проверки " + gb.Lavas.Count);
 
         }
 
@@ -1415,14 +1361,9 @@ namespace Bomber_wpf
         /// <param name="_bomb"></param>
         public void GenerateLava(Bomb _bomb)
         {
-            int tradius = Config.lava_radius;
+            int tradius = _bomb.Bang_radius;
 
-            if (_bomb is Bomb_big)
-            {
-                tradius = Config.lava_radius_big;
-            }
-
-            for (int i = _bomb.X+1; i <= _bomb.X + tradius; i++)
+            for (int i = _bomb.X + 1; i <= _bomb.X + tradius; i++)
             {
                 if (i < 0 || i > gb.W - 1 || gb.Cells[i, _bomb.Y] is Cell_indestructible)
                 {
@@ -1441,7 +1382,7 @@ namespace Bomber_wpf
 
 
             for (int i = _bomb.X; i >= _bomb.X - tradius; i--)
-           { 
+            {
                 if (i < 0 || i > gb.W - 1 || gb.Cells[i, _bomb.Y] is Cell_indestructible)
                 {
                     break;
@@ -1458,7 +1399,7 @@ namespace Bomber_wpf
             }
 
 
-            for (int j = _bomb.Y+1; j <= _bomb.Y + tradius; j++)
+            for (int j = _bomb.Y + 1; j <= _bomb.Y + tradius; j++)
             {
                 if (j < 0 || j > gb.H - 1 || gb.Cells[_bomb.X, j] is Cell_indestructible)
                 {
@@ -1476,7 +1417,7 @@ namespace Bomber_wpf
             }
 
 
-            for (int j = _bomb.Y-1; j >= _bomb.Y - tradius; j--)
+            for (int j = _bomb.Y - 1; j >= _bomb.Y - tradius; j--)
             {
                 if (j < 0 || j > gb.H - 1 || gb.Cells[_bomb.X, j] is Cell_indestructible)
                 {
@@ -1522,7 +1463,7 @@ namespace Bomber_wpf
         public void PaintBomb(int x, int y, Color cl)
         {
             sb = new SolidBrush(cl);
-            g.FillEllipse(new SolidBrush(cl), x * cw + cw/6, y * cw+ cw/6, cw-cw/3, cw-cw/3);
+            g.FillEllipse(new SolidBrush(cl), x * cw + cw/4, y * cw+ cw/4, cw-cw/2, cw-cw/2);
         }
 
         /// <summary>
@@ -1536,6 +1477,23 @@ namespace Bomber_wpf
             sb = new SolidBrush(cl);
             g.FillEllipse(new SolidBrush(cl), x * cw, y * cw, cw, cw);
         }
+
+
+        /// <summary>
+        /// Нариросовать эллипс
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="cl"></param>
+        public void PaintPlayer(int x, int y, Color cl)
+        {
+            sb = new SolidBrush(cl);
+            float zoomed = Convert.ToSingle(0.7);
+            g.FillEllipse(new SolidBrush(Color.Black), x * cw, y * cw, cw, cw);
+
+            g.FillEllipse(new SolidBrush(cl), x * cw + cw / 10, y * cw + cw / 10, cw - cw / 5, cw - cw / 5);      
+        }
+
 
         /// <summary>
         /// нарисовать квадрат
