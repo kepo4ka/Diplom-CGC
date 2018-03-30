@@ -573,7 +573,7 @@ namespace ClassLibrary_CGC
     public class Bomb : GameObject
     {
         int liveTime;
-        int playerID;
+        string playerID;
         int bang_radius;
 
         public Bomb()
@@ -607,7 +607,7 @@ namespace ClassLibrary_CGC
         }
 
 
-        public int PlayerID
+        public string PlayerID
         {
             get
             {
@@ -616,8 +616,8 @@ namespace ClassLibrary_CGC
 
             set
             {
-                if (value >= 0)
-                    playerID = (int)value;
+                if (value.Length>0 && value != "")
+                    playerID = value;
             }
         }
 
@@ -735,7 +735,7 @@ namespace ClassLibrary_CGC
     public class Lava : GameObject
     {
         int liveTime;
-        int playerID;       
+        string playerID;       
 
         public Lava()
         {
@@ -752,7 +752,7 @@ namespace ClassLibrary_CGC
 
        
 
-        public int PlayerID
+        public string PlayerID
         {
             get
             {
@@ -760,8 +760,8 @@ namespace ClassLibrary_CGC
             }
             set
             {
-                if (value >= 0)
-                    playerID = (int)value;
+                if (value.Length>0 && value!= "")
+                    playerID = value;
             }
         }
 
@@ -784,7 +784,7 @@ namespace ClassLibrary_CGC
     public class Player : GameObject
     {
         int health;
-        int id;
+        string id;
         string name;
         PlayerAction action;
         int points;
@@ -801,7 +801,7 @@ namespace ClassLibrary_CGC
             
         }
 
-        public Player(int ID)
+        public Player(string ID)
         {
             this.ID = ID;
             Health = 1;
@@ -811,7 +811,7 @@ namespace ClassLibrary_CGC
         }
 
 
-        public Player(int ID, string NAME)
+        public Player(string ID, string NAME)
         {
             this.ID = ID;
             this.Name = NAME;
@@ -881,7 +881,7 @@ namespace ClassLibrary_CGC
             }
         }
 
-        public int ID
+        public string ID
         {
             get
             {
@@ -889,7 +889,7 @@ namespace ClassLibrary_CGC
             }
             set
             {
-                if (value >= 0)
+                if (value.Length>0 && value != "")
                 {
                     id = value;
                 }
@@ -1053,12 +1053,11 @@ namespace ClassLibrary_CGC
         public static int bonuses_count = 3;
         public static int bang_start_radius = 1;
         public static int lava_livetime = 2;
-        public static int bomb_live_time = 3;
+        public static int bomb_live_time = 3;        
         
-        public static int player_health = 3;
         public static int player_bombs_count_start = 1;
 
-        public static int player_kill_points = 20;
+       // public static int player_kill_points = 20;
         public static int player_survive_points = 20;
         public static int player_cell_destroy_points = 1;
         public static int player_win_points = 100;

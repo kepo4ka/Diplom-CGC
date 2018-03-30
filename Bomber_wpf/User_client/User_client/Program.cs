@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Drawing;
 using ClassLibrary_CGC;
 using User_class;
 using System.Threading;
@@ -25,23 +19,20 @@ namespace User_client
 
         static void Main(string[] args)
         {           
-            Connect();           
-
-            CommunicateWithServer();
-           
+            Connect();         
+            CommunicateWithServer();           
         }
 
+
+        /// <summary>
+        /// Подключиться к серверу
+        /// </summary>
         static void Connect()
         {
             try
-            {               
-                //  gameBoard = new GameBoard();                
-
+            {        
                 server = new TcpClient(serverIp, 9595);
-           //     Console.WriteLine("Удалось подключиться к серверу");
-
-                connected = true;
-              
+                connected = true;              
             }
             catch 
             {
@@ -51,7 +42,9 @@ namespace User_client
             }
         }
 
-
+        /// <summary>
+        /// Общение с сервером
+        /// </summary>
         static void CommunicateWithServer()
         {
             while (connected)
@@ -76,7 +69,6 @@ namespace User_client
                     connected = false;
                     server.Close();
                     Application.Exit();
-
                 }
             }
         }

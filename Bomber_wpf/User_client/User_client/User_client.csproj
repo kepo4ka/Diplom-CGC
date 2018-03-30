@@ -45,8 +45,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="User_class">
-      <HintPath>..\..\User_class\User_class\bin\Debug\User_class.dll</HintPath>
+    <Reference Include="User_class, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\User_class.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

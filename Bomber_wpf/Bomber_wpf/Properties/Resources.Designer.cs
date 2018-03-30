@@ -59,25 +59,5 @@ namespace Bomber_wpf.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Поиск локализованного ресурса типа System.Byte[].
-        /// </summary>
-        public static byte[] ClassLibrary_CGC_dll {
-            get {
-                object obj = ResourceManager.GetObject("ClassLibrary_CGC_dll", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Поиск локализованного ресурса типа System.Byte[].
-        /// </summary>
-        public static byte[] User_class_dll {
-            get {
-                object obj = ResourceManager.GetObject("User_class_dll", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using ClassLibrary_CGC;
 
 namespace User_class
@@ -18,7 +17,7 @@ namespace User_class
             /*
                  Код пользователя
             */
-
+            
             return action;
         }
     }

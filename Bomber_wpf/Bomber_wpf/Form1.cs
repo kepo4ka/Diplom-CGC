@@ -36,6 +36,7 @@ namespace Bomber_wpf
         List<GameBoard> savedGameBoardStates = new List<GameBoard>();
         int visualizeGameCadrNumber = 0;
 
+
         Color[] player_colors = new Color[4]
         {
             Color.PaleVioletRed, Color.Green, Color.HotPink, Color.Aqua
@@ -43,7 +44,10 @@ namespace Bomber_wpf
 
         bool isGameOver = false;
 
-        bool testbool = false;
+        Random rn = new Random();
+
+
+
 
         /// <summary>
         /// Игра в реальном времени
@@ -159,14 +163,13 @@ namespace Bomber_wpf
             {
                 pplayer = new User();
                 pplayer.Name = "User_" + (i + 1);
-            }
+            }                        
 
-
-            pplayer.ID = i;
+            pplayer.ID = CalculateMD5Hash(DateTime.Now.Millisecond * rn.NextDouble() + "JOPA" + pplayer.Name);
             pplayer.Color = player_colors[i];
             pplayer.Points = 0;
             //    pplayer.Health = Config.player_health;
-            pplayer.Health = 15;
+            pplayer.Health = 1;
             pplayer.Bang_radius = Config.bang_start_radius;
             pplayer.BombsCount = Config.player_bombs_count_start;
             pplayer.Bang_radius = 3;
@@ -1173,7 +1176,7 @@ namespace Bomber_wpf
                 var tplayer = gb.Players[i];
                 if (tplayer.ID != plava.PlayerID)
                 {
-                    tplayer.Points += Config.player_kill_points;
+                 //   tplayer.Points += Config.player_kill_points;
                     break;
                 }
             }
