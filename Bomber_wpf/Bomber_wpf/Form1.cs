@@ -59,9 +59,9 @@ namespace Bomber_wpf
             IPAddress ip = IPAddress.Parse(serverIp);
             server = new TcpListener(ip, 9595);
             server.Start();
-            startPage = pstartPage; 
-            
-            InitGame();            
+            startPage = pstartPage;
+
+            InitGame();
         }
 
 
@@ -96,8 +96,8 @@ namespace Bomber_wpf
                     string tfilename = SpliteEndPath(startPage.paths[i]);
                     CompileAndStartUserFiles(tfilename);
                     clients_count++;
-                }               
-            }        
+                }
+            }
         }
 
         /// <summary>
@@ -112,9 +112,9 @@ namespace Bomber_wpf
 
             int tindex = ppath.Length - 1;
 
-            for (; tindex >=0; tindex--)
+            for (; tindex >= 0; tindex--)
             {
-                if (ppath[tindex]=='.')
+                if (ppath[tindex] == '.')
                 {
                     break;
                 }
@@ -123,7 +123,7 @@ namespace Bomber_wpf
             tindex--;
 
             for (; tindex >= 0; tindex--)
-            {              
+            {
 
                 if (ppath[tindex] == '\\')
                 {
@@ -153,14 +153,14 @@ namespace Bomber_wpf
             if (ppaths[i] == "")
             {
                 pplayer = new Bot();
-                pplayer.Name = "bot_" + (i + 1);
+                pplayer.Name = "Bot_" + (i + 1);
             }
             else
             {
-                pplayer = new User();                
+                pplayer = new User();
                 pplayer.Name = "User_" + (i + 1);
             }
-            
+
 
             pplayer.ID = i;
             pplayer.Color = player_colors[i];
@@ -194,7 +194,7 @@ namespace Bomber_wpf
         }
 
 
- 
+
         /// <summary>
         /// Запуск визуализации сохраннённой игры
         /// </summary>
@@ -221,16 +221,16 @@ namespace Bomber_wpf
         /// </summary>
         public void NextTickInVisualizingGame()
         {
-            visualizeGameCadrNumber = savedGameBoardStates.Count - GameTimer;            
+            visualizeGameCadrNumber = savedGameBoardStates.Count - GameTimer;
             gb = savedGameBoardStates[visualizeGameCadrNumber];
-            
+
             panel1.Refresh();
             UpdateListView();
 
             this.Text = "Тик - " + GameTimer;
             DrawAll();
 
-            CheckVisualizingGameOver();            
+            CheckVisualizingGameOver();
             GameTimer--;
         }
 
@@ -239,7 +239,7 @@ namespace Bomber_wpf
         /// </summary>
         public void CheckVisualizingGameOver()
         {
-            if (GameTimer<=1)
+            if (GameTimer <= 1)
             {
                 VisualizingGameOver();
             }
@@ -275,13 +275,13 @@ namespace Bomber_wpf
         /// Начать сеанс игры
         /// </summary>
         public void InitGame()
-        {        
-            clients.Clear();      
+        {
+            clients.Clear();
             gameBoardStates.Clear();
 
-            isGameOver = false;    
-            
-            GameTimer = Config.gameTicksMax;           
+            isGameOver = false;
+
+            GameTimer = Config.gameTicksMax;
             gb = new GameBoard();
             int tconnected_clients_count;
 
@@ -302,7 +302,7 @@ namespace Bomber_wpf
             Bonus_big test1 = new Bonus_big(1, 0);
             test1.Visible = true;
 
-            
+
 
             gb.Bonuses.Add(test);
             gb.Bonuses.Add(test1);
@@ -326,9 +326,9 @@ namespace Bomber_wpf
                     clients.Add(gb.Players[tplayers_index], server.AcceptTcpClient());
                 }
                 tplayers_index++;
-              //  MessageBox.Show("Клиент подключился");
+                //  MessageBox.Show("Клиент подключился");
             }
-            
+
 
             SendGameInfo();
 
@@ -349,9 +349,8 @@ namespace Bomber_wpf
         {
             try
             {
-                Dictionary<Player, TcpClient> tclients = clients;
 
-                foreach (var tclient in tclients)
+                foreach (var tclient in clients)
                 {
                     try
                     {
@@ -365,7 +364,6 @@ namespace Bomber_wpf
                     }
                     catch
                     {
-                        PlayerDeath(tclient.Key);
                         PlayerDisconnect(tclient.Value);
                     }
                 }
@@ -396,21 +394,20 @@ namespace Bomber_wpf
                             gb.Players.Find(c => c.ID == nplayer.ID).ACTION = nplayer.ACTION;
                         }
                     }
-                    catch (Exception e)
+                    catch
                     {
-                        PlayerDeath(tclient.Key);
                         PlayerDisconnect(tclient.Value);
                     }
                 }
             }
-            catch 
+            catch
             {
                 LogUpdate("ОШИБКА при перечислении списка Юзеров");
             }
         }
 
 
-        
+
 
         /// <summary>
         /// Обновить информацию о живых игроках
@@ -418,7 +415,6 @@ namespace Bomber_wpf
         public void UpdateListView()
         {
             players_listView.Items.Clear();
-            dead_players_listvView.Items.Clear();
 
             for (int i = 0; i < gb.Players.Count; i++)
             {
@@ -437,24 +433,8 @@ namespace Bomber_wpf
                 players_listView.Items.Add(item);
             }
 
-            for (int i = 0; i < gb.DeadPlayers.Count; i++)
-            {
-                var tplayer = gb.DeadPlayers[i];
-
-                var item = new ListViewItem(new[] {
-                    tplayer.Name, tplayer.ID.ToString(),
-                    tplayer.Health.ToString(),
-                    tplayer.Points.ToString(),
-                    tplayer.ACTION.ToString(),
-                    tplayer.BombsCount.ToString(),
-                    tplayer.Bang_radius.ToString(),
-                    tplayer.X.ToString(),
-                    tplayer.Y.ToString()
-                });
-                dead_players_listvView.Items.Add(item);
-            }
         }
-       
+
 
         /// <summary>
         /// Задать списки игроков
@@ -462,10 +442,10 @@ namespace Bomber_wpf
         public void initListView()
         {
             players_listView.Clear();
-            dead_players_listvView.Clear();
+
 
             players_listView.View = View.Details;
-            dead_players_listvView.View = View.Details;
+
 
             players_listView.Columns.Add("Name");
             players_listView.Columns.Add("ID");
@@ -476,17 +456,6 @@ namespace Bomber_wpf
             players_listView.Columns.Add("BangRadius");
             players_listView.Columns.Add("X");
             players_listView.Columns.Add("Y");
-
-
-            dead_players_listvView.Columns.Add("Name");
-            dead_players_listvView.Columns.Add("ID");
-            dead_players_listvView.Columns.Add("Health");
-            dead_players_listvView.Columns.Add("Points");
-            dead_players_listvView.Columns.Add("PlayerAction");
-            dead_players_listvView.Columns.Add("BombsCount");
-            dead_players_listvView.Columns.Add("BangRadius");
-            dead_players_listvView.Columns.Add("X");
-            dead_players_listvView.Columns.Add("Y");
 
             for (int i = 0; i < gb.Players.Count; i++)
             {
@@ -521,7 +490,7 @@ namespace Bomber_wpf
             DrawBonuses();
             DrawPlayers();
             DrawBombs();
-            DrawGrid();           
+            DrawGrid();
         }
 
         /// <summary>
@@ -547,9 +516,12 @@ namespace Bomber_wpf
         public void DrawPlayers()
         {
             for (int i = 0; i < gb.Players.Count; i++)
-            {
+            {                
                 var tplayer = gb.Players[i];
-                PaintPlayer(tplayer.X, tplayer.Y, tplayer.Color);
+                if (tplayer.Health > 0)
+                {
+                    PaintPlayer(tplayer.X, tplayer.Y, tplayer.Color);
+                }
             }
         }
 
@@ -573,7 +545,7 @@ namespace Bomber_wpf
             for (int k = 0; k < gb.Lavas.Count; k++)
             {
                 var tlava = gb.Lavas[k];
-                PaintRect(tlava.X, tlava.Y, Config.lava_color);               
+                PaintRect(tlava.X, tlava.Y, Config.lava_color);
             }
         }
 
@@ -588,7 +560,7 @@ namespace Bomber_wpf
 
             BombsProccess();
             LavasProccess();
-            LavaCollision();                        
+            LavaCollision();
         }
 
 
@@ -607,7 +579,7 @@ namespace Bomber_wpf
 
                 this.Text = "Тик - " + GameTimer;
 
-                GameProccess();                            
+                GameProccess();
                 DrawAll();
 
                 gameBoardStates.Add((GameBoard)gb.Clone());
@@ -621,7 +593,7 @@ namespace Bomber_wpf
 
 
         public void panel1_Paint(object sender, PaintEventArgs e)
-        {     
+        {
 
         }
 
@@ -640,7 +612,7 @@ namespace Bomber_wpf
 
                     for (int ii = 0; ii < gb.Players.Count; ii++)
                     {
-                        if (gb.Players[ii].X == i && gb.Players[ii].Y ==j)
+                        if (gb.Players[ii].X == i && gb.Players[ii].Y == j)
                         {
                             tXYInfo.Player = gb.Players[ii];
                             break;
@@ -657,7 +629,7 @@ namespace Bomber_wpf
                             if (gb.Lavas[ii].LiveTime >= tmaxLiveTime)
                             {
                                 tmaxLiveTime = gb.Lavas[ii].LiveTime;
-                                tXYInfo.Lava = gb.Lavas[ii];                                
+                                tXYInfo.Lava = gb.Lavas[ii];
                             }
                         }
                     }
@@ -665,7 +637,7 @@ namespace Bomber_wpf
 
                     for (int ii = 0; ii < gb.Bonuses.Count; ii++)
                     {
-                        if (gb.Bonuses[ii].X == i && gb.Bonuses[ii].Y ==j)
+                        if (gb.Bonuses[ii].X == i && gb.Bonuses[ii].Y == j)
                         {
                             tXYInfo.Bonus = gb.Bonuses[ii];
                             break;
@@ -689,7 +661,7 @@ namespace Bomber_wpf
         /// <summary>
         /// Окончание игры: вывод и сохранение информации
         /// </summary>
-        public void GameOver()
+        public void GameOver(List<Player> winners)
         {
             isGameOver = true;
 
@@ -704,43 +676,23 @@ namespace Bomber_wpf
             var result = DialogResult.No;
             string message = "";
 
+           winners.Sort((a, b) => a.Health.CompareTo(b.Health));
 
-            if (gb.Players.Count == 1)
+            if (GameTimer<1)
             {
-                gb.Players[0].Points += Config.player_win_points;
-
-                message = "Всех порешал игрок - " + gb.Players[0].Name + ", количество Очков - " + gb.Players[0].Points + ". \n";
+                message += "ВРЕМЯ И СТЕКЛО \n";
             }
-            else if (gb.Players.Count < 1)
+
+            message += "Игроки: \n";
+
+            for (int i = 0; i < gb.Players.Count; i++)
             {
-                message = "Игроки погибли одновременно. \n";
-            }
-            else if (GameTimer < 1)
-            {
-                message = "Время истекло. \n";
-                message += "Выжившие Игроки и их Очки: \n";
-
-                for (int i = 0; i < gb.Players.Count; i++)
-                {
-                    var tplayer = gb.Players[i];
-                    tplayer.Points += Config.player_survive_points;
-
-                    message += tplayer.Name + ": " + tplayer.Points + " \n";
-                }
-
-                message += "Мёртвые Игроки и их Очки: \n";
-                for (int i = 0; i < gb.DeadPlayers.Count; i++)
-                {
-                    var tplayer = gb.DeadPlayers[i];
-                    message += tplayer.Name + ": " + tplayer.Points + " \n";
-                }
+                message += gb.Players[i].Name + ": " + gb.Players[i].Points + " (баллы)";
             }
 
             gameBoardStates.Add(gb);
 
             SaveGameInfoFile();
-
-
 
             message += "Начать заново?";
 
@@ -751,20 +703,19 @@ namespace Bomber_wpf
             if (result == DialogResult.Yes)
             {
                 this.Close();
-                
+
                 this.startPage.OpenRealGameForm();
             }
             else
             {
                 this.Hide();
-                startPage.Show();                
-            }          
+                startPage.Show();
+            }
         }
 
+        
 
 
-
-       
         /// <summary>
         /// Проверить наступили ли условия для наступления Конца игры
         /// </summary>
@@ -772,9 +723,11 @@ namespace Bomber_wpf
         {
             if (isGameOver == false)
             {
-                if (GameTimer < 1 || gb.Players.Count <= 1)
-                {                
-                    GameOver();
+                List<Player> winners = gb.Players.FindAll(c => c.Health > 0);
+
+                if (GameTimer < 1 || winners.Count<2)
+                {
+                    GameOver(winners);
                 }
             }
         }
@@ -823,7 +776,7 @@ namespace Bomber_wpf
         /// <returns></returns>
         private List<Player> GetPlayerResult()
         {
-            if (gameBoardStates.Count<1)
+            if (gameBoardStates.Count < 1)
             {
                 return null;
             }
@@ -836,13 +789,7 @@ namespace Bomber_wpf
             {
                 var tplayer = lastGameBoardState.Players[i];
                 players.Add(tplayer);
-            }
-
-            for (int i = 0; i < lastGameBoardState.DeadPlayers.Count; i++)
-            {
-                var tplayer = lastGameBoardState.DeadPlayers[i];
-                players.Add(tplayer);
-            }
+            }       
 
             return players;
         }
@@ -885,9 +832,15 @@ namespace Bomber_wpf
             for (int i = 0; i < gb.Players.Count; i++)
             {
                 var tvitya = gb.Players[i];
+
+                if (tvitya.Health == 0)
+                {
+                    continue;
+                }
+
                 if (tvitya is Bot)
                 {
-                     tvitya.ACTION = tvitya.Play();                   
+                    tvitya.ACTION = tvitya.Play();
                 }
 
                 PlayerFire(tvitya);
@@ -900,12 +853,12 @@ namespace Bomber_wpf
                 };
                 PlayerMove(tempplayer);
                 tempplayers.Add(tempplayer);
-            }          
+            }
 
             for (int i = 0; i < tempplayers.Count; i++)
             {
                 var tvitya1 = tempplayers[i];
-                for (int j = i+1; j < tempplayers.Count; j++)
+                for (int j = i + 1; j < tempplayers.Count; j++)
                 {
                     var tvitya2 = tempplayers[j];
                     if (tvitya1.X == tvitya2.X && tvitya1.Y == tvitya2.Y)
@@ -913,7 +866,7 @@ namespace Bomber_wpf
                         gb.Players[i].ACTION = PlayerAction.Wait;
                         gb.Players[j].ACTION = PlayerAction.Wait;
                     }
-                    if (tvitya2.X == gb.Players[i].X  && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
+                    if (tvitya2.X == gb.Players[i].X && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
                     {
                         gb.Players[i].ACTION = PlayerAction.Wait;
                         gb.Players[j].ACTION = PlayerAction.Wait;
@@ -923,7 +876,12 @@ namespace Bomber_wpf
 
             for (int i = 0; i < gb.Players.Count; i++)
             {
-                PlayerMove(gb.Players[i]);
+                if (gb.Players[i].Health > 0)
+                {
+                    PlayerMove(gb.Players[i]);
+                }
+
+                gb.Players[i].ACTION = PlayerAction.Wait;
             }
         }
 
@@ -934,24 +892,29 @@ namespace Bomber_wpf
         public void PlayerBonusCollision()
         {
             Bonus[,] tempbonus = ListToMass(gb.Bonuses);
-           
+
             for (int k = 0; k < gb.Players.Count; k++)
             {
                 var tvitya = gb.Players[k];
 
+                if (tvitya.Health < 1)
+                {
+                    continue;
+                }
+
                 int i = tvitya.X;
                 int j = tvitya.Y;
 
-                if(tempbonus[i,j] != null && tempbonus[i,j].Visible == true)
+                if (tempbonus[i, j] != null && tempbonus[i, j].Visible == true)
                 {
 
                     tvitya.Points += Config.player_bonus_find_points;
 
-                    if (tempbonus[i,j] is Bonus_big)
+                    if (tempbonus[i, j] is Bonus_big)
                     {
                         tvitya.Bang_radius++;
                     }
-                    else if (tempbonus[i,j] is Bonus_fast)
+                    else if (tempbonus[i, j] is Bonus_fast)
                     {
                         tvitya.BombsCount++;
                     }
@@ -978,7 +941,7 @@ namespace Bomber_wpf
             }
             return tbombs_mass;
         }
-        
+
         /// <summary>
         /// Перевести список в матрицу координат игроков
         /// </summary>
@@ -1024,7 +987,7 @@ namespace Bomber_wpf
         /// </summary>
         /// <param name="pplayer">Игрок, действие которого планируется выполнить</param>
         public void PlayerMove(Player pplayer)
-        {           
+        {
             Bomb[,] tbombs_mass = ListToMass(gb.Bombs);
             switch (pplayer.ACTION)
             {
@@ -1119,12 +1082,12 @@ namespace Bomber_wpf
                 {
                     CreateBomb(pplayer);
                     pplayer.BombsCount--;
-                }             
+                }
             }
         }
 
 
-  
+
 
         ///// <summary>
         ///// Перезарядка игроков
@@ -1142,7 +1105,7 @@ namespace Bomber_wpf
         //    }
         //}
 
-   
+
 
         /// <summary>
         /// Создать бомбу на месте игрока
@@ -1150,7 +1113,7 @@ namespace Bomber_wpf
         /// <param name="_player">Игрок, создающий бомбу</param>
         public void CreateBomb(Player _player)
         {
-            Bomb tbomb= new Bomb();              
+            Bomb tbomb = new Bomb();
 
             tbomb.LiveTime = Config.bomb_live_time;
             tbomb.PlayerID = _player.ID;
@@ -1161,22 +1124,27 @@ namespace Bomber_wpf
             gb.Bombs.Add(tbomb);
         }
 
-     
+
 
         /// <summary>
         /// Обработать состояния бомб
         /// </summary>
         public void BombsProccess()
-        {          
+        {
             for (int i = 0; i < gb.Bombs.Count; i++)
             {
                 var tbomb = gb.Bombs[i];
                 if (tbomb.LiveTime < 1)
                 {
-                   // gb.Players.Find(c => c.ID == tbomb.PlayerID).BombsCount++;
+                    // gb.Players.Find(c => c.ID == tbomb.PlayerID).BombsCount++;
 
                     for (int j = 0; j < gb.Players.Count; j++)
                     {
+                        if (gb.Players[i].Health<1)
+                        {
+                            continue;
+                        }
+
                         if (gb.Players[j].ID == tbomb.PlayerID)
                         {
                             gb.Players[j].BombsCount++;
@@ -1234,12 +1202,13 @@ namespace Bomber_wpf
         /// </summary>
         /// <param name="pplayer"></param>
         /// <param name="plava"></param>
-        public void PlayerKill(Player pplayer, Lava plava)
+        public void PlayerKill(Player pplayer)
         {
             //if (plava.PlayerID != pplayer.ID)
             //{
             //    PlayerAddPointsKill(plava);
             //}
+            pplayer.Health = 0;
 
             if (pplayer is User)
             {
@@ -1248,7 +1217,7 @@ namespace Bomber_wpf
 
             clients[pplayer] = null;
 
-            PlayerDeath(pplayer);
+            //   PlayerDeath(pplayer);
         }
 
         /// <summary>
@@ -1258,7 +1227,6 @@ namespace Bomber_wpf
         public void PlayerDeath(Player pplayer)
         {
             gb.Players.Remove(pplayer);
-            gb.DeadPlayers.Add(pplayer);
         }
 
 
@@ -1293,13 +1261,13 @@ namespace Bomber_wpf
         /// </summary>
         /// <param name="pclient"></param>
         public void Disconnect()
-        {          
+        {
             foreach (var tclient in clients)
-            {                
-                 if (tclient.Value != null)
+            {
+                if (tclient.Value != null)
                 {
                     tclient.Value.Close();
-                }                
+                }
             }
             clients.Clear();
         }
@@ -1317,13 +1285,9 @@ namespace Bomber_wpf
             {
                 var tplayer = gb.Players[k];
 
-                if (tplayer.X == plava.X && tplayer.Y == plava.Y)
+                if (tplayer.Health>0 && tplayer.X == plava.X && tplayer.Y == plava.Y)
                 {
-                    tplayer.Health--;
-                    if (tplayer.Health < 1)
-                    {
-                        PlayerKill(tplayer, plava);
-                    }
+                    PlayerKill(tplayer);
                 }
             }
         }
@@ -1335,7 +1299,6 @@ namespace Bomber_wpf
         /// <param name="plava">Лава</param>
         public void LavaCollision()
         {
-
             for (int i = 0; i < gb.Lavas.Count; i++)
             {
                 var tlava = gb.Lavas[i];
@@ -1367,7 +1330,7 @@ namespace Bomber_wpf
                     tbonuses_mass[plava.X, plava.Y].Visible = true;
                 }
 
-                PlayerAddPointsCellDestroy(plava);
+             //   PlayerAddPointsCellDestroy(plava);
             }
         }
 
@@ -1383,11 +1346,11 @@ namespace Bomber_wpf
             {
                 var tlava = gb.Lavas[k];
 
-                if (tlava.LiveTime<1)
+                if (tlava.LiveTime < 1)
                 {
                     gb.Lavas.Remove(tlava);
                     k--;
-                }                     
+                }
                 tlava.LiveTime--;
             }
 
@@ -1403,7 +1366,7 @@ namespace Bomber_wpf
             {
                 for (int j = 0; j < gb.Cells.GetLength(1); j++)
                 {
-                    var tcell = gb.Cells[i, j];          
+                    var tcell = gb.Cells[i, j];
 
                     if (tcell is Cell_indestructible)
                     {
@@ -1526,7 +1489,7 @@ namespace Bomber_wpf
         public void PaintBomb(int x, int y, Color cl)
         {
             sb = new SolidBrush(cl);
-            g.FillEllipse(new SolidBrush(cl), x * cw + cw/4, y * cw+ cw/4, cw-cw/2, cw-cw/2);
+            g.FillEllipse(new SolidBrush(cl), x * cw + cw / 4, y * cw + cw / 4, cw - cw / 2, cw - cw / 2);
         }
 
         /// <summary>
@@ -1554,7 +1517,7 @@ namespace Bomber_wpf
             float zoomed = Convert.ToSingle(0.7);
             g.FillEllipse(new SolidBrush(Color.Black), x * cw, y * cw, cw, cw);
 
-            g.FillEllipse(new SolidBrush(cl), x * cw + cw / 10, y * cw + cw / 10, cw - cw / 5, cw - cw / 5);      
+            g.FillEllipse(new SolidBrush(cl), x * cw + cw / 10, y * cw + cw / 10, cw - cw / 5, cw - cw / 5);
         }
 
 
@@ -1579,10 +1542,10 @@ namespace Bomber_wpf
         {
             int w = gb.Cells.GetLength(0);
             int h = gb.Cells.GetLength(0);
-           
+
             for (int i = 0; i < w; i++)
             {
-                g.DrawLine(p, i * cw, 0, i * cw, w * cw);                
+                g.DrawLine(p, i * cw, 0, i * cw, w * cw);
             }
             for (int j = 0; j < h; j++)
             {
@@ -1649,13 +1612,14 @@ namespace Bomber_wpf
 
 
         void CompileAndStartUserFiles(string path)
-        {          
+        {
             Compiler compiler = new Compiler(path);
             compiler.Compile();
 
             Thread.Sleep(1000);
             compiler.UserClientStart();
         }
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -1693,14 +1657,14 @@ namespace Bomber_wpf
             game_timer.Interval = game_timer.Interval / 2;
             slow_btn.Enabled = true;
 
-            if (game_timer.Interval<100)
+            if (game_timer.Interval < 100)
             {
                 fast_btn.Enabled = false;
                 game_timer.Interval = 100;
             }
             else
             {
-                fast_btn.Enabled = true;              
+                fast_btn.Enabled = true;
             }
         }
 
@@ -1727,11 +1691,11 @@ namespace Bomber_wpf
             }
         }
 
-       
+
 
         private void log_box_DoubleClick(object sender, EventArgs e)
         {
             log_box.Clear();
         }
-    }    
+    }
 }
