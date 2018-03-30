@@ -373,7 +373,7 @@ namespace Bomber_wpf
             }
             catch (Exception e)
             {
-                MessageBox.Show("SendGameInfo Error " + e.Message);
+                LogUpdate("SendGameInfo Error " + e.Message);
             }
         }
 
@@ -1257,7 +1257,7 @@ namespace Bomber_wpf
             }
             catch (Exception e)
             {
-                MessageBox.Show("Ошибка в функции PlayerDisconnect: " + e.Message);
+                LogUpdate("Ошибка в функции PlayerDisconnect: " + e.Message);
             }
         }
 
@@ -1568,7 +1568,10 @@ namespace Bomber_wpf
         /// <param name="message"></param>
         public void LogUpdate(string message)
         {
-            log_box.Text += message + Environment.NewLine;
+            string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
+            time = "[" + time + "] ";
+
+            log_box.Text += time + message + Environment.NewLine;
         }
 
 
