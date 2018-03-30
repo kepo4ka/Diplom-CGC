@@ -27,7 +27,6 @@ namespace ClassLibrary_CGC
         int w, h;
         Cell[,] cells;
         List<Player> players;
-        List<Player> dead_players;
         List<Bonus> bonuses;
         List<Bomb> bombs;
         List<Lava> lavas;
@@ -46,11 +45,9 @@ namespace ClassLibrary_CGC
             Bonuses = new List<Bonus>();
             Bombs = new List<Bomb>();
             Lavas = new List<Lava>();
-            Players = new List<Player>();
-            dead_players = new List<Player>();
+            Players = new List<Player>();           
 
             GenerateBonuses(Config.bonuses_count);
-
 
             for (int i = 0; i < XYinfo.GetLength(0); i++)
             {
@@ -69,25 +66,9 @@ namespace ClassLibrary_CGC
             Bonuses = new List<Bonus>();
             Bombs = new List<Bomb>();
             Lavas = new List<Lava>();
-            Players = new List<Player>();
-            dead_players = new List<Player>();
+            Players = new List<Player>();          
 
             GenerateBonuses(Config.bonuses_count);
-        }
-
-
-
-
-        public List<Player> DeadPlayers
-        {
-            get
-            {
-                return dead_players;
-            }
-            set
-            {
-                this.dead_players = value;
-            }
         }
 
 
@@ -496,36 +477,11 @@ namespace ClassLibrary_CGC
                 nplayer.ACTION = this.Players[i].ACTION;
 
                 nGameBoard.Players.Add(nplayer);
-            }
-
-            nGameBoard.DeadPlayers = new List<Player>();
-
-            for (int i = 0; i < this.DeadPlayers.Count; i++)
-            {
-                Player nplayer = new Player();
-
-                nplayer.X = this.DeadPlayers[i].X;
-                nplayer.Y = this.DeadPlayers[i].Y;
-                nplayer.Health = this.DeadPlayers[i].Health;
-                nplayer.ID = this.DeadPlayers[i].ID;
-                nplayer.Name = this.DeadPlayers[i].Name;
-                nplayer.Points = this.DeadPlayers[i].Points;
-                nplayer.BombsCount = this.DeadPlayers[i].BombsCount;
-                nplayer.Bang_radius = this.DeadPlayers[i].Bang_radius;
-                nplayer.Color = this.DeadPlayers[i].Color;
-                nplayer.ACTION = this.DeadPlayers[i].ACTION;
-
-                nGameBoard.DeadPlayers.Add(nplayer);
-            }
+            }        
 
             return nGameBoard;
         } 
-
-    }
-
-
-
-    
+    }    
 
     [Serializable]
     public class Bonus : GameObject
@@ -545,6 +501,7 @@ namespace ClassLibrary_CGC
         }
     }
 
+
     [Serializable]
     public class Bonus_fast : Bonus
     {
@@ -557,6 +514,7 @@ namespace ClassLibrary_CGC
         }
     }
 
+
     [Serializable]
     public class Bonus_big : Bonus
     {
@@ -568,6 +526,7 @@ namespace ClassLibrary_CGC
             this.Color = Config.bonus_big;
         }
     }
+
 
     [Serializable]
     public class Bomb : GameObject
@@ -696,12 +655,13 @@ namespace ClassLibrary_CGC
         }
     }
 
+
     [Serializable]
     public class Cell : GameObject
     {
 
-
     }
+
 
     [Serializable]
     public class Cell_indestructible : Cell
@@ -711,6 +671,7 @@ namespace ClassLibrary_CGC
             this.Color = Config.cell_indestructible_color;
         }
     }
+
 
     [Serializable]
     public class Cell_destructible : Cell
@@ -727,9 +688,9 @@ namespace ClassLibrary_CGC
     {
         public Cell_free()
         {
-
         }
     }
+
 
     [Serializable]
     public class Lava : GameObject
@@ -748,9 +709,7 @@ namespace ClassLibrary_CGC
             this.Color = Config.lava_color;
             this.LiveTime = Config.lava_livetime;
             this.PlayerID = pbomb.PlayerID;                       
-        }
-
-       
+        }       
 
         public string PlayerID
         {
@@ -792,13 +751,11 @@ namespace ClassLibrary_CGC
 
         int bombs_count;
 
-
         public Player()
         {
             Health = 1;
             ACTION = PlayerAction.Wait;
-            BombsCount = Config.player_bombs_count_start;
-            
+            BombsCount = Config.player_bombs_count_start;            
         }
 
         public Player(string ID)
@@ -937,8 +894,6 @@ namespace ClassLibrary_CGC
     }
 
 
-
-
     [Serializable]
     public class Bot : Player
     {
@@ -979,7 +934,6 @@ namespace ClassLibrary_CGC
             return taction;
         }
     }
-
 
 
     [Serializable]
@@ -1039,8 +993,7 @@ namespace ClassLibrary_CGC
             }
         }
     }
-
-
+    
 
     /// <summary>
     /// Постоянные параметры игры

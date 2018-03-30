@@ -912,7 +912,6 @@ namespace Bomber_wpf
 
                 if (tempbonus[i, j] != null && tempbonus[i, j].Visible == true)
                 {
-
                     tvitya.Points += Config.player_bonus_find_points;
 
                     if (tempbonus[i, j] is Bonus_big)
@@ -924,7 +923,7 @@ namespace Bomber_wpf
                         tvitya.BombsCount++;
                     }
                     gb.Bonuses.Remove(tempbonus[i, j]);
-                    tempbonus[i, j] = null;
+                    tempbonus[i, j] = null;                   
                 }
             }
         }
