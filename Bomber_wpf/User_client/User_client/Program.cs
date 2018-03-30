@@ -6,6 +6,7 @@ using ClassLibrary_CGC;
 using User_class;
 using System.Threading;
 using System.Windows.Forms;
+using System.Text;
 
 namespace User_client
 {
@@ -56,12 +57,43 @@ namespace User_client
 
                     //Информация о игровом мире, полученная с сервера
                     gameBoard = (GameBoard) formatter.Deserialize(strm);
-                    myUser = (User)formatter.Deserialize(strm);                   
+                    myUser = (User)formatter.Deserialize(strm);
 
-                    myUser.ACTION = myUser.Play(gameBoard);
+                    string message = "";
+                    byte[] data = Encoding.ASCII.GetBytes("s");
+
+                    strm.Write(data, 0, data.Length);
+
+                    //   myUser.ACTION = myUser.Play(gameBoard);                        
+
+                    switch(myUser.Play(gameBoard))
+                    {
+                        case PlayerAction.Wait:
+                            message = "0";
+                            break;
+                        case PlayerAction.Bomb:
+                            message = "1";
+                            break;
+                        case PlayerAction.Down:
+                            message = "2";
+                            break;
+                        case PlayerAction.Left:
+                            message = "3";
+                            break;
+                        case PlayerAction.Right:
+                            message = "4";
+                            break;
+                        case PlayerAction.Up:
+                            message = "5";
+                            break;
+                    }
+
+                    data = Encoding.ASCII.GetBytes(message);
+
+                    strm.Write(data, 0, data.Length);
 
                     //Отправка на сервер информацию об игроке, в частности, планируемое действие
-                     formatter.Serialize(strm, myUser); 
+                    // formatter.Serialize(strm, myUser); 
                 }
                 catch (Exception e)
                 {
