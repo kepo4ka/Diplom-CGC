@@ -424,7 +424,8 @@ namespace Bomber_wpf
                 var tplayer = gb.Players[i];
 
                 var item = new ListViewItem(new[] {
-                    tplayer.Name, tplayer.ID.ToString(),
+                    tplayer.Name,
+                    tplayer.ID,
                     tplayer.Health.ToString(),
                     tplayer.Points.ToString(),
                     tplayer.ACTION.ToString(),
@@ -465,7 +466,8 @@ namespace Bomber_wpf
                 var tplayer = gb.Players[i];
 
                 var item = new ListViewItem(new[] {
-                    tplayer.Name, tplayer.ID.ToString(),
+                    tplayer.Name,
+                    tplayer.ID,
                     tplayer.Health.ToString(),
                     tplayer.Points.ToString(),
                     tplayer.ACTION.ToString(),
@@ -690,7 +692,7 @@ namespace Bomber_wpf
 
             for (int i = 0; i < gb.Players.Count; i++)
             {
-                message += gb.Players[i].Name + ": " + gb.Players[i].Points + " (баллы)";
+                message += gb.Players[i].Name + ": " + gb.Players[i].Points + " (баллы) \n";
             }
 
             gameBoardStates.Add(gb);
