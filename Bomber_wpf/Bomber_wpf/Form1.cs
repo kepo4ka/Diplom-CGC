@@ -444,12 +444,9 @@ namespace Bomber_wpf
                             {
                                 throw new Exception();
                             }
-                            
+
                             switch (message)
                             {
-                                case "0":
-                                    tclient.Key.ACTION = PlayerAction.Wait;
-                                    break;
                                 case "1":
                                     tclient.Key.ACTION = PlayerAction.Bomb;
                                     break;
@@ -464,7 +461,10 @@ namespace Bomber_wpf
                                     break;
                                 case "5":
                                     tclient.Key.ACTION = PlayerAction.Up;
-                                    break;                                
+                                    break;
+                                default:
+                                    tclient.Key.ACTION = PlayerAction.Wait;
+                                    break;
                             }
 
                             //Thread thr = new Thread(() =>
