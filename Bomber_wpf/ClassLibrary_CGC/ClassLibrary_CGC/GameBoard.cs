@@ -384,7 +384,7 @@ namespace ClassLibrary_CGC
         public object Clone()
         {
             GameBoard nGameBoard = new GameBoard();
-            nGameBoard =(GameBoard) this.MemberwiseClone();
+            nGameBoard = (GameBoard)this.MemberwiseClone();
 
 
             nGameBoard.Cells = new Cell[nGameBoard.W, nGameBoard.H];
@@ -417,14 +417,14 @@ namespace ClassLibrary_CGC
                 Bonus nbonus;
                 if (this.Bonuses[i] is Bonus_big)
                 {
-                    nbonus = new Bonus_big(this.Bonuses[i].X, this.Bonuses[i].Y);                    
+                    nbonus = new Bonus_big(this.Bonuses[i].X, this.Bonuses[i].Y);
                 }
                 else
                 {
                     nbonus = new Bonus_fast(this.Bonuses[i].X, this.Bonuses[i].Y);
                 }
                 nbonus.Visible = this.Bonuses[i].Visible;
-                nbonus.Color = this.Bonuses[i].Color;                
+                nbonus.Color = this.Bonuses[i].Color;
                 nGameBoard.Bonuses.Add(nbonus);
             }
 
@@ -432,15 +432,7 @@ namespace ClassLibrary_CGC
 
             for (int i = 0; i < this.Bombs.Count; i++)
             {
-                Bomb nbomb  = new Bomb();
-                
-                nbomb.X = this.Bombs[i].X;
-                nbomb.Y = this.Bombs[i].Y;
-                nbomb.Color = this.Bombs[i].Color;
-                nbomb.PlayerID = this.Bombs[i].PlayerID;
-                nbomb.LiveTime = this.Bombs[i].LiveTime;
-                nbomb.Bang_radius = this.Bombs[i].Bang_radius;                
-
+                Bomb nbomb = new Bomb(this.Bombs[i]);
                 nGameBoard.Bombs.Add(nbomb);
             }
 
@@ -448,40 +440,34 @@ namespace ClassLibrary_CGC
 
             for (int i = 0; i < this.Lavas.Count; i++)
             {
-                var tlava = this.Lavas[i];
-                Lava nlava = new Lava();
-                nlava.Color = tlava.Color;
-                nlava.LiveTime = tlava.LiveTime;
-                nlava.PlayerID = tlava.PlayerID;
-                nlava.X = tlava.X;
-                nlava.Y = tlava.Y;
+                Lava nlava = new Lava(this.Lavas[i]);
                 nGameBoard.Lavas.Add(nlava);
             }
-
 
             nGameBoard.Players = new List<Player>();
 
             for (int i = 0; i < this.Players.Count; i++)
             {
-                Player nplayer = new Player();              
-
-                nplayer.X = this.Players[i].X;
-                nplayer.Y = this.Players[i].Y;
-                nplayer.Health = this.Players[i].Health;
-                nplayer.ID = this.Players[i].ID;
-                nplayer.Name = this.Players[i].Name;
-                nplayer.Points = this.Players[i].Points;
-                nplayer.BombsCount = this.Players[i].BombsCount;
-                nplayer.Bang_radius = this.Players[i].Bang_radius;
-                nplayer.Color = this.Players[i].Color;
-                nplayer.ACTION = this.Players[i].ACTION;
-
+                Player nplayer = new Player(this.Players[i]);
                 nGameBoard.Players.Add(nplayer);
-            }        
+            }
+
+            nGameBoard.XYinfo = new XYInfo[15, 15];
+
+            for (int i = 0; i < nGameBoard.XYinfo.GetLength(0); i++)
+            {
+                for (int j = 0; j < nGameBoard.XYinfo.GetLength(1); j++)
+                {
+                    nGameBoard.XYinfo[i, j] = new XYInfo(this.XYinfo[i, j]);
+                }
+            }
 
             return nGameBoard;
-        } 
+        }
     }    
+
+
+
 
     [Serializable]
     public class Bonus : GameObject
@@ -538,6 +524,17 @@ namespace ClassLibrary_CGC
         public Bomb()
         {
             this.Color = Config.bomb_color;
+        }
+
+        public Bomb(Bomb origin)
+        {            
+            
+            this.X = origin.X;
+            this.Y = origin.Y;
+            this.Color = origin.Color;
+            this.PlayerID = origin.PlayerID;
+            this.LiveTime = origin.LiveTime;
+            this.Bang_radius = origin.Bang_radius;
         }
 
         public Bomb(int x, int y)
@@ -704,6 +701,17 @@ namespace ClassLibrary_CGC
             this.LiveTime = Config.lava_livetime;
         }
 
+        public Lava(Lava origin)
+        {
+
+            this.Color = origin.Color;
+            this.LiveTime = origin.LiveTime;
+            this.PlayerID = origin.PlayerID;
+            this.X = origin.X;
+            this.Y = origin.Y;
+        }
+
+
         public Lava(Bomb pbomb)
         {
             this.Color = Config.lava_color;
@@ -711,6 +719,7 @@ namespace ClassLibrary_CGC
             this.PlayerID = pbomb.PlayerID;                       
         }       
 
+     
         public string PlayerID
         {
             get
@@ -757,6 +766,21 @@ namespace ClassLibrary_CGC
             ACTION = PlayerAction.Wait;
             BombsCount = Config.player_bombs_count_start;            
         }
+
+        public Player(Player origin)
+        {
+            this.X =origin.X;
+            this.Y =origin.Y;
+            this.Health =origin.Health;
+            this.ID =origin.ID;
+            this.Name =origin.Name;
+            this.Points =origin.Points;
+            this.BombsCount =origin.BombsCount;
+            this.Bang_radius =origin.Bang_radius;
+            this.Color =origin.Color;
+            this.ACTION =origin.ACTION;
+        }
+
 
         public Player(string ID)
         {
@@ -939,11 +963,26 @@ namespace ClassLibrary_CGC
     [Serializable]
     public class XYInfo
     {
-        Player player = null;
-        Bonus bonus = null;
-        Lava lava = null;
-        Bomb bomb = null;
+        Player player;
+        Bonus bonus;
+        Lava lava;
+        Bomb bomb;
 
+        public XYInfo()
+        {
+            Player = new Player();
+            Bomb = new Bomb();
+            Bonus = new Bonus();
+            Lava = new Lava();
+        }
+
+        public XYInfo(XYInfo origin)
+        {
+            this.Player = origin.Player;
+            this.Bomb = origin.Bomb;
+            this.Bonus = origin.Bonus;
+            this.Lava = origin.Lava;           
+        }
 
         public Player Player
         {
