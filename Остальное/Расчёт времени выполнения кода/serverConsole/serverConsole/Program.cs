@@ -22,103 +22,93 @@ namespace serverConsole
         static string serverIp = "127.0.0.1";
         static TcpListener server;
         static TcpClient cl;
-
+        static int totaltimeout = 0;
+        static int maxtimeout = 9000;
 
 
         static void Main(string[] args)
         {
             IPAddress ip = IPAddress.Parse(serverIp);
             server = new TcpListener(ip, 9595);
+            Console.WriteLine("server Start");
             server.Start();
             cl = server.AcceptTcpClient();
-            Console.WriteLine("server Start");
-              readMessage();
+            Console.WriteLine("client add");
+            for (int i = 0; i < 10; i++)
+            {
+                readMessage();
+            }
+
+            Console.WriteLine("Затраченное время: " + totaltimeout);
+            if (totaltimeout>maxtimeout)
+            {
+                Console.WriteLine("Превышен общий лимит времени");
+            }
+           
            // test();
             Console.ReadKey();
         }
 
 
 
-        public static void test()
-        {
-            byte[] data = new byte[256];
-
-            var str = cl.GetStream();
-
-            int i = str.Read(data, 0, data.Length);
-
-            string result = Encoding.Default.GetString(data);
-            Console.WriteLine(result);
-        }
 
         public static void readMessage()
         {
             //      BinaryFormatter fr = new BinaryFormatter();
-           // string message = "";
+            // string message = "";
 
             NetworkStream stream = cl.GetStream();
 
-            string[] res_array = new string[4];
+            WriteStream(stream);
 
 
-            for (int i = 0; i < res_array.Length; i++)
+            string client_message = ReadStream(stream);
+          
+            if (client_message != "s")
             {
-                WriteStream(stream);
-
-
-                string client_message = ReadStream(stream);
-                if (client_message != "start")
-                {
-                    Console.WriteLine("Ошибка, сообщение о начале считывания неверно");
-                }
-
-                res_array[i] = "";
-                Thread thr = new Thread(() =>
-                {
-                    res_array[i] = ReadStream(stream);
-                });
-
-                thr.Start();
-                Thread.Sleep(1000);
-
-                if (thr.ThreadState == System.Threading.ThreadState.Running)
-                {
-                    //thr.Abort();
-                    //while (true)
-                    //{
-                    //    if (thr.ThreadState == System.Threading.ThreadState.Stopped)
-                    //    {
-                    //        break;
-                    //    }
-                    //}
-
-                    Console.WriteLine((i + 1) + " - долго");
-                }
-                else
-                {
-                    Console.WriteLine((i + 1) + " - быстро " + res_array[i] + ", " + thr.ThreadState.ToString());
-                }
+                Console.WriteLine("Ошибка, сообщение о начале считывания неверно");
             }
+
+            client_message = ReadStream(stream);
+
+            Console.WriteLine("Время задержки клиента: " + client_message);
+            totaltimeout += int.Parse(client_message);
         }
 
 
         public static string ReadStream(NetworkStream str)
         {
-            byte[] data = new byte[512];
+            string result = "";
+            try
+            {
+                byte[] data = new byte[512];
 
-            int bytes = str.Read(data, 0, data.Length);
+                int bytes = str.Read(data, 0, data.Length);
 
-            string result = Encoding.Default.GetString(data, 0, bytes);
+                result = Encoding.Default.GetString(data, 0, bytes);
+            }
+            catch
+            {
+                Console.WriteLine("ERROR: stream read");
+            }
 
             return result;
+
         }
 
 
         public static void WriteStream(NetworkStream str)
         {
-            byte[] data = Encoding.Default.GetBytes("next");
+            try
+            {
+                byte[] data = Encoding.Default.GetBytes("next");
 
-            str.Write(data, 0, data.Length);
+                str.Write(data, 0, data.Length);
+            }
+            catch
+            {
+                Console.WriteLine("ERROR: stream write");
+            }
         }
     }
 }
