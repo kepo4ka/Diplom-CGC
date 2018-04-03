@@ -57,6 +57,9 @@ namespace User_client
 
                     //Информация о игровом мире, полученная с сервера
                     gameBoard = (GameBoard) formatter.Deserialize(strm);
+
+                    ResetPlayerId(ref gameBoard);
+                    
                     myUser = (User)formatter.Deserialize(strm);
 
                     string message = "";
@@ -102,6 +105,19 @@ namespace User_client
                     server.Close();
                     Application.Exit();
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// Очистить ID игроков
+        /// </summary>
+        /// <param name="gb"></param>
+        static void ResetPlayerId(ref GameBoard gb)
+        {
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                gb.Players[i].ID = "";
             }
         }
     }
