@@ -197,7 +197,7 @@ namespace Bomber_wpf
 
         private void checkBot4_CheckedChanged(object sender, EventArgs e)
         {
-            ChangeBotUser(3, path4_btn, path4_lab, checkBot3);
+            ChangeBotUser(3, path4_btn, path4_lab, checkBot4);
         }
     }
 }
