@@ -93,12 +93,11 @@ namespace Bomber_wpf
             clients_count = 0;
 
             for (int i = 0; i < startPage.paths.Length; i++)
-            {
-               
+            {               
                 if (startPage.paths[i] != null && startPage.paths[i] != "")
                 {
-                    string tfilename = SpliteEndPath(startPage.paths[i]);
-                    if (CompileAndStartUserFiles(tfilename))
+                    string tfilename = startPage.paths[i];
+                    if (CompileAndStartUserFiles(tfilename, i))
                     {
                         clients_count++;
                     }
@@ -117,7 +116,7 @@ namespace Bomber_wpf
         /// </summary>
         /// <param name="ppath">Полный путь до файла</param>
         /// <returns>Имя файла</returns>
-        public string SpliteEndPath(string ppath)
+        public static string SpliteEndPath(string ppath, bool k=false)
         {
             Stack<char> tsymbols = new Stack<char>();
             string nfileName = "";
@@ -147,6 +146,11 @@ namespace Bomber_wpf
             while (tsymbols.Count > 0)
             {
                 nfileName += tsymbols.Pop();
+            }
+
+            if (k)
+            {
+                nfileName = ppath.Substring(0, ppath.IndexOf(nfileName+ ".cs"));
             }
             return nfileName;
         }
@@ -313,24 +317,15 @@ namespace Bomber_wpf
             //};
             //gb.Bombs.Add(test);
 
-            Bonus_big test = new Bonus_big(0, 1);
-            test.Visible = true;
-            Bonus_big test1 = new Bonus_big(1, 0);
-            test1.Visible = true;
+            //Bonus_big test = new Bonus_big(0, 1);
+            //test.Visible = true;
+            //Bonus_big test1 = new Bonus_big(1, 0);
+            //test1.Visible = true;
 
 
 
-            gb.Bonuses.Add(test);
-            gb.Bonuses.Add(test1);
-
-            LogUpdate(gb.Bonuses.Count + "");
-
-
-
-
-
-
-
+            //gb.Bonuses.Add(test);
+            //gb.Bonuses.Add(test1);       
 
             int tplayers_index = 0;
 
@@ -774,10 +769,10 @@ namespace Bomber_wpf
         }
 
         /// <summary>
-        /// Окончание игры: вывод и сохранение информации
+        /// Окончание игры: очищение, разрыв соединения, отображение и сохранение информации
         /// </summary>
         public void GameOver(List<Player> winners)
-        {
+        {      
             isGameOver = true;
 
             Disconnect();
@@ -788,12 +783,25 @@ namespace Bomber_wpf
             Thread.Sleep(100);
             Compiler.DeleteComppiledFiles();
 
+            EndGameMessage(winners);
+
+            gameBoardStates.Add(gb);
+            SaveGameInfoFile();
+        }
+
+        
+        /// <summary>
+        /// Диалоговое окно с информацией о результатах игровой сессии
+        /// </summary>
+        /// <param name="winners"></param>
+        public void EndGameMessage(List<Player> winners)
+        {
             var result = DialogResult.No;
             string message = "";
 
-           winners.Sort((a, b) => a.Health.CompareTo(b.Health));
+            winners.Sort((a, b) => a.Health.CompareTo(b.Health));
 
-            if (GameTimer<1)
+            if (GameTimer < 1)
             {
                 message += "ВРЕМЯ И СТЕКЛО \n";
             }
@@ -804,10 +812,6 @@ namespace Bomber_wpf
             {
                 message += gb.Players[i].Name + ": " + gb.Players[i].Points + " (баллы) \n";
             }
-
-            gameBoardStates.Add(gb);
-
-            SaveGameInfoFile();
 
             message += "Начать заново?";
 
@@ -828,22 +832,17 @@ namespace Bomber_wpf
             }
         }
 
-        
-
 
         /// <summary>
         /// Проверить наступили ли условия для наступления Конца игры
         /// </summary>
         public void CheckGameOver()
         {
-            if (isGameOver == false)
-            {
-                List<Player> winners = gb.Players.FindAll(c => c.Health > 0);
+            List<Player> winners = gb.Players.FindAll(c => c.Health > 0);
 
-                if (GameTimer < 1 || winners.Count<2)
-                {
-                    GameOver(winners);
-                }
+            if (GameTimer<1 || winners.Count<2)
+            {
+                GameOver(winners);                
             }
         }
 
@@ -1737,11 +1736,11 @@ namespace Bomber_wpf
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        bool CompileAndStartUserFiles(string path)
+        bool CompileAndStartUserFiles(string path, int i)
         {
             try
             {
-                Compiler compiler = new Compiler(path);
+                Compiler compiler = new Compiler(path, i);
                 compiler.Compile();
 
                 Thread.Sleep(1000);
