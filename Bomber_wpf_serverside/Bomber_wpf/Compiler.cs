@@ -28,8 +28,12 @@ namespace Bomber_wpf
 
         public static List<string> compileDirectories = new List<string>();
 
-        public Compiler(string _userClass_sourceName)
+        public Compiler(string _userClass_sourceName, int i)
         {           
+            if (_userClass_sourceName == "" || _userClass_sourceName == null)
+            {
+                throw new Exception("Неверное имя файла исходного кода");
+            }
 
             main_Path = Directory.GetCurrentDirectory();
             if (main_Path.Contains("\\bin\\"))
@@ -37,17 +41,16 @@ namespace Bomber_wpf
                 main_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\.."));
             }
            
-                main_Path += "\\";
-            
+            main_Path += "\\";            
            
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
-            userClass_Path = main_Path + "User_class\\User_class\\";
+            userClass_Path = Form1.SpliteEndPath(_userClass_sourceName,true);
             userClient_Path = main_Path + "User_client\\User_client\\";
-
-            userClass_sourceName = _userClass_sourceName + ".cs";
+            
+            userClass_sourceName = Form1.SpliteEndPath(_userClass_sourceName) + ".cs";
             userClass_dllName = "User_class.dll";
 
-            user_directory_name = _userClass_sourceName;
+            user_directory_name = "User_" + i;
 
             userClient_sourceName = "Program.cs";
             userClientexe_Name = "Program.exe";
@@ -68,20 +71,20 @@ namespace Bomber_wpf
         //}
 
 
-            /// <summary>
-            /// Скомпилировать файлы, необходимые для tcp-клиента пользователя
-            /// </summary>
+        /// <summary>
+        /// Скомпилировать файлы, необходимые для tcp-клиента пользователя
+        /// </summary>
         public void Compile()
         {
             try
             {
                 CreateUserDirectory();
                 UserClassDLLCompile();
-                UserClientExeCompile();               
+                UserClientExeCompile();
             }
             catch (Exception e)
             {
-                MessageBox.Show($"Ошибка при компиляции: {e.Message}");
+                throw new Exception("compile_error: " + e.Message);
             }
         }
 
@@ -97,7 +100,14 @@ namespace Bomber_wpf
             File.Copy(userClient_Path + ClassLibrary_CGC, userClient_Path + user_directory_name+"\\" + ClassLibrary_CGC);
             File.Copy(userClient_Path + userClient_sourceName, userClient_Path + user_directory_name +"\\" + userClient_sourceName);
 
-
+            if (File.Exists(userClass_Path + userClass_sourceName))
+            {
+                File.Copy(userClass_Path + userClass_sourceName, userClient_Path + user_directory_name + "\\" + userClass_sourceName);
+            }
+            else
+            {
+                throw new Exception("Не удалось скопировать файл исходного кода стратегии");
+            }
         }
 
 
@@ -108,29 +118,21 @@ namespace Bomber_wpf
         private void UserClassDLLCompile()
         {
             DeleteFile(userClass_Path + userClass_dllName);
-          //  DeleteFile(userClient_Path + userClass_dllName);
-
-            if (!File.Exists(userClass_Path + userClass_sourceName))
-            {
-                throw new Exception("Файл исходного кода класса Юзера не найден");
-            }
+          //  DeleteFile(userClient_Path + userClass_dllName);         
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat($"/C cd {userClass_Path} && " +
+            sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && " +
                 $"{CscEXE_Path} " +
                 $"/r:{ClassLibrary_CGC} " +
                 $"/target:library " +
-                $"/out:{userClass_dllName} {userClass_Path}{userClass_sourceName}");
+                $"/out:{userClass_dllName} {userClass_sourceName}");
 
             Process.Start("cmd.exe", sb.ToString());
-            Thread.Sleep(1000);
-            if (File.Exists(userClass_Path + userClass_dllName))
+            Thread.Sleep(3000);
+
+            if (!File.Exists(userClient_Path + userClass_dllName))
             {
-                File.Move(userClass_Path + userClass_dllName, userClient_Path + user_directory_name + "\\" + userClass_dllName);
-            }
-            else
-            {
-                throw new Exception("Библиотека с кодом юзера не была скомпилирована");
+                throw new Exception("Исходный код стратегии не удалось скомпилировать, возможны ошибки в коде");
             }
         }
 
