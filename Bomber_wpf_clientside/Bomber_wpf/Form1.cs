@@ -92,16 +92,23 @@ namespace Bomber_wpf
         {
             clients_count = 0;
 
-
             for (int i = 0; i < startPage.paths.Length; i++)
             {
-                InitPlayersInfo(i);
+               
                 if (startPage.paths[i] != null && startPage.paths[i] != "")
                 {
                     string tfilename = SpliteEndPath(startPage.paths[i]);
-                    CompileAndStartUserFiles(tfilename);
-                    clients_count++;
+                    if (CompileAndStartUserFiles(tfilename))
+                    {
+                        clients_count++;
+                    }
+                    else
+                    {
+                        LogUpdate("Ошибка при компиляции файла \"" + startPage.paths[i] + "\"");
+                        continue;
+                    }
                 }
+                InitPlayersInfo(i);
             }
         }
 
@@ -145,6 +152,10 @@ namespace Bomber_wpf
         }
 
 
+        /// <summary>
+        /// Создание игрока на основе данных из формы
+        /// </summary>
+        /// <param name="i"></param>
         void InitPlayersInfo(int i)
         {
             string[] ppaths = startPage.paths;
@@ -1695,6 +1706,11 @@ namespace Bomber_wpf
         }
 
 
+        /// <summary>
+        /// Случайный md5 хеш
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public string CalculateMD5Hash(string input)
         {
 
@@ -1716,14 +1732,27 @@ namespace Bomber_wpf
         }
 
 
-
-        void CompileAndStartUserFiles(string path)
+        /// <summary>
+        /// Попытаться скомпилировать и запустить стратегию пользователя
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        bool CompileAndStartUserFiles(string path)
         {
-            Compiler compiler = new Compiler(path);
-            compiler.Compile();
+            try
+            {
+                Compiler compiler = new Compiler(path);
+                compiler.Compile();
 
-            Thread.Sleep(1000);
-            compiler.UserClientStart();
+                Thread.Sleep(1000);
+                compiler.UserClientStart();
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogUpdate("Ошибка при компиляции: " + e.Message);
+                return false;
+            }
         }
 
 

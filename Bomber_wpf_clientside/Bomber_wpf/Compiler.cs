@@ -30,6 +30,10 @@ namespace Bomber_wpf
 
         public Compiler(string _userClass_sourceName)
         {           
+            if (_userClass_sourceName == "" || _userClass_sourceName == null)
+            {
+                throw new Exception("Неверное имя файла исходного кода");
+            }
 
             main_Path = Directory.GetCurrentDirectory();
             if (main_Path.Contains("\\bin\\"))
@@ -37,8 +41,7 @@ namespace Bomber_wpf
                 main_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\.."));
             }
            
-                main_Path += "\\";
-            
+            main_Path += "\\";            
            
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
             userClass_Path = main_Path + "User_class\\User_class\\";
@@ -68,20 +71,20 @@ namespace Bomber_wpf
         //}
 
 
-            /// <summary>
-            /// Скомпилировать файлы, необходимые для tcp-клиента пользователя
-            /// </summary>
+        /// <summary>
+        /// Скомпилировать файлы, необходимые для tcp-клиента пользователя
+        /// </summary>
         public void Compile()
         {
             try
             {
                 CreateUserDirectory();
                 UserClassDLLCompile();
-                UserClientExeCompile();               
+                UserClientExeCompile();
             }
             catch (Exception e)
             {
-                MessageBox.Show($"Ошибка при компиляции: {e.Message}");
+                throw new Exception("compile_error: " + e.Message);
             }
         }
 
@@ -96,7 +99,6 @@ namespace Bomber_wpf
 
             File.Copy(userClient_Path + ClassLibrary_CGC, userClient_Path + user_directory_name+"\\" + ClassLibrary_CGC);
             File.Copy(userClient_Path + userClient_sourceName, userClient_Path + user_directory_name +"\\" + userClient_sourceName);
-
 
         }
 
