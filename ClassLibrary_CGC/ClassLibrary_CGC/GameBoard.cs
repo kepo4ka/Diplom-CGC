@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Drawing;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-
-
 
 namespace ClassLibrary_CGC
 {
@@ -30,8 +24,7 @@ namespace ClassLibrary_CGC
         List<Bonus> bonuses;
         List<Bomb> bombs;
         List<Lava> lavas;
-        public XYInfo[,] XYinfo = new XYInfo[15,15];
-        
+        public XYInfo[,] XYinfo = new XYInfo[15,15];        
 
         Random rn = new Random();
 

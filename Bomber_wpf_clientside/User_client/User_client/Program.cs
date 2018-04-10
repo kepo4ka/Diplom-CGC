@@ -5,7 +5,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
 using User_class;
 using System.Threading;
-using System.Windows.Forms;
 using System.Text;
 
 namespace User_client
@@ -62,7 +61,7 @@ namespace User_client
                     GetInfo();
 
                     // Получить Команду, которую хочет выполнить Игровая Стратегия
-                    myUser.ACTION = myUser.Play(gameBoard);                    
+                    myUser.ACTION = myUser.Play(gameBoard);
                     
                     SentInfo();                   
                 }
@@ -71,7 +70,7 @@ namespace User_client
                     Console.WriteLine("ERROR: " + e.Message);
                     connected = false;
                     server.Close();
-                    Application.Exit();
+                    Environment.Exit(0);
                 }
             }
         }     
@@ -79,7 +78,6 @@ namespace User_client
         /// <summary>
         /// Получить данные от сервера
         /// </summary>
-        /// <param name="strm">Поток</param>
         static void GetInfo()
         {
             IFormatter formatter = new BinaryFormatter();           
@@ -115,9 +113,7 @@ namespace User_client
                     break;
             }
 
-            data = Encoding.ASCII.GetBytes(message);
-
-            //Отправка данных на сервер
+            data = Encoding.ASCII.GetBytes(message);            
             strm.Write(data, 0, data.Length);
         }
     }

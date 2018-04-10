@@ -34,8 +34,7 @@ namespace Bomber_wpf
         Dictionary<Player, TcpClient> clients = new Dictionary<Player, TcpClient>();
         List<GameBoard> gameBoardStates = new List<GameBoard>();
         List<GameBoard> savedGameBoardStates = new List<GameBoard>();
-        int visualizeGameCadrNumber = 0;
-        int TimeOut = 5000;
+        int visualizeGameCadrNumber = 0;        
 
         Color[] player_colors = new Color[4]
         {
