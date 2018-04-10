@@ -34,7 +34,10 @@ namespace Bomber_wpf
         Dictionary<Player, TcpClient> clients = new Dictionary<Player, TcpClient>();
         List<GameBoard> gameBoardStates = new List<GameBoard>();
         List<GameBoard> savedGameBoardStates = new List<GameBoard>();
-        int visualizeGameCadrNumber = 0;        
+        int visualizeGameCadrNumber = 0;
+
+        int TimeLimit = 5000;
+        int globalTimeLimit = 120000; 
 
         Color[] player_colors = new Color[4]
         {
@@ -351,6 +354,31 @@ namespace Bomber_wpf
 
 
         /// <summary>
+        /// Cчитать строку из сетевого потока
+        /// </summary>
+        /// <returns></returns>
+        static string readStream(NetworkStream strm)
+        {
+            Byte[] serverData = new Byte[16];
+            int bytes = strm.Read(serverData, 0, serverData.Length);
+
+            string serverMessage = Encoding.ASCII.GetString(serverData, 0, bytes);
+            return serverMessage;
+        }
+
+
+        /// <summary>
+        /// Отправить строку в сетевой поток
+        /// </summary>
+        /// <param name="message">Отправляемая строка</param>
+        static void writeStream(NetworkStream strm, string message)
+        {
+            Byte[] data = Encoding.ASCII.GetBytes(message);
+
+            strm.Write(data, 0, data.Length);
+        }
+
+        /// <summary>
         /// Отправить Клиентам инофрмацию об Игровом мире (объект класса GameBoard)
         /// </summary>
         public void SendGameInfo()
@@ -364,9 +392,12 @@ namespace Bomber_wpf
                         if (tclient.Value != null)
                         {
                             NetworkStream strm = tclient.Value.GetStream();
+
+                            writeStream(strm, "n");
+
                             IFormatter formatter = new BinaryFormatter();
                             formatter.Serialize(strm, gb);
-                            formatter.Serialize(strm, tclient.Key);                            
+                            formatter.Serialize(strm, tclient.Key);                                                            
                         }
                     }
                     catch
@@ -396,18 +427,29 @@ namespace Bomber_wpf
                         if (tclient.Value != null)
                         {
                             NetworkStream strm = tclient.Value.GetStream();
-                            IFormatter formatter = new BinaryFormatter();                        
-                            
-                            byte[] data = new byte[4];
-                            strm.Read(data, 0, data.Length);  
-                            string message = Encoding.ASCII.GetString(data);
 
-                            if (message.Length<1 || message=="")
+                            if (readStream(strm) != "s")
+                            {
+                                throw new Exception("Неверный символ, определеющий начало замера времени");
+                            }
+
+                            int sleepTime = int.Parse(readStream(strm));
+
+                            if (sleepTime > TimeLimit)
+                            {
+                                throw new Exception("Стратегия игрока " + tclient.Key.Name + " слишком долго думала: " + sleepTime + "ms");
+                            }
+
+
+                            string message = readStream(strm);
+                            string[] messagePie = message.Split(' ');
+
+                            if (message.Length < 1 || message == "" || messagePie[0] != "action")
                             {
                                 throw new Exception("Сообщение от стратегии игрока " + tclient.Key.Name + " неверное");
                             }
 
-                            switch (message)
+                            switch (messagePie[1])
                             {
                                 case "1":
                                     tclient.Key.ACTION = PlayerAction.Bomb;
@@ -427,10 +469,10 @@ namespace Bomber_wpf
                                 default:
                                     tclient.Key.ACTION = PlayerAction.Wait;
                                     break;
-                            }                 
+                            }
                         }
                     }
-               
+
                     catch (Exception er)
                     {
                         LogUpdate(er.Message);
