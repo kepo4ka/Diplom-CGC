@@ -55,6 +55,10 @@ namespace Bomber_wpf
             userClientexe_Name = "Program.exe";
 
             ClassLibrary_CGC = "ClassLibrary_CGC.dll";
+            Compile();
+            Thread.Sleep(2000);
+            UserClientStart();
+
         }
 
 
@@ -87,7 +91,7 @@ namespace Bomber_wpf
             }
         }
 
-        public void CreateUserDirectory()
+        void CreateUserDirectory()
         {
             compileDirectories.Add(userClient_Path + user_directory_name);
 
@@ -114,54 +118,74 @@ namespace Bomber_wpf
         /// <summary>
         /// Компиляция пользовательского класса в dll и перещение его в папку программы Tcp-клиента
         /// </summary>
-        private void UserClassDLLCompile()
+        void UserClassDLLCompile()
         {
             DeleteFile(userClass_Path + userClass_dllName);
-          //  DeleteFile(userClient_Path + userClass_dllName);         
+            //  DeleteFile(userClient_Path + userClass_dllName);         
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && " +
+            //StringBuilder sb = new StringBuilder();
+            //sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && " +
+            //    $"{CscEXE_Path} " +
+            //    $"/r:{ClassLibrary_CGC} " +
+            //    $"/target:library " +
+            //    $"/out:{userClass_dllName} {userClass_sourceName}");
+
+            //Process.Start("cmd.exe", sb.ToString());
+            //Thread.Sleep(2000);
+
+
+            MessageBox.Show("Результат компиляции dll: " + Helper.startProccess($"cd {userClient_Path}{user_directory_name} && " +
                 $"{CscEXE_Path} " +
                 $"/r:{ClassLibrary_CGC} " +
                 $"/target:library " +
-                $"/out:{userClass_dllName} {userClass_sourceName}");
+                $"/out:{userClass_dllName} {userClass_sourceName}"));
 
-            Process.Start("cmd.exe", sb.ToString());
-            Thread.Sleep(3000);
 
-            if (!File.Exists(userClient_Path + userClass_dllName))
-            {
-                throw new Exception("Исходный код стратегии не удалось скомпилировать, возможны ошибки в коде");
-            }
+            //if (!File.Exists(userClient_Path + userClass_dllName))
+            //{
+            //    throw new Exception("Исходный код стратегии не удалось скомпилировать, возможны ошибки в коде");
+            //}
         }
 
         /// <summary>
         /// Скомпилировать exe tcp-клиента пользователя
         /// </summary>
-        private void UserClientExeCompile()
+        void UserClientExeCompile()
         {
-            StringBuilder sb = new StringBuilder();
+            //StringBuilder sb = new StringBuilder();
 
-            sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && " +
-                $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName} {userClient_sourceName}");
-            Process.Start("cmd.exe", sb.ToString());
+            //sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && " +
+            //    $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName} {userClient_sourceName}");
+            //Process.Start("cmd.exe", sb.ToString());
+            //Thread.Sleep(2000);
+
+
+            MessageBox.Show("Результат компиляции exe: " + Helper.startProccess($"cd {userClient_Path}{user_directory_name} && " +
+               $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName} {userClient_sourceName}"));
+
+
+            //if (!File.Exists(userClient_Path + user_directory_name + "\\" + userClientexe_Name))
+            //{
+            //    throw new Exception("Не удалось скомпилировать exe tcp клиента");
+            //}
         }
 
+
+ 
 
         /// <summary>
         /// Запустить tcp-клиент пользователя
         /// </summary>
-        public void UserClientStart()
+        void UserClientStart()
         {
             StringBuilder sb = new StringBuilder();
-            if (!File.Exists(userClient_Path + user_directory_name + "\\" + userClientexe_Name))
-            {
-                throw new Exception("Не найден файл exe, запускающий tcp клиент");
-            }
+          
             sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && {userClientexe_Name}");
 
             Process.Start("cmd.exe", sb.ToString());
         }
+
+     
 
 
         /// <summary>
