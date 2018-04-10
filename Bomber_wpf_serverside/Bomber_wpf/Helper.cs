@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 
 using ClassLibrary_CGC;
-
+using System.Diagnostics;
 
 namespace Bomber_wpf
 {
@@ -159,5 +159,35 @@ namespace Bomber_wpf
 
             log_box.Text += time + message + Environment.NewLine;
         }
+
+
+        /// <summary>
+        /// Запустить процесс со специфичными настройками
+        /// </summary>
+        /// <param name="stroke">Команда и её параметры</param>
+        /// <returns>Результат выполнения процесса</returns>
+        public static string startProccess(string stroke)
+        {
+            ProcessStartInfo procStartInfo =
+                new ProcessStartInfo(
+                    "cmd", "/c " + stroke);
+            // Следующая команды означает, что нужно перенаправить стандартынй вывод
+            // на Process.StandardOutput StreamReader.
+            procStartInfo.RedirectStandardOutput = true;
+            procStartInfo.UseShellExecute = false;
+            // не создавать окно CMD
+            procStartInfo.CreateNoWindow = true;
+
+            Process proc = new Process();
+            // Получение текста в виде кодировки 866 win
+            procStartInfo.StandardOutputEncoding = Encoding.GetEncoding(866);
+            //запуск CMD
+            proc.StartInfo = procStartInfo;
+            proc.Start();
+            //чтение результата
+            string result = proc.StandardOutput.ReadToEnd();
+            return result;
+        }
+
     }
 }
