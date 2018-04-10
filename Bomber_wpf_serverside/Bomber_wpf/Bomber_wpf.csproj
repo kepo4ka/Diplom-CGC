@@ -77,6 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compiler.cs" />
+    <Compile Include="Docker.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
