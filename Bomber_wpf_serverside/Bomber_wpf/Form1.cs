@@ -384,8 +384,7 @@ namespace Bomber_wpf
                         Helper.LogUpdate(er.Message, ref log_box);
                         usersInfo[i].player.ACTION = PlayerAction.Wait;
                     }
-                }
-        
+                }        
             }
             catch
             {
@@ -1566,10 +1565,10 @@ namespace Bomber_wpf
             try
             {               
                 Compiler compiler = new Compiler(path, i);
-                compiler.Compile();
+                //compiler.Compile();
 
-                Thread.Sleep(1000);
-                compiler.UserClientStart();
+                //Thread.Sleep(1000);
+                //compiler.UserClientStart();
                 return true;
             }
             catch (Exception e)
