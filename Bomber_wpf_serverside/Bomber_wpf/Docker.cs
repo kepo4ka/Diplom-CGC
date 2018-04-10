@@ -14,6 +14,7 @@ namespace Bomber_wpf
       public static string dockerRun()
         {
             string containerId = "";
+            string runResult = Helper.startProccess("docker-machine shh default docker run --rm -d kepo4ka/ubuntu_mono");
             bool isError = false;
 
             for (int i = 0; i < runResult.Length; i++)
@@ -35,6 +36,7 @@ namespace Bomber_wpf
 
         public static void dockerStopContainer(string ID)
         {
+            Helper.startProccess($"docker-machine shh default docker stop {ID}");
         }
 
 
