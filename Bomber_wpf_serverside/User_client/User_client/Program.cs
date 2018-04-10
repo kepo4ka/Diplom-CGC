@@ -6,6 +6,7 @@ using ClassLibrary_CGC;
 using User_class;
 using System.Threading;
 using System.Text;
+using System.Diagnostics;
 
 namespace User_client
 {
@@ -19,6 +20,9 @@ namespace User_client
         static byte[] data;
         static string message;
         static NetworkStream strm;
+        static int TimeLimit = 1000;
+        static bool sleeptimeSended;
+        static object obj = new object();
 
 
         static void Main(string[] args)
@@ -54,16 +58,39 @@ namespace User_client
             {
                 try
                 {
-                    message = "";
-                    data = new byte[4];
                     strm = server.GetStream();
+
+                    if (readStream() != "n")
+                    {
+                        continue;
+                    }
 
                     GetInfo();
 
-                    // Получить Команду, которую хочет выполнить Игровая Стратегия
-                    myUser.ACTION = myUser.Play(gameBoard);
+                    message = "";
+                    sleeptimeSended = false;
+
+                    Thread thr = CreateMyThread();
+                    writeStream("s");
+                    thr.Start();
+                    Thread.Sleep(TimeLimit);
+
+                    if (thr.ThreadState == System.Threading.ThreadState.Running)
+                    {
+                        thr.Abort();
+                        if (sleeptimeSended==false)
+                        {
+                            lock (obj)
+                            {
+                                sleeptimeSended = true;
+                            }
+                            writeStream(TimeLimit.ToString());
+                        }
+                        continue;
+                    }               
                     
-                    SentInfo();                   
+                    SentInfo();
+                    writeStream("e");             
                 }
                 catch (Exception e)
                 {
@@ -74,6 +101,42 @@ namespace User_client
                 }
             }
         }     
+
+        static Thread CreateMyThread()
+        {
+            Thread thr = new Thread(() =>
+            {
+                Stopwatch a = new Stopwatch();
+
+                a.Start();
+
+                // Получить Команду, которую хочет выполнить Игровая Стратегия
+                myUser.ACTION = myUser.Play(gameBoard);
+
+                a.Stop();
+
+                long sleeptime = a.ElapsedMilliseconds;
+
+                Console.WriteLine("Strategy work Time: " + sleeptime);
+
+                if (sleeptime > TimeLimit)
+                {
+                    sleeptime = TimeLimit;
+                }
+
+                if (sleeptimeSended == false)
+                {
+                    lock (obj)
+                    {
+                        sleeptimeSended = true;
+                    }
+                    writeStream(sleeptime.ToString());
+                }
+            });
+            return thr;
+        }
+
+
         
         /// <summary>
         /// Получить данные от сервера
@@ -112,8 +175,32 @@ namespace User_client
                     message = "5";
                     break;
             }
+            message = "action " + message;
+            writeStream(message);
+        }
 
-            data = Encoding.ASCII.GetBytes(message);            
+        /// <summary>
+        /// Cчитать строку из сетевого потока
+        /// </summary>
+        /// <returns></returns>
+        static string readStream()
+        {
+            Byte[] serverData = new Byte[2];
+            int bytes = strm.Read(serverData, 0, serverData.Length);
+
+            string serverMessage = Encoding.Default.GetString(serverData, 0, bytes);
+            return serverMessage;
+        }
+
+
+        /// <summary>
+        /// Отправить строку в сетевой поток
+        /// </summary>
+        /// <param name="message">Отправляемая строка</param>
+        static void writeStream(string message)
+        {
+            Byte[] data = Encoding.ASCII.GetBytes(message);
+
             strm.Write(data, 0, data.Length);
         }
     }
