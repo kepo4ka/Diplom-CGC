@@ -44,10 +44,7 @@ namespace User_client
 
 
         static void CommunicateWithServer()
-        {
-
-            Random rn = new Random();          
-           
+        {           
             while (connected)
             {
                 try
@@ -55,7 +52,7 @@ namespace User_client
                     string serverMessage = readStream();
                     Console.WriteLine(serverMessage);
 
-                    if (serverMessage != "next")
+                    if (serverMessage != "n")
                     {
                         continue;
                     }
@@ -110,7 +107,6 @@ namespace User_client
 
         static int generatePause()
         {
-            
             Random rn = new Random();
             int sleeptime= rn.Next(100, 1500);
             Thread.Sleep(sleeptime);            
@@ -131,10 +127,10 @@ namespace User_client
         {
             NetworkStream stream = server.GetStream();
 
-            Byte[] serverData = new Byte[512];
+            Byte[] serverData = new Byte[2];
             Int32 bytes = stream.Read(serverData, 0, serverData.Length);
 
-            string serverMessage = Encoding.Default.GetString(serverData, 0, bytes);
+            string serverMessage = Encoding.Default.GetString(serverData, 0, bytes);           
             return serverMessage;
         }
     }
