@@ -32,7 +32,6 @@ namespace Bomber_wpf
         string serverIp = "127.0.0.1";
         TcpListener server;
         Dictionary<Player, TcpClient> clients = new Dictionary<Player, TcpClient>();
-        List<PlayerTimeout> players_timeout = new List<PlayerTimeout>();
         List<GameBoard> gameBoardStates = new List<GameBoard>();
         List<GameBoard> savedGameBoardStates = new List<GameBoard>();
         int visualizeGameCadrNumber = 0;
@@ -296,7 +295,6 @@ namespace Bomber_wpf
         public void InitGame()
         {
             clients.Clear();
-            players_timeout.Clear();
             gameBoardStates.Clear();
 
             isGameOver = false;
@@ -335,7 +333,6 @@ namespace Bomber_wpf
                 if (gb.Players[tplayers_index] is User)
                 {
                     clients.Add(gb.Players[tplayers_index], server.AcceptTcpClient());
-                    players_timeout.Add( new PlayerTimeout(gb.Players[tplayers_index]));
                 }
                 tplayers_index++;
                 //  MessageBox.Show("Клиент подключился");
@@ -361,7 +358,6 @@ namespace Bomber_wpf
         {
             try
             {
-
                 foreach (var tclient in clients)
                 {
                     try
@@ -401,54 +397,15 @@ namespace Bomber_wpf
                         if (tclient.Value != null)
                         {
                             NetworkStream strm = tclient.Value.GetStream();
-                            IFormatter formatter = new BinaryFormatter();
-
-                            PlayerTimeout tplayer = players_timeout.Find(c => c.Player.ID == tclient.Key.ID);
-                            if (tplayer.Timeout > 120)
-                            {
-                                throw new TimeoutException(tclient.Key.Name + " превысил общее допустимое время на все ходы");
-                            }
-
-                            byte[] sdata = new byte[4];
-                            strm.Read(sdata, 0, sdata.Length);
-                            string start = Encoding.ASCII.GetString(sdata);
-
-                            if (start != "s")
-                            {
-                                throw new Exception("Неверное начально сообщения");
-                            }
-
+                            IFormatter formatter = new BinaryFormatter();                        
+                            
                             byte[] data = new byte[4];
-
-                            IAsyncResult ar = strm.BeginRead(data, 0, data.Length, null, null);
-
-                            WaitHandle wh = ar.AsyncWaitHandle;
-
-                            try
-                            {
-                                if (!ar.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(TimeOut), false))
-                                {
-                                    tplayer.Timeout += TimeOut;
-                                    throw new TimeoutException(tclient.Key.Name + " превысил допустимое время на один ход");
-                                }
-
-                                strm.EndRead(ar);
-                            }
-                            catch (TimeoutException e)
-                            {                               
-                                throw new TimeoutException(e.Message);
-                            }
-
-                            finally
-                            {
-                                wh.Close();
-                            }
-
+                            strm.Read(data, 0, data.Length);  
                             string message = Encoding.ASCII.GetString(data);
 
                             if (message.Length<1 || message=="")
                             {
-                                throw new Exception();
+                                throw new Exception("Сообщение от стратегии игрока " + tclient.Key.Name + " неверное");
                             }
 
                             switch (message)
@@ -471,37 +428,13 @@ namespace Bomber_wpf
                                 default:
                                     tclient.Key.ACTION = PlayerAction.Wait;
                                     break;
-                            }
-
-                            //Thread thr = new Thread(() =>
-                            //{
-                            //    Player nplayer = (Player)formatter.Deserialize(strm);
-                            //    tclient.Key.ACTION = nplayer.ACTION;
-                            //});
-
-                            //thr.Start();
-
-                            //Thread.Sleep(2000);
-
-                            //if (thr.ThreadState==ThreadState.Running)
-                            //{
-
-                            //}
-
-                            //   gb.Players.Find(c => c.ID == nplayer.ID).ACTION = nplayer.ACTION;
-
+                            }                 
                         }
                     }
-
-                    catch (TimeoutException e)
+               
+                    catch (Exception er)
                     {
-                        LogUpdate(e.Message);
-                        tclient.Key.ACTION = PlayerAction.Wait;
-                    }
-                    catch (Exception)
-                    {
-                        // PlayerDisconnect(tclient.Value);
-                      //  LogUpdate("Игрок " + tclient.Key.Name + " слишком долго думал");
+                        LogUpdate(er.Message);
                         tclient.Key.ACTION = PlayerAction.Wait;
                     }
                 }
@@ -511,7 +444,6 @@ namespace Bomber_wpf
                 LogUpdate("ОШИБКА при перечислении списка Юзеров");
             }
         }
-
 
 
 
