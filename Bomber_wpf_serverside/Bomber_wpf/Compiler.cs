@@ -43,10 +43,10 @@ namespace Bomber_wpf
             main_Path += "\\";            
            
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
-            userClass_Path = Form1.SpliteEndPath(_userClass_sourceName,true);
+            userClass_Path = Helper.SpliteEndPath(_userClass_sourceName,true);
             userClient_Path = main_Path + "User_client\\User_client\\";
             
-            userClass_sourceName = Form1.SpliteEndPath(_userClass_sourceName) + ".cs";
+            userClass_sourceName = Helper.SpliteEndPath(_userClass_sourceName) + ".cs";
             userClass_dllName = "User_class.dll";
 
             user_directory_name = "User_" + i;

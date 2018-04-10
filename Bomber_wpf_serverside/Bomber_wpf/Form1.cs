@@ -10,7 +10,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
 using User_class;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
@@ -31,7 +30,7 @@ namespace Bomber_wpf
 
         string serverIp = "127.0.0.1";
         TcpListener server;
-        Dictionary<Player, TcpClient> clients = new Dictionary<Player, TcpClient>();
+        List<UserInfo> usersInfo = new List<UserInfo>();
         List<GameBoard> gameBoardStates = new List<GameBoard>();
         List<GameBoard> savedGameBoardStates = new List<GameBoard>();
         int visualizeGameCadrNumber = 0;
@@ -104,7 +103,7 @@ namespace Bomber_wpf
                     }
                     else
                     {
-                        LogUpdate("Ошибка при компиляции файла \"" + startPage.paths[i] + "\"");
+                       Helper.LogUpdate("Ошибка при компиляции файла \"" + startPage.paths[i] + "\"", ref log_box);
                         continue;
                     }
                 }
@@ -112,50 +111,7 @@ namespace Bomber_wpf
             }
         }
 
-        /// <summary>
-        /// Выделить из Пути файла имя этого Файла
-        /// </summary>
-        /// <param name="ppath">Полный путь до файла</param>
-        /// <returns>Имя файла</returns>
-        public static string SpliteEndPath(string ppath, bool k=false)
-        {
-            Stack<char> tsymbols = new Stack<char>();
-            string nfileName = "";
-
-            int tindex = ppath.Length - 1;
-
-            for (; tindex >= 0; tindex--)
-            {
-                if (ppath[tindex] == '.')
-                {
-                    break;
-                }
-            }
-
-            tindex--;
-
-            for (; tindex >= 0; tindex--)
-            {
-
-                if (ppath[tindex] == '\\')
-                {
-                    break;
-                }
-                tsymbols.Push(ppath[tindex]);
-            }
-
-            while (tsymbols.Count > 0)
-            {
-                nfileName += tsymbols.Pop();
-            }
-
-            if (k)
-            {
-                nfileName = ppath.Substring(0, ppath.IndexOf(nfileName+ ".cs"));
-            }
-            return nfileName;
-        }
-
+     
 
         /// <summary>
         /// Создание игрока на основе данных из формы
@@ -182,7 +138,7 @@ namespace Bomber_wpf
                 pplayer.Name = "User_" + (i + 1);
             }                        
 
-            pplayer.ID = CalculateMD5Hash(DateTime.Now.Millisecond * rn.NextDouble() + "JOPA" + pplayer.Name);
+            pplayer.ID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * rn.NextDouble() + "JOPA" + pplayer.Name);
             pplayer.Color = player_colors[i];
             pplayer.Points = 0;
             //    pplayer.Health = Config.player_health;
@@ -296,9 +252,6 @@ namespace Bomber_wpf
         /// </summary>
         public void InitGame()
         {
-            clients.Clear();
-            gameBoardStates.Clear();
-
             isGameOver = false;
 
             GameTimer = Config.gameTicksMax;
@@ -329,19 +282,15 @@ namespace Bomber_wpf
 
             int tplayers_index = 0;
 
-            while (clients.Count < tconnected_clients_count)
+
+            while (usersInfo.Count < tconnected_clients_count)
             {
-                //  MessageBox.Show("Ожидаем клиентов в фоновом режиме");
                 if (gb.Players[tplayers_index] is User)
                 {
-                    clients.Add(gb.Players[tplayers_index], server.AcceptTcpClient());
+                    usersInfo.Add(new UserInfo(gb.Players[tplayers_index], server.AcceptTcpClient()));
                 }
                 tplayers_index++;
-                //  MessageBox.Show("Клиент подключился");
             }
-
-
-          //  SendGameInfo();
 
             gameBoardStates.Add((GameBoard)gb.Clone());
 
@@ -353,30 +302,9 @@ namespace Bomber_wpf
         }
 
 
-        /// <summary>
-        /// Cчитать строку из сетевого потока
-        /// </summary>
-        /// <returns></returns>
-        static string readStream(NetworkStream strm)
-        {
-            Byte[] serverData = new Byte[16];
-            int bytes = strm.Read(serverData, 0, serverData.Length);
+   
 
-            string serverMessage = Encoding.ASCII.GetString(serverData, 0, bytes);
-            return serverMessage;
-        }
-
-
-        /// <summary>
-        /// Отправить строку в сетевой поток
-        /// </summary>
-        /// <param name="message">Отправляемая строка</param>
-        static void writeStream(NetworkStream strm, string message)
-        {
-            Byte[] data = Encoding.ASCII.GetBytes(message);
-
-            strm.Write(data, 0, data.Length);
-        }
+    
 
         /// <summary>
         /// Отправить Клиентам инофрмацию об Игровом мире (объект класса GameBoard)
@@ -385,30 +313,30 @@ namespace Bomber_wpf
         {
             try
             {
-                foreach (var tclient in clients)
+                for (int i = 0; i < usersInfo.Count; i++)
                 {
                     try
                     {
-                        if (tclient.Value != null)
+                        if (usersInfo[i].client != null)
                         {
-                            NetworkStream strm = tclient.Value.GetStream();
+                            NetworkStream strm = usersInfo[i].client.GetStream();
 
-                            writeStream(strm, "n");
+                           Helper.writeStream(strm, "n");
 
                             IFormatter formatter = new BinaryFormatter();
                             formatter.Serialize(strm, gb);
-                            formatter.Serialize(strm, tclient.Key);                                                            
+                            formatter.Serialize(strm, usersInfo[i].player);
                         }
                     }
                     catch
                     {
-                        PlayerDisconnect(tclient.Value);
+                        PlayerDisconnect(usersInfo[i].player);
                     }
-                }
+                }              
             }
             catch (Exception e)
             {
-                LogUpdate("SendGameInfo Error " + e.Message);
+               Helper.LogUpdate("SendGameInfo Error " + e.Message, ref log_box);
             }
         }
 
@@ -420,69 +348,48 @@ namespace Bomber_wpf
         {
             try
             {
-                foreach (var tclient in clients)
+                for (int i = 0; i < usersInfo.Count; i++)
                 {
                     try
                     {
-                        if (tclient.Value != null)
+                        if (usersInfo[i].client != null)
                         {
-                            NetworkStream strm = tclient.Value.GetStream();
+                            NetworkStream strm = usersInfo[i].client.GetStream();
 
-                            if (readStream(strm) != "s")
+                            if (Helper.readStream(strm) != "s")
                             {
                                 throw new Exception("Неверный символ, определеющий начало замера времени");
                             }
 
-                            int sleepTime = int.Parse(readStream(strm));
+                            int sleepTime = int.Parse(Helper.readStream(strm));
 
                             if (sleepTime > TimeLimit)
                             {
-                                throw new Exception("Стратегия игрока " + tclient.Key.Name + " слишком долго думала: " + sleepTime + "ms");
+                                throw new Exception("Стратегия игрока " + usersInfo[i].player.Name + " слишком долго думала: " + sleepTime + "ms");
                             }
 
-
-                            string message = readStream(strm);
-                            string[] messagePie = message.Split(' ');
-
-                            if (message.Length < 1 || message == "" || messagePie[0] != "action")
+                            usersInfo[i].globalTimeLimit += sleepTime;
+                            if (usersInfo[i].globalTimeLimit> globalTimeLimit)
                             {
-                                throw new Exception("Сообщение от стратегии игрока " + tclient.Key.Name + " неверное");
+                                throw new Exception("Стратегия игрока " + usersInfo[i].player.Name + " превысила общий лимит времени");
                             }
 
-                            switch (messagePie[1])
-                            {
-                                case "1":
-                                    tclient.Key.ACTION = PlayerAction.Bomb;
-                                    break;
-                                case "2":
-                                    tclient.Key.ACTION = PlayerAction.Down;
-                                    break;
-                                case "3":
-                                    tclient.Key.ACTION = PlayerAction.Left;
-                                    break;
-                                case "4":
-                                    tclient.Key.ACTION = PlayerAction.Right;
-                                    break;
-                                case "5":
-                                    tclient.Key.ACTION = PlayerAction.Up;
-                                    break;
-                                default:
-                                    tclient.Key.ACTION = PlayerAction.Wait;
-                                    break;
-                            }
+                            string message = Helper.readStream(strm);
+                            Helper.DiscoverAction(message, ref usersInfo, i);
                         }
                     }
 
                     catch (Exception er)
                     {
-                        LogUpdate(er.Message);
-                        tclient.Key.ACTION = PlayerAction.Wait;
+                        Helper.LogUpdate(er.Message, ref log_box);
+                        usersInfo[i].player.ACTION = PlayerAction.Wait;
                     }
                 }
+        
             }
             catch
             {
-                LogUpdate("ОШИБКА при перечислении списка Юзеров");
+               Helper.LogUpdate("ОШИБКА при перечислении списка Юзеров", ref log_box);
             }
         }
 
@@ -512,7 +419,6 @@ namespace Bomber_wpf
                 });
                 players_listView.Items.Add(item);
             }
-
         }
 
 
@@ -523,9 +429,7 @@ namespace Bomber_wpf
         {
             players_listView.Clear();
 
-
             players_listView.View = View.Details;
-
 
             players_listView.Columns.Add("Name");
             players_listView.Columns.Add("ID");
@@ -760,6 +664,7 @@ namespace Bomber_wpf
 
             gameBoardStates.Add(gb);
             SaveGameInfoFile();
+            gameBoardStates.Clear();
         }
 
         
@@ -1284,11 +1189,11 @@ namespace Bomber_wpf
         }
 
         /// <summary>
-        /// Игрок умер в лаве
+        /// Игрок умер
         /// </summary>
         /// <param name="pplayer"></param>
         /// <param name="plava"></param>
-        public void PlayerKill(Player pplayer)
+        public void PlayerDeath(Player pplayer)
         {
             //if (plava.PlayerID != pplayer.ID)
             //{
@@ -1298,47 +1203,26 @@ namespace Bomber_wpf
 
             if (pplayer is User)
             {
-                PlayerDisconnect(clients[pplayer]);
-            }
-
-            clients[pplayer] = null;
-
-            //   PlayerDeath(pplayer);
+                PlayerDisconnect(pplayer);                
+            } 
         }
 
-        /// <summary>
-        /// Похороны игрока
-        /// </summary>
-        /// <param name="pplayer"></param>
-        public void PlayerDeath(Player pplayer)
-        {
-            gb.Players.Remove(pplayer);
-        }
-
-
+  
         /// <summary>
         /// Отключение игрока-клиента
         /// </summary>
         /// <param name="pclient"></param>
-        public void PlayerDisconnect(TcpClient pclient)
+        public void PlayerDisconnect(Player pplayer)
         {
-            if (pclient != null)
-            {
-                pclient.Close();
-            }
             try
             {
-                foreach (var tclient in clients)
-                {
-                    if (tclient.Value == pclient)
-                    {
-                        clients[tclient.Key] = null;
-                    }
-                }
+                TcpClient tempclient = usersInfo.Find(c => c.player == pplayer).client;
+                tempclient.Close();
+                tempclient = null;
             }
             catch (Exception e)
             {
-                LogUpdate("Ошибка в функции PlayerDisconnect: " + e.Message);
+                Helper.LogUpdate("Ошибка в функции PlayerDisconnect: " + e.Message, ref log_box);
             }
         }
 
@@ -1348,14 +1232,15 @@ namespace Bomber_wpf
         /// <param name="pclient"></param>
         public void Disconnect()
         {
-            foreach (var tclient in clients)
+            for (int i = 0; i < usersInfo.Count; i++)
             {
-                if (tclient.Value != null)
+                if (usersInfo[i].client != null)
                 {
-                    tclient.Value.Close();
+                    usersInfo[i].client.Close();
                 }
             }
-            clients.Clear();
+
+            usersInfo.Clear();
         }
 
 
@@ -1373,7 +1258,7 @@ namespace Bomber_wpf
 
                 if (tplayer.Health>0 && tplayer.X == plava.X && tplayer.Y == plava.Y)
                 {
-                    PlayerKill(tplayer);
+                    PlayerDeath(tplayer);
                 }
             }
         }
@@ -1643,17 +1528,7 @@ namespace Bomber_wpf
 
 
 
-        /// <summary>
-        /// Добавить информацию в лог
-        /// </summary>
-        /// <param name="message"></param>
-        public void LogUpdate(string message)
-        {
-            string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
-            time = "[" + time + "] ";
-
-            log_box.Text += time + message + Environment.NewLine;
-        }
+     
 
 
         private void log_box_TextChanged(object sender, EventArgs e)
@@ -1678,30 +1553,7 @@ namespace Bomber_wpf
         }
 
 
-        /// <summary>
-        /// Случайный md5 хеш
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public string CalculateMD5Hash(string input)
-        {
-
-            MD5 md5 = MD5.Create();
-
-            byte[] inputBytes = Encoding.ASCII.GetBytes(input);
-
-            byte[] hash = md5.ComputeHash(inputBytes);
-
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < hash.Length; i++)
-
-            {
-                sb.Append(hash[i].ToString("X2"));
-            }
-
-            return sb.ToString();
-        }
+ 
 
 
         /// <summary>
@@ -1712,7 +1564,7 @@ namespace Bomber_wpf
         bool CompileAndStartUserFiles(string path, int i)
         {
             try
-            {
+            {               
                 Compiler compiler = new Compiler(path, i);
                 compiler.Compile();
 
@@ -1722,7 +1574,7 @@ namespace Bomber_wpf
             }
             catch (Exception e)
             {
-                LogUpdate("Ошибка при компиляции: " + e.Message);
+               Helper.LogUpdate("Ошибка при компиляции: " + e.Message, ref log_box);
                 return false;
             }
         }
