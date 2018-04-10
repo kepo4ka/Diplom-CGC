@@ -17,13 +17,16 @@ namespace User_client
         static User myUser;
         static GameBoard gameBoard;
         static bool connected;
+        static byte[] data;
+        static string message;
+        static NetworkStream strm;
+
 
         static void Main(string[] args)
         {           
             Connect();         
             CommunicateWithServer();           
         }
-
 
         /// <summary>
         /// Подключиться к серверу
@@ -52,51 +55,16 @@ namespace User_client
             {
                 try
                 {
-                    IFormatter formatter = new BinaryFormatter(); 
-                    NetworkStream strm = server.GetStream(); 
+                    message = "";
+                    data = new byte[4];
+                    strm = server.GetStream();
 
-                    //Информация о игровом мире, полученная с сервера
-                    gameBoard = (GameBoard) formatter.Deserialize(strm);
+                    GetInfo();
 
-                    ResetPlayerId(ref gameBoard);
+                    // Получить Команду, которую хочет выполнить Игровая Стратегия
+                    myUser.ACTION = myUser.Play(gameBoard);                    
                     
-                    myUser = (User)formatter.Deserialize(strm);
-
-                    string message = "";
-                    byte[] data = Encoding.ASCII.GetBytes("s");
-
-                    strm.Write(data, 0, data.Length);
-
-                    //   myUser.ACTION = myUser.Play(gameBoard);                        
-
-                    switch(myUser.Play(gameBoard))
-                    {
-                        case PlayerAction.Wait:
-                            message = "0";
-                            break;
-                        case PlayerAction.Bomb:
-                            message = "1";
-                            break;
-                        case PlayerAction.Down:
-                            message = "2";
-                            break;
-                        case PlayerAction.Left:
-                            message = "3";
-                            break;
-                        case PlayerAction.Right:
-                            message = "4";
-                            break;
-                        case PlayerAction.Up:
-                            message = "5";
-                            break;
-                    }
-
-                    data = Encoding.ASCII.GetBytes(message);
-
-                    strm.Write(data, 0, data.Length);
-
-                    //Отправка на сервер информацию об игроке, в частности, планируемое действие
-                    // formatter.Serialize(strm, myUser); 
+                    SentInfo();                   
                 }
                 catch (Exception e)
                 {
@@ -106,19 +74,51 @@ namespace User_client
                     Application.Exit();
                 }
             }
-        }
+        }     
+        
+        /// <summary>
+        /// Получить данные от сервера
+        /// </summary>
+        /// <param name="strm">Поток</param>
+        static void GetInfo()
+        {
+            IFormatter formatter = new BinaryFormatter();           
+            gameBoard = (GameBoard)formatter.Deserialize(strm);
+            myUser = (User)formatter.Deserialize(strm);
+        }  
 
 
         /// <summary>
-        /// Очистить ID игроков
+        /// Отправить данные на сервер
         /// </summary>
-        /// <param name="gb"></param>
-        static void ResetPlayerId(ref GameBoard gb)
+        static void SentInfo()
         {
-            for (int i = 0; i < gb.Players.Count; i++)
+            switch (myUser.ACTION)
             {
-                gb.Players[i].ID = "";
+                case PlayerAction.Wait:
+                    message = "0";
+                    break;
+                case PlayerAction.Bomb:
+                    message = "1";
+                    break;
+                case PlayerAction.Down:
+                    message = "2";
+                    break;
+                case PlayerAction.Left:
+                    message = "3";
+                    break;
+                case PlayerAction.Right:
+                    message = "4";
+                    break;
+                case PlayerAction.Up:
+                    message = "5";
+                    break;
             }
+
+            data = Encoding.ASCII.GetBytes(message);
+
+            //Отправка данных на сервер
+            strm.Write(data, 0, data.Length);
         }
     }
 }
