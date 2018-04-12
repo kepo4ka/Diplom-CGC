@@ -129,7 +129,7 @@ namespace Bomber_wpf
             Process.Start("cmd.exe", sb.ToString());
             Thread.Sleep(3000);
 
-            if (!File.Exists(userClient_Path + userClass_dllName))
+            if (!File.Exists(userClient_Path + user_directory_name + "\\" + userClass_dllName))
             {
                 throw new Exception("Исходный код стратегии не удалось скомпилировать, возможны ошибки в коде");
             }
