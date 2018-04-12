@@ -110,6 +110,18 @@ namespace Bomber_wpf
         }
 
         /// <summary>
+        /// Добавить информацию в лог на форме
+        /// </summary>
+        /// <param name="message"></param>
+        public static void logForm(string message)
+        {
+            string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
+            time = "[" + time + "] ";
+
+            log_box.Text += time + message + Environment.NewLine;
+        }
+
+        /// <summary>
         /// Выделить из Пути файла имя этого Файла
         /// </summary>
         /// <param name="ppath">Полный путь до файла</param>
