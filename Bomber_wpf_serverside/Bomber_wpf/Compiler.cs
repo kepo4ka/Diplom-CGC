@@ -24,15 +24,17 @@ namespace Bomber_wpf
         string user_directory_name;
         string userClient_sourceName;
         string userClientexe_Name;
-
+        string output;
+        string errorput;    
         public static List<string> compileDirectories = new List<string>();
+
 
         public Compiler(string _userClass_sourceName, int i)
         {           
             if (_userClass_sourceName == "" || _userClass_sourceName == null)
             {
                 throw new Exception("Неверное имя файла исходного кода");
-            }
+            }           
 
             main_Path = Directory.GetCurrentDirectory();
             if (main_Path.Contains("\\bin\\"))
@@ -55,10 +57,7 @@ namespace Bomber_wpf
             userClientexe_Name = "Program.exe";
 
             ClassLibrary_CGC = "ClassLibrary_CGC.dll";
-            Compile();
-            Thread.Sleep(2000);
-            UserClientStart();
-
+            Compile();           
         }
 
 
@@ -84,12 +83,25 @@ namespace Bomber_wpf
                 CreateUserDirectory();
                 UserClassDLLCompile();
                 UserClientExeCompile();
+                CopyToContainer();
             }
             catch (Exception e)
             {
-                throw new Exception("compile_error: " + e.Message);
+                Helper.LogERROR(e.Message);
+                throw new Exception(e.Message);
             }
         }
+
+
+        public void CopyToContainer()
+        {
+            string hostPath = $"{userClient_Path}{user_directory_name}";
+
+            hostPath = Docker.dockerVolumeFormat(hostPath);
+
+            Docker.dockerRun("kepo4ka/ubuntu_mono", hostPath);
+        }
+
 
         void CreateUserDirectory()
         {
@@ -121,30 +133,28 @@ namespace Bomber_wpf
         void UserClassDLLCompile()
         {
             DeleteFile(userClass_Path + userClass_dllName);
-            //  DeleteFile(userClient_Path + userClass_dllName);         
+            output = "";
+            errorput = "";
 
-            //StringBuilder sb = new StringBuilder();
-            //sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && " +
-            //    $"{CscEXE_Path} " +
-            //    $"/r:{ClassLibrary_CGC} " +
-            //    $"/target:library " +
-            //    $"/out:{userClass_dllName} {userClass_sourceName}");
-
-            //Process.Start("cmd.exe", sb.ToString());
-            //Thread.Sleep(2000);
-
-
-            MessageBox.Show("Результат компиляции dll: " + Helper.startProccess($"cd {userClient_Path}{user_directory_name} && " +
+            string code = $"cd {userClient_Path}{user_directory_name} && " +
                 $"{CscEXE_Path} " +
                 $"/r:{ClassLibrary_CGC} " +
                 $"/target:library " +
-                $"/out:{userClass_dllName} {userClass_sourceName}"));
+                $"/out:{userClass_dllName} {userClass_sourceName}";
 
+            ////code = $"cd {userClient_Path}{user_directory_name} && " +
+            ////    "dir &&" +
+            ////    "ping 127.0.0.1 -n 6 > nul";
 
-            //if (!File.Exists(userClient_Path + userClass_dllName))
-            //{
-            //    throw new Exception("Исходный код стратегии не удалось скомпилировать, возможны ошибки в коде");
-            //}
+            //Process.Start("cmd.exe", code);
+
+           Helper.startProccess(code, out output, out errorput);
+
+            if (errorput!= "")
+            {                
+                throw new Exception($"Ошибка при компиляции пользовательской стратегии в DLL: {errorput}");
+            }
+           
         }
 
         /// <summary>
@@ -152,22 +162,15 @@ namespace Bomber_wpf
         /// </summary>
         void UserClientExeCompile()
         {
-            //StringBuilder sb = new StringBuilder();
+            output = "";
+            errorput = "";
+            Helper.startProccess($"cd {userClient_Path}{user_directory_name} && " +
+               $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName} {userClient_sourceName}", out output, out errorput);
 
-            //sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && " +
-            //    $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName} {userClient_sourceName}");
-            //Process.Start("cmd.exe", sb.ToString());
-            //Thread.Sleep(2000);
-
-
-            MessageBox.Show("Результат компиляции exe: " + Helper.startProccess($"cd {userClient_Path}{user_directory_name} && " +
-               $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName} {userClient_sourceName}"));
-
-
-            //if (!File.Exists(userClient_Path + user_directory_name + "\\" + userClientexe_Name))
-            //{
-            //    throw new Exception("Не удалось скомпилировать exe tcp клиента");
-            //}
+            if (errorput!="")
+            {               
+                throw new Exception($"Ошибка при компиляции exe tcp-клиента: {errorput}");
+            }
         }
 
 
@@ -178,6 +181,12 @@ namespace Bomber_wpf
         /// </summary>
         void UserClientStart()
         {
+            if (!File.Exists($"{userClient_Path}{user_directory_name}\\{userClientexe_Name}"))
+            {               
+                throw new Exception($"Не удалось запустить exe tcp-клиента");
+            }
+
+
             StringBuilder sb = new StringBuilder();
           
             sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && {userClientexe_Name}");
