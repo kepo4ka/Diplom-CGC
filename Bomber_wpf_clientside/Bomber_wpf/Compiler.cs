@@ -58,16 +58,36 @@ namespace Bomber_wpf
         }
 
 
-        //public Compiler(string main_path, string cscExe_path, string source_name)
-        //{
-        //    main_Path = "D:\\Cloudmail\\Исходники\\C#\\Diplom-CGC";
-        //    CscEXE_Path = "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe";
-        //    userClass_Path = main_Path + "\\User_class\\User_class";
-        //    userClient_Path = main_Path + "\\User_client\\User_client";
-        //    userClass_sourceName = source_name + ".cs";
-        //    userClientexe_Name = source_name + ".exe";
-        //    userClass_dllName = source_name + ".dll";
-        //}
+
+        /// <summary>
+        /// Запустить процесс со специфичными настройками
+        /// </summary>
+        /// <param name="stroke">Команда и её параметры</param>
+        /// <returns>Результат выполнения процесса</returns>
+        public static void startProccess(string stroke, out string output, out string errorlog)
+        {
+            ProcessStartInfo procStartInfo =
+                new ProcessStartInfo(
+                    "cmd", "/c " + stroke);
+            // Следующая команды означает, что нужно перенаправить стандартынй вывод
+            // на Process.StandardOutput StreamReader.
+            procStartInfo.RedirectStandardOutput = true;
+            procStartInfo.RedirectStandardError = true;
+            procStartInfo.UseShellExecute = false;
+            // не создавать окно CMD
+            procStartInfo.CreateNoWindow = true;
+
+            Process proc = new Process();
+            // Получение текста в виде кодировки 866 win
+            procStartInfo.StandardOutputEncoding = Encoding.GetEncoding(866);
+            procStartInfo.StandardErrorEncoding = Encoding.GetEncoding(866);
+            //запуск CMD
+            proc.StartInfo = procStartInfo;
+            proc.Start();
+            //чтение результата
+            output = proc.StandardOutput.ReadToEnd();
+            errorlog = proc.StandardError.ReadToEnd();
+        }
 
 
         /// <summary>
@@ -117,22 +137,21 @@ namespace Bomber_wpf
         private void UserClassDLLCompile()
         {
             DeleteFile(userClass_Path + userClass_dllName);
-          //  DeleteFile(userClient_Path + userClass_dllName);         
+            //  DeleteFile(userClient_Path + userClass_dllName);       
+            string output = "";
+            string error = "";
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && " +
+            startProccess($"cd {userClient_Path}{user_directory_name} && " +
                 $"{CscEXE_Path} " +
                 $"/r:{ClassLibrary_CGC} " +
                 $"/target:library " +
-                $"/out:{userClass_dllName} {userClass_sourceName}");
+                $"/out:{userClass_dllName} {userClass_sourceName}", out output, out error);
 
-            Process.Start("cmd.exe", sb.ToString());
-            Thread.Sleep(3000);
-
-            if (!File.Exists(userClient_Path + user_directory_name + "\\" + userClass_dllName))
+            if (error.Length > 1)
             {
-                throw new Exception("Исходный код стратегии не удалось скомпилировать, возможны ошибки в коде");
+                Form1.LogUpdate(error);
             }
+           
         }
 
         /// <summary>
