@@ -149,7 +149,8 @@ namespace Bomber_wpf
 
             if (error.Length > 1)
             {
-                Form1.LogUpdate(error);
+                // Form1.LogUpdate(error);
+                throw new Exception("Ошибка, не удалось скомпилировать пользовательский код");                
             }
            
         }
@@ -159,11 +160,15 @@ namespace Bomber_wpf
         /// </summary>
         private void UserClientExeCompile()
         {
-            StringBuilder sb = new StringBuilder();
+            string output = "";
+            string error = "";
+            startProccess($"cd {userClient_Path}{user_directory_name} && " +
+                $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName} {userClient_sourceName}", out output, out error);
 
-            sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && " +
-                $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName} {userClient_sourceName}");
-            Process.Start("cmd.exe", sb.ToString());
+            if (error != "")
+            {
+                throw new Exception("Ошибка, не удалось скомпилировать tcp-client");
+            }
         }
 
 
