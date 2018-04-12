@@ -103,7 +103,7 @@ namespace Bomber_wpf
                     }
                     else
                     {
-                       Helper.LogUpdate("Ошибка при компиляции файла \"" + startPage.paths[i] + "\"", ref log_box);
+                       Helper.LOG("Ошибка при компиляции файла \"" + startPage.paths[i] + "\"");
                         continue;
                     }
                 }
@@ -258,6 +258,15 @@ namespace Bomber_wpf
             gb = new GameBoard();
             int tconnected_clients_count;
 
+            try
+            {
+                Docker.dockerStopContainer("$(docker ps -q");
+            }
+            catch (Exception error)
+            {
+                Helper.LogERROR(error.Message);
+            }
+
             CheckUserCodeSourcesPath(out tconnected_clients_count);
 
             //Bomb test = new Bomb_big
@@ -336,7 +345,7 @@ namespace Bomber_wpf
             }
             catch (Exception e)
             {
-               Helper.LogUpdate("SendGameInfo Error " + e.Message, ref log_box);
+               Helper.LOG("SendGameInfo Error " + e.Message);
             }
         }
 
@@ -381,14 +390,14 @@ namespace Bomber_wpf
 
                     catch (Exception er)
                     {
-                        Helper.LogUpdate(er.Message, ref log_box);
+                        Helper.LOG(er.Message);
                         usersInfo[i].player.ACTION = PlayerAction.Wait;
                     }
                 }        
             }
             catch
             {
-               Helper.LogUpdate("ОШИБКА при перечислении списка Юзеров", ref log_box);
+               Helper.LOG("ОШИБКА при перечислении списка Юзеров");
             }
         }
 
@@ -1221,7 +1230,7 @@ namespace Bomber_wpf
             }
             catch (Exception e)
             {
-                Helper.LogUpdate("Ошибка в функции PlayerDisconnect: " + e.Message, ref log_box);
+                Helper.LOG("Ошибка в функции PlayerDisconnect: " + e.Message);
             }
         }
 
@@ -1564,16 +1573,17 @@ namespace Bomber_wpf
         {
             try
             {               
-                Compiler compiler = new Compiler(path, i);
-                //compiler.Compile();
+                Compiler compiler = new Compiler(path, i);                
+                Thread.Sleep(1000);
 
-                //Thread.Sleep(1000);
+
+
                 //compiler.UserClientStart();
                 return true;
             }
             catch (Exception e)
             {
-               Helper.LogUpdate("Ошибка при компиляции: " + e.Message, ref log_box);
+               Helper.LogERROR("Ошибка при работе с пользовательским кодом: " + e.Message);
                 return false;
             }
         }
