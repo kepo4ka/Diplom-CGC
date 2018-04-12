@@ -706,6 +706,19 @@ namespace Bomber_wpf
         {      
             isGameOver = true;
 
+            if (winners.Count == 1)
+            {
+                winners[0].Points += 100;
+            }
+            else if (winners.Count > 1)
+            {
+                for (int i = 0; i < winners.Count; i++)
+                {
+                    winners[i].Points += 200;
+                }
+            }
+
+
             Disconnect();
             server.Stop();
 
@@ -770,7 +783,6 @@ namespace Bomber_wpf
         public void CheckGameOver()
         {
             List<Player> winners = gb.Players.FindAll(c => c.Health > 0);
-
             if (GameTimer<1 || winners.Count<2)
             {
                 GameOver(winners);                
