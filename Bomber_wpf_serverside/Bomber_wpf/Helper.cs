@@ -8,6 +8,8 @@ using System.Net.Sockets;
 
 using ClassLibrary_CGC;
 using System.Diagnostics;
+using System.Windows.Forms;
+using System.IO;
 
 namespace Bomber_wpf
 {
@@ -148,25 +150,45 @@ namespace Bomber_wpf
             strm.Write(data, 0, data.Length);
         }
 
-           /// <summary>
-        /// Добавить информацию в лог
+
+        /// <summary>
+        /// Добавить информацию в лог на форме
         /// </summary>
         /// <param name="message"></param>
-        public static void LogUpdate(string message, ref System.Windows.Forms.TextBox log_box)
+        public static void LOG(string message)
         {
+            StreamWriter sw = new StreamWriter("LOG.txt",true);
+
             string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
             time = "[" + time + "] ";
 
-            log_box.Text += time + message + Environment.NewLine;
+            sw.WriteLine($"{time}: {message} \n");
+
+            sw.Close();
         }
 
+        /// <summary>
+        /// Добавить информацию в лог на форме
+        /// </summary>
+        /// <param name="message"></param>
+        public static void LogERROR(string message)
+        {
+            StreamWriter sw = new StreamWriter("ERRORS.txt", true);
+
+            string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
+            time = "[" + time + "] ";
+
+            sw.WriteLine($"{time} ERROR: {message} \n");
+
+            sw.Close();
+        }
 
         /// <summary>
         /// Запустить процесс со специфичными настройками
         /// </summary>
         /// <param name="stroke">Команда и её параметры</param>
         /// <returns>Результат выполнения процесса</returns>
-        public static string startProccess(string stroke)
+        public static void startProccess(string stroke, out string output, out string errorput)
         {
             ProcessStartInfo procStartInfo =
                 new ProcessStartInfo(
@@ -174,6 +196,7 @@ namespace Bomber_wpf
             // Следующая команды означает, что нужно перенаправить стандартынй вывод
             // на Process.StandardOutput StreamReader.
             procStartInfo.RedirectStandardOutput = true;
+            procStartInfo.RedirectStandardError = true;
             procStartInfo.UseShellExecute = false;
             // не создавать окно CMD
             procStartInfo.CreateNoWindow = true;
@@ -185,8 +208,8 @@ namespace Bomber_wpf
             proc.StartInfo = procStartInfo;
             proc.Start();
             //чтение результата
-            string result = proc.StandardOutput.ReadToEnd();
-            return result;
+            output = proc.StandardOutput.ReadToEnd();
+            errorput = proc.StandardError.ReadToEnd();          
         }
 
     }
