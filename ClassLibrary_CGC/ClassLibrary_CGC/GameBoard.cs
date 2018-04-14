@@ -516,6 +516,9 @@ namespace ClassLibrary_CGC
 
         public Bomb()
         {
+            LiveTime = 0;
+            PlayerID = "null";
+            Bang_radius = 0;
             this.Color = Config.bomb_color;
         }
 
@@ -592,7 +595,7 @@ namespace ClassLibrary_CGC
             }
             set
             {
-                if (value>0)
+                if (value>=0)
                 {
                     bang_radius = value;
                 }
@@ -690,6 +693,8 @@ namespace ClassLibrary_CGC
 
         public Lava()
         {
+            PlayerID = "null";
+            LiveTime = 0;
             this.Color = Config.lava_color;
             this.LiveTime = Config.lava_livetime;
         }
@@ -755,6 +760,10 @@ namespace ClassLibrary_CGC
 
         public Player()
         {
+            Name = "null";
+            ID = "null";
+            Points = 0;
+            Bang_radius = 0;
             Health = 1;
             ACTION = PlayerAction.Wait;
             BombsCount = Config.player_bombs_count_start;            
@@ -806,7 +815,7 @@ namespace ClassLibrary_CGC
                 if (value.Length > 0)
                 {
                     this.name = value;
-                }
+                }            
             }
         }
 
@@ -818,7 +827,7 @@ namespace ClassLibrary_CGC
             }
             set
             {
-                if (value > 0)
+                if (value >= 0)
                 {
                     points = value;
                 }
@@ -833,7 +842,7 @@ namespace ClassLibrary_CGC
             }
             set
             {
-                if (value > 0)
+                if (value >= 0)
                 {
                     bang_radius = value;
                 }
@@ -866,7 +875,7 @@ namespace ClassLibrary_CGC
                 if (value.Length>0 && value != "")
                 {
                     id = value;
-                }
+                }              
             }
         }
 

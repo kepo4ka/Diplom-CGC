@@ -31,6 +31,10 @@ namespace Bomber_wpf
             labels[1] = path2_lab.Text;
             labels[2] = path3_lab.Text;
             labels[3] = path4_lab.Text;
+            for (int i = 1; i < paths.Length; i++)
+            {
+                paths [i]= "";
+            }
             
 
         }

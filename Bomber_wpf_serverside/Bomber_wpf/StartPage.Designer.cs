@@ -31,19 +31,19 @@
             this.realGameButton = new System.Windows.Forms.Button();
             this.savedGameButton = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.path1_btn = new System.Windows.Forms.Button();
-            this.path2_btn = new System.Windows.Forms.Button();
-            this.path1_lab = new System.Windows.Forms.Label();
-            this.path2_lab = new System.Windows.Forms.Label();
-            this.path3_lab = new System.Windows.Forms.Label();
-            this.path3_btn = new System.Windows.Forms.Button();
+            this.checkBot4 = new System.Windows.Forms.CheckBox();
+            this.checkBot3 = new System.Windows.Forms.CheckBox();
+            this.checkBot2 = new System.Windows.Forms.CheckBox();
+            this.checkBot1 = new System.Windows.Forms.CheckBox();
             this.path4_lab = new System.Windows.Forms.Label();
             this.path4_btn = new System.Windows.Forms.Button();
-            this.checkBot1 = new System.Windows.Forms.CheckBox();
-            this.checkBot2 = new System.Windows.Forms.CheckBox();
-            this.checkBot3 = new System.Windows.Forms.CheckBox();
-            this.checkBot4 = new System.Windows.Forms.CheckBox();
+            this.path3_lab = new System.Windows.Forms.Label();
+            this.path3_btn = new System.Windows.Forms.Button();
+            this.path2_lab = new System.Windows.Forms.Label();
+            this.path1_lab = new System.Windows.Forms.Label();
+            this.path2_btn = new System.Windows.Forms.Button();
+            this.path1_btn = new System.Windows.Forms.Button();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -89,87 +89,44 @@
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             // 
-            // groupBox2
+            // checkBot4
             // 
-            this.groupBox2.Controls.Add(this.savedGameButton);
-            this.groupBox2.Location = new System.Drawing.Point(12, 262);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(273, 66);
-            this.groupBox2.TabIndex = 1;
-            this.groupBox2.TabStop = false;
+            this.checkBot4.AutoSize = true;
+            this.checkBot4.Checked = true;
+            this.checkBot4.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBot4.Location = new System.Drawing.Point(162, 219);
+            this.checkBot4.Name = "checkBot4";
+            this.checkBot4.Size = new System.Drawing.Size(113, 17);
+            this.checkBot4.TabIndex = 12;
+            this.checkBot4.Text = "Стандартный бот";
+            this.checkBot4.UseVisualStyleBackColor = true;
+            this.checkBot4.CheckedChanged += new System.EventHandler(this.checkBot4_CheckedChanged);
             // 
-            // path1_btn
+            // checkBot3
             // 
-            this.path1_btn.Location = new System.Drawing.Point(10, 79);
-            this.path1_btn.Name = "path1_btn";
-            this.path1_btn.Size = new System.Drawing.Size(132, 23);
-            this.path1_btn.TabIndex = 1;
-            this.path1_btn.Text = "Выбрать файл";
-            this.path1_btn.UseVisualStyleBackColor = true;
-            this.path1_btn.Click += new System.EventHandler(this.path1_btn_Click);
+            this.checkBot3.AutoSize = true;
+            this.checkBot3.Checked = true;
+            this.checkBot3.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBot3.Location = new System.Drawing.Point(162, 174);
+            this.checkBot3.Name = "checkBot3";
+            this.checkBot3.Size = new System.Drawing.Size(113, 17);
+            this.checkBot3.TabIndex = 11;
+            this.checkBot3.Text = "Стандартный бот";
+            this.checkBot3.UseVisualStyleBackColor = true;
+            this.checkBot3.CheckedChanged += new System.EventHandler(this.checkBot3_CheckedChanged);
             // 
-            // path2_btn
+            // checkBot2
             // 
-            this.path2_btn.Location = new System.Drawing.Point(10, 123);
-            this.path2_btn.Name = "path2_btn";
-            this.path2_btn.Size = new System.Drawing.Size(132, 24);
-            this.path2_btn.TabIndex = 2;
-            this.path2_btn.Text = "Выбрать файл";
-            this.path2_btn.UseVisualStyleBackColor = true;
-            this.path2_btn.Click += new System.EventHandler(this.path2_btn_Click);
-            // 
-            // path1_lab
-            // 
-            this.path1_lab.AutoSize = true;
-            this.path1_lab.Location = new System.Drawing.Point(17, 63);
-            this.path1_lab.Name = "path1_lab";
-            this.path1_lab.Size = new System.Drawing.Size(0, 13);
-            this.path1_lab.TabIndex = 3;
-            this.path1_lab.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // path2_lab
-            // 
-            this.path2_lab.AutoSize = true;
-            this.path2_lab.Location = new System.Drawing.Point(17, 107);
-            this.path2_lab.Name = "path2_lab";
-            this.path2_lab.Size = new System.Drawing.Size(0, 13);
-            this.path2_lab.TabIndex = 4;
-            // 
-            // path3_lab
-            // 
-            this.path3_lab.AutoSize = true;
-            this.path3_lab.Location = new System.Drawing.Point(17, 151);
-            this.path3_lab.Name = "path3_lab";
-            this.path3_lab.Size = new System.Drawing.Size(0, 13);
-            this.path3_lab.TabIndex = 6;
-            // 
-            // path3_btn
-            // 
-            this.path3_btn.Location = new System.Drawing.Point(10, 167);
-            this.path3_btn.Name = "path3_btn";
-            this.path3_btn.Size = new System.Drawing.Size(132, 24);
-            this.path3_btn.TabIndex = 5;
-            this.path3_btn.Text = "Выбрать файл";
-            this.path3_btn.UseVisualStyleBackColor = true;
-            this.path3_btn.Click += new System.EventHandler(this.path3_btn_Click);
-            // 
-            // path4_lab
-            // 
-            this.path4_lab.AutoSize = true;
-            this.path4_lab.Location = new System.Drawing.Point(17, 198);
-            this.path4_lab.Name = "path4_lab";
-            this.path4_lab.Size = new System.Drawing.Size(0, 13);
-            this.path4_lab.TabIndex = 8;
-            // 
-            // path4_btn
-            // 
-            this.path4_btn.Location = new System.Drawing.Point(10, 214);
-            this.path4_btn.Name = "path4_btn";
-            this.path4_btn.Size = new System.Drawing.Size(132, 24);
-            this.path4_btn.TabIndex = 7;
-            this.path4_btn.Text = "Выбрать файл";
-            this.path4_btn.UseVisualStyleBackColor = true;
-            this.path4_btn.Click += new System.EventHandler(this.path4_btn_Click);
+            this.checkBot2.AutoSize = true;
+            this.checkBot2.Checked = true;
+            this.checkBot2.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBot2.Location = new System.Drawing.Point(162, 128);
+            this.checkBot2.Name = "checkBot2";
+            this.checkBot2.Size = new System.Drawing.Size(113, 17);
+            this.checkBot2.TabIndex = 10;
+            this.checkBot2.Text = "Стандартный бот";
+            this.checkBot2.UseVisualStyleBackColor = true;
+            this.checkBot2.CheckedChanged += new System.EventHandler(this.checkBot2_CheckedChanged);
             // 
             // checkBot1
             // 
@@ -182,38 +139,90 @@
             this.checkBot1.UseVisualStyleBackColor = true;
             this.checkBot1.CheckedChanged += new System.EventHandler(this.checkBot1_CheckedChanged);
             // 
-            // checkBot2
+            // path4_lab
             // 
-            this.checkBot2.AutoSize = true;
-            this.checkBot2.Location = new System.Drawing.Point(162, 128);
-            this.checkBot2.Name = "checkBot2";
-            this.checkBot2.Size = new System.Drawing.Size(113, 17);
-            this.checkBot2.TabIndex = 10;
-            this.checkBot2.Text = "Стандартный бот";
-            this.checkBot2.UseVisualStyleBackColor = true;
-            this.checkBot2.CheckedChanged += new System.EventHandler(this.checkBot2_CheckedChanged);
+            this.path4_lab.AutoSize = true;
+            this.path4_lab.Location = new System.Drawing.Point(17, 198);
+            this.path4_lab.Name = "path4_lab";
+            this.path4_lab.Size = new System.Drawing.Size(0, 13);
+            this.path4_lab.TabIndex = 8;
             // 
-            // checkBot3
+            // path4_btn
             // 
-            this.checkBot3.AutoSize = true;
-            this.checkBot3.Location = new System.Drawing.Point(162, 174);
-            this.checkBot3.Name = "checkBot3";
-            this.checkBot3.Size = new System.Drawing.Size(113, 17);
-            this.checkBot3.TabIndex = 11;
-            this.checkBot3.Text = "Стандартный бот";
-            this.checkBot3.UseVisualStyleBackColor = true;
-            this.checkBot3.CheckedChanged += new System.EventHandler(this.checkBot3_CheckedChanged);
+            this.path4_btn.Enabled = false;
+            this.path4_btn.Location = new System.Drawing.Point(10, 214);
+            this.path4_btn.Name = "path4_btn";
+            this.path4_btn.Size = new System.Drawing.Size(132, 24);
+            this.path4_btn.TabIndex = 7;
+            this.path4_btn.Text = "Выбрать файл";
+            this.path4_btn.UseVisualStyleBackColor = true;
+            this.path4_btn.Click += new System.EventHandler(this.path4_btn_Click);
             // 
-            // checkBot4
+            // path3_lab
             // 
-            this.checkBot4.AutoSize = true;
-            this.checkBot4.Location = new System.Drawing.Point(162, 219);
-            this.checkBot4.Name = "checkBot4";
-            this.checkBot4.Size = new System.Drawing.Size(113, 17);
-            this.checkBot4.TabIndex = 12;
-            this.checkBot4.Text = "Стандартный бот";
-            this.checkBot4.UseVisualStyleBackColor = true;
-            this.checkBot4.CheckedChanged += new System.EventHandler(this.checkBot4_CheckedChanged);
+            this.path3_lab.AutoSize = true;
+            this.path3_lab.Location = new System.Drawing.Point(17, 151);
+            this.path3_lab.Name = "path3_lab";
+            this.path3_lab.Size = new System.Drawing.Size(0, 13);
+            this.path3_lab.TabIndex = 6;
+            // 
+            // path3_btn
+            // 
+            this.path3_btn.Enabled = false;
+            this.path3_btn.Location = new System.Drawing.Point(10, 167);
+            this.path3_btn.Name = "path3_btn";
+            this.path3_btn.Size = new System.Drawing.Size(132, 24);
+            this.path3_btn.TabIndex = 5;
+            this.path3_btn.Text = "Выбрать файл";
+            this.path3_btn.UseVisualStyleBackColor = true;
+            this.path3_btn.Click += new System.EventHandler(this.path3_btn_Click);
+            // 
+            // path2_lab
+            // 
+            this.path2_lab.AutoSize = true;
+            this.path2_lab.Location = new System.Drawing.Point(17, 107);
+            this.path2_lab.Name = "path2_lab";
+            this.path2_lab.Size = new System.Drawing.Size(0, 13);
+            this.path2_lab.TabIndex = 4;
+            // 
+            // path1_lab
+            // 
+            this.path1_lab.AutoSize = true;
+            this.path1_lab.Location = new System.Drawing.Point(17, 63);
+            this.path1_lab.Name = "path1_lab";
+            this.path1_lab.Size = new System.Drawing.Size(0, 13);
+            this.path1_lab.TabIndex = 3;
+            this.path1_lab.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // path2_btn
+            // 
+            this.path2_btn.Enabled = false;
+            this.path2_btn.Location = new System.Drawing.Point(10, 123);
+            this.path2_btn.Name = "path2_btn";
+            this.path2_btn.Size = new System.Drawing.Size(132, 24);
+            this.path2_btn.TabIndex = 2;
+            this.path2_btn.Text = "Выбрать файл";
+            this.path2_btn.UseVisualStyleBackColor = true;
+            this.path2_btn.Click += new System.EventHandler(this.path2_btn_Click);
+            // 
+            // path1_btn
+            // 
+            this.path1_btn.Location = new System.Drawing.Point(10, 79);
+            this.path1_btn.Name = "path1_btn";
+            this.path1_btn.Size = new System.Drawing.Size(132, 23);
+            this.path1_btn.TabIndex = 1;
+            this.path1_btn.Text = "Выбрать файл";
+            this.path1_btn.UseVisualStyleBackColor = true;
+            this.path1_btn.Click += new System.EventHandler(this.path1_btn_Click);
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.savedGameButton);
+            this.groupBox2.Location = new System.Drawing.Point(12, 262);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(273, 66);
+            this.groupBox2.TabIndex = 1;
+            this.groupBox2.TabStop = false;
             // 
             // StartPage
             // 

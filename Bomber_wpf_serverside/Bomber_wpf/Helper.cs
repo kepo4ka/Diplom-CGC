@@ -16,41 +16,35 @@ namespace Bomber_wpf
     class Helper
     {
 
+       public static Random rn = new Random();
+
         /// <summary>
         /// Распознать Команду из строки
         /// </summary>
         /// <param name="message">Данная строка</param>
         /// <param name="usersInfo">Список, в элемент которого необходимо передать команду</param>
         /// <param name="i">Индекс элемента в Списке, который получает команду</param>
-        public static void DiscoverAction(string message, ref List<UserInfo> usersInfo, int i)
-        {
-            string[] messagePie = message.Split(' ');
-
-            if (message.Length < 1 || message == "" || messagePie[0] != "action")
-            {
-                throw new Exception("Сообщение от стратегии игрока " + usersInfo[i].player.Name + " неверное");
-            }
-
-            switch (messagePie[1])
+        public static PlayerAction DiscoverAction(string message)
+        {    
+            switch (message)
             {
                 case "1":
-                    usersInfo[i].player.ACTION = PlayerAction.Bomb;
-                    break;
+                    return PlayerAction.Bomb;
+                   
                 case "2":
-                    usersInfo[i].player.ACTION = PlayerAction.Down;
-                    break;
+                   return PlayerAction.Down;
+                   
                 case "3":
-                    usersInfo[i].player.ACTION = PlayerAction.Left;
-                    break;
+                    return PlayerAction.Left;
+                   
                 case "4":
-                    usersInfo[i].player.ACTION = PlayerAction.Right;
-                    break;
+                   return PlayerAction.Right;
+                   
                 case "5":
-                    usersInfo[i].player.ACTION = PlayerAction.Up;
-                    break;
+                    return PlayerAction.Up;
+                   
                 default:
-                    usersInfo[i].player.ACTION = PlayerAction.Wait;
-                    break;
+                    return PlayerAction.Wait;                   
             }
         }
 
@@ -135,7 +129,7 @@ namespace Bomber_wpf
             Byte[] serverData = new Byte[16];
             int bytes = strm.Read(serverData, 0, serverData.Length);
 
-            string serverMessage = Encoding.ASCII.GetString(serverData, 0, bytes);
+            string serverMessage = Encoding.Unicode.GetString(serverData, 0, bytes);
             return serverMessage;
         }
 
@@ -145,7 +139,7 @@ namespace Bomber_wpf
         /// <param name="message">Отправляемая строка</param>
         public static void writeStream(NetworkStream strm, string message)
         {
-            Byte[] data = Encoding.ASCII.GetBytes(message);
+            Byte[] data = Encoding.Unicode.GetBytes(message);
 
             strm.Write(data, 0, data.Length);
         }
@@ -199,7 +193,7 @@ namespace Bomber_wpf
             procStartInfo.RedirectStandardError = true;
             procStartInfo.UseShellExecute = false;
             // не создавать окно CMD
-            procStartInfo.CreateNoWindow = true;
+            procStartInfo.CreateNoWindow = false;
 
             Process proc = new Process();
             // Получение текста в виде кодировки 866 win
@@ -209,8 +203,130 @@ namespace Bomber_wpf
             proc.Start();
             //чтение результата
             output = proc.StandardOutput.ReadToEnd();
-            errorput = proc.StandardError.ReadToEnd();          
+            errorput = proc.StandardError.ReadToEnd();
+
+          while (proc.StandardOutput.Peek()>=0)
+            {
+                output = proc.StandardOutput.ReadLine();
+                if (output.Contains("error"))
+                {
+                    errorput += Environment.NewLine + proc.StandardOutput.ReadToEnd();
+                    break;
+                }
+            }
         }
 
+
+        /// <summary>
+        /// Удалить файл, если он существует
+        /// </summary>
+        /// <param name="filePath">Путь к удаляемому файлу</param>
+        public static void DeleteFile(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+
+
+        /// <summary>
+        ///  Удалить папку, если она существует
+        /// </summary>
+        /// <param name="DirectoryPath"></param>
+        public static void DeleteDirectory(string DirectoryPath)
+        {
+            try
+            {
+                if (Directory.Exists(DirectoryPath))
+                {
+                    DirectoryInfo di = new DirectoryInfo(DirectoryPath);
+                    DirectoryInfo[] diA = di.GetDirectories();
+                    FileInfo[] fi = di.GetFiles();
+
+                    foreach (FileInfo f in fi)
+                    {
+                        f.Delete();
+                    }
+
+                    foreach (FileInfo tfile in di.GetFiles())
+                    {
+                        tfile.Delete();
+                    }
+
+                    foreach (DirectoryInfo df in diA)
+                    {
+                        DeleteDirectory(df.FullName);
+                        if (df.GetDirectories().Length == 0 && df.GetFiles().Length == 0)
+                        {
+                            df.Delete();
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Helper.LOG("DeleteDirectory ERROR: " + e.Message);
+            }
+        }       
+
+
+        /// <summary>
+        /// Создать, либо пересоздать пустую папку
+        /// </summary>
+        /// <param name="ppath"></param>
+        public static void CreateEmptyDirectory(string ppath)
+        {
+            DeleteDirectory(ppath);
+            Directory.CreateDirectory(ppath);
+        }
+
+        /// <summary>
+        /// Записать строку в файл
+        /// </summary>
+        /// <param name="data">Строка</param>
+        /// <param name="path">Полный путь до файла, включая имя файла и расширение</param>
+        /// <param name="k">Если true, то данные добавляются в конец файла, не перезаписывая файл</param>
+        public static void WriteDataJson(string data, string path, bool k)
+        {
+            if (data != null)
+            {
+                using (StreamWriter sw = new StreamWriter(path, k))
+                {
+                    sw.AutoFlush = true;
+                    sw.WriteLine(data);
+                }
+            }
+        }
+
+
+      
+        /// <summary>
+        /// Считать данные из файла
+        /// </summary>
+        /// <param name="path">Полный путь до файла, включая имя файла и расширение</param>
+        /// <returns>Полученные данные</returns>
+        public static string[] ReadFile(string path)
+        {
+            string[] data = new string[3];
+
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+
+            using (StreamReader sr = new StreamReader(path))
+            {
+                for (int i = 0; i < data.Length; i++)
+                {
+                    data[i] = sr.ReadLine();
+                    if (String.IsNullOrWhiteSpace(data[i]))
+                    {
+                        return null;
+                    }
+                }
+            }              
+            return data;
+        }
     }
 }

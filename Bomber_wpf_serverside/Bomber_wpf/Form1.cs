@@ -28,12 +28,15 @@ namespace Bomber_wpf
         GameBoard gb;
         int GameTimer;
 
-        string serverIp = "127.0.0.1";
-        TcpListener server;
+        //string serverIp = "127.0.0.1";
+        //TcpListener server;
         List<UserInfo> usersInfo = new List<UserInfo>();
         List<GameBoard> gameBoardStates = new List<GameBoard>();
         List<GameBoard> savedGameBoardStates = new List<GameBoard>();
         int visualizeGameCadrNumber = 0;
+        public static string gameID;
+
+        public string gameboardjson; 
 
         int TimeLimit = 5000;
         int globalTimeLimit = 120000; 
@@ -45,9 +48,7 @@ namespace Bomber_wpf
 
         bool isGameOver = false;
 
-        Random rn = new Random();
-
-
+        Random rn = new Random();     
 
 
         /// <summary>
@@ -61,9 +62,9 @@ namespace Bomber_wpf
             p = new Pen(Color.Black);
             sb = new SolidBrush(Color.DimGray);
 
-            IPAddress ip = IPAddress.Parse(serverIp);
-            server = new TcpListener(ip, 9595);
-            server.Start();
+            //IPAddress ip = IPAddress.Parse(serverIp);
+            //server = new TcpListener(ip, 9595);
+            //server.Start();
             startPage = pstartPage;
 
             InitGame();
@@ -88,26 +89,29 @@ namespace Bomber_wpf
         }
 
 
-        void CheckUserCodeSourcesPath(out int clients_count)
-        {
-            clients_count = 0;
-
+        void CheckUserCodeSourcesPath()
+        {     
             for (int i = 0; i < startPage.paths.Length; i++)
-            {               
-                if (startPage.paths[i] != null && startPage.paths[i] != "")
+            {
+                switch (startPage.paths[i])
                 {
-                    string tfilename = startPage.paths[i];
-                    if (CompileAndStartUserFiles(tfilename, i))
-                    {
-                        clients_count++;
-                    }
-                    else
-                    {
-                       Helper.LOG("Ошибка при компиляции файла \"" + startPage.paths[i] + "\"");
+                    case null:
                         continue;
-                    }
-                }
-                InitPlayersInfo(i);
+                    case "":
+                        gb.Players.Add(InitPlayersInfo(false,i));
+                        break;
+                    default:
+                        Compiler cmp = CompileAndStartUserFiles(startPage.paths[i], i);
+                        User tuser = (User)InitPlayersInfo(true,i);
+                        if (cmp == null)
+                        {
+                            continue;
+                        }
+
+                        usersInfo.Add(new UserInfo(tuser, null, cmp));
+                        gb.Players.Add(tuser);
+                        break;
+                }  
             }
         }
 
@@ -117,17 +121,12 @@ namespace Bomber_wpf
         /// Создание игрока на основе данных из формы
         /// </summary>
         /// <param name="i"></param>
-        void InitPlayersInfo(int i)
+        Player InitPlayersInfo(bool k, int i)
         {
             string[] ppaths = startPage.paths;
-            Player pplayer;
+            Player pplayer;           
 
-            if (ppaths[i] == null)
-            {
-                return;
-            }
-
-            if (ppaths[i] == "")
+            if (!k)
             {
                 pplayer = new Bot();
                 pplayer.Name = "Bot_" + (i + 1);
@@ -166,7 +165,7 @@ namespace Bomber_wpf
                     pplayer.Y = gb.H - 1;
                     break;
             }
-            gb.Players.Add(pplayer);
+            return pplayer;
         }
 
 
@@ -256,50 +255,20 @@ namespace Bomber_wpf
 
             GameTimer = Config.gameTicksMax;
             gb = new GameBoard();
-            int tconnected_clients_count;
 
-            try
+           
+
+           // gameID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
+            gameID = "JOPAJOPA";
+
+            CheckUserCodeSourcesPath();
+
+            for (int i = 0; i < usersInfo.Count; i++)
             {
-                Docker.dockerStopContainer("$(docker ps -q");
-            }
-            catch (Exception error)
-            {
-                Helper.LogERROR(error.Message);
+                usersInfo[i].compiler.WaitClientStart();
             }
 
-            CheckUserCodeSourcesPath(out tconnected_clients_count);
-
-            //Bomb test = new Bomb_big
-            //{
-            //    X = 0,
-            //    Y = 1,                
-            //    Color = Color.Red,
-            //    LiveTime = 3,
-            //    PlayerID = 1
-            //};
-            //gb.Bombs.Add(test);
-
-            //Bonus_big test = new Bonus_big(0, 1);
-            //test.Visible = true;
-            //Bonus_big test1 = new Bonus_big(1, 0);
-            //test1.Visible = true;
-
-
-
-            //gb.Bonuses.Add(test);
-            //gb.Bonuses.Add(test1);       
-
-            int tplayers_index = 0;
-
-
-            while (usersInfo.Count < tconnected_clients_count)
-            {
-                if (gb.Players[tplayers_index] is User)
-                {
-                    usersInfo.Add(new UserInfo(gb.Players[tplayers_index], server.AcceptTcpClient()));
-                }
-                tplayers_index++;
-            }
+            SetGameBoardCast();           
 
             gameBoardStates.Add((GameBoard)gb.Clone());
 
@@ -307,98 +276,140 @@ namespace Bomber_wpf
             game_timer.Interval = 800;
             game_timer.Start();
 
-            initListView();
+            initListView();           
         }
 
 
-   
+        /// <summary>
+        /// Сериализовать в json класс Gameboard
+        /// </summary>
+        public void SetGameBoardCast()
+        {
+            gameboardjson = JsonConvert.SerializeObject(gb);
+        }
 
-    
 
         /// <summary>
         /// Отправить Клиентам инофрмацию об Игровом мире (объект класса GameBoard)
         /// </summary>
         public void SendGameInfo()
         {
-            try
+            for (int i = 0; i < usersInfo.Count; i++)
             {
-                for (int i = 0; i < usersInfo.Count; i++)
+                try
                 {
-                    try
-                    {
-                        if (usersInfo[i].client != null)
-                        {
-                            NetworkStream strm = usersInfo[i].client.GetStream();
+                    // NetworkStream strm = usersInfo[i].client.GetStream();
 
-                           Helper.writeStream(strm, "n");
+                    ////Helper.writeStream(strm, "server");
 
-                            IFormatter formatter = new BinaryFormatter();
-                            formatter.Serialize(strm, gb);
-                            formatter.Serialize(strm, usersInfo[i].player);
-                        }
-                    }
-                    catch
-                    {
-                        PlayerDisconnect(usersInfo[i].player);
-                    }
-                }              
-            }
-            catch (Exception e)
-            {
-               Helper.LOG("SendGameInfo Error " + e.Message);
-            }
+                    // // IFormatter formatter = new BinaryFormatter();
+                    // //  formatter.Serialize(strm, gb);
+                    // // formatter.Serialize(strm, usersInfo[i].player);
+                    //string message = JsonConvert.SerializeObject(gb);
+                    // log_box.Text += message.Length + Environment.NewLine;               
+                    // Helper.writeStream(strm, message);
+
+                    UserInfo tempUserInfo = usersInfo[i];
+                    
+
+                    string userjson = JsonConvert.SerializeObject(usersInfo[i].player);
+                    tempUserInfo.compiler.SaveTempGameInfo(GameTimer + Environment.NewLine + gameboardjson, GameTimer + Environment.NewLine + userjson);
+                }
+                catch (Exception er)
+                {
+                    Helper.LOG("SendGameInfo ERROR: " + er.Message);
+                    // PlayerDisconnect(usersInfo[i].player);
+                }
+            } 
         }
 
+
+
+        public void CheckClientData(UserInfo UI)
+        {
+            string[] userData = UI.compiler.ReadClientDataFile();
+
+            int clientGameTime = int.Parse(userData[0]);
+            clientGameTime--;
+
+            if (clientGameTime != GameTimer)
+            {
+                throw new IOException();
+            }
+
+            int sleepTime = int.Parse(userData[1]);
+
+            if (sleepTime > TimeLimit)
+            {
+                throw new Exception("Стратегия клиента слишком долго думала: " + sleepTime + "ms");
+            }
+
+           UI.globalTimeLimit += sleepTime;
+
+            if (UI.globalTimeLimit > globalTimeLimit)
+            {
+                throw new Exception("Стратегия клиента превысила общий лимит времени");
+            }
+
+            UI.player.ACTION = Helper.DiscoverAction(userData[3]);
+        }
 
         /// <summary>
         /// Получить информацию об Игроках (класс Player) от Клиентов
         /// </summary>
         public void RecieveUserInfo()
         {
-            try
+            for (int i = 0; i < usersInfo.Count; i++)
             {
-                for (int i = 0; i < usersInfo.Count; i++)
+                try
                 {
-                    try
-                    {
-                        if (usersInfo[i].client != null)
-                        {
-                            NetworkStream strm = usersInfo[i].client.GetStream();
+                    CheckClientData(usersInfo[i]);
 
-                            if (Helper.readStream(strm) != "s")
-                            {
-                                throw new Exception("Неверный символ, определеющий начало замера времени");
-                            }
+                    //NetworkStream strm = usersInfo[i].client.GetStream();
 
-                            int sleepTime = int.Parse(Helper.readStream(strm));
+                    //string message = Helper.readStream(strm);
+                    //message = Helper.readStream(strm);
+                    //Player tempPlayer = (Player)JsonConvert.DeserializeObject(message);
+                    //log_box.Text += "playerName: " + tempPlayer.Name;
 
-                            if (sleepTime > TimeLimit)
-                            {
-                                throw new Exception("Стратегия игрока " + usersInfo[i].player.Name + " слишком долго думала: " + sleepTime + "ms");
-                            }
+                    //if (Helper.readStream(strm) != "client")
+                    //{
+                    //    throw new Exception("Неверный символ, определеющий начало замера времени");
+                    //}
+                    //else
+                    //{
+                    //    log_box.Text += "client" + Environment.NewLine;
+                    //}
 
-                            usersInfo[i].globalTimeLimit += sleepTime;
-                            if (usersInfo[i].globalTimeLimit> globalTimeLimit)
-                            {
-                                throw new Exception("Стратегия игрока " + usersInfo[i].player.Name + " превысила общий лимит времени");
-                            }
+                    //int sleepTime = int.Parse(Helper.readStream(strm));
 
-                            string message = Helper.readStream(strm);
-                            Helper.DiscoverAction(message, ref usersInfo, i);
-                        }
-                    }
+                    //if (sleepTime > TimeLimit)
+                    //{
+                    //    throw new Exception("Стратегия игрока " + usersInfo[i].player.Name + " слишком долго думала: " + sleepTime + "ms");
+                    //}
 
-                    catch (Exception er)
-                    {
-                        Helper.LOG(er.Message);
-                        usersInfo[i].player.ACTION = PlayerAction.Wait;
-                    }
-                }        
-            }
-            catch
-            {
-               Helper.LOG("ОШИБКА при перечислении списка Юзеров");
-            }
+                    //usersInfo[i].globalTimeLimit += sleepTime;
+                    //if (usersInfo[i].globalTimeLimit> globalTimeLimit)
+                    //{
+                    //    throw new Exception("Стратегия игрока " + usersInfo[i].player.Name + " превысила общий лимит времени");
+                    //}
+
+                    //string message = Helper.readStream(strm);
+                    //Helper.DiscoverAction(message, ref usersInfo, i);
+
+                }
+                catch (IOException)
+                {
+                    Thread.Sleep(100);
+                    CheckClientData(usersInfo[i]);
+                }
+
+                catch (Exception er)
+                {
+                    Helper.LOG($"{er.Message} - {usersInfo[i].player.Name}:{usersInfo[i].compiler.containerName}");
+                    usersInfo[i].player.ACTION = PlayerAction.Wait;
+                }
+            }      
         }
 
 
@@ -470,7 +481,7 @@ namespace Bomber_wpf
 
         private void game_timer_Tick(object sender, EventArgs e)
         {
-            NextTick();
+           NextTick();
         }
 
         /// <summary>
@@ -554,9 +565,7 @@ namespace Bomber_wpf
             BombsProccess();
             LavasProccess();
             LavaCollision();
-        }
-
-
+        }        
 
         /// <summary>
         /// Следующий ход игры
@@ -565,7 +574,7 @@ namespace Bomber_wpf
         {
             if (isGameOver == false)
             {
-                
+                CheckGameOver();
 
                 panel1.Refresh();
                 UpdateListView();
@@ -577,13 +586,18 @@ namespace Bomber_wpf
 
                 gameBoardStates.Add((GameBoard)gb.Clone());
 
-                CheckGameOver();
-
                 SetXYInfo();
+                SetGameBoardCast();
 
                 SendGameInfo();
                 RecieveUserInfo();
-            }
+
+
+                //  Helper.writeStream(usersInfo[0].client.GetStream(), "server");
+                //log_box.Text+= Helper.readStream(usersInfo[0].client.GetStream()) + Environment.NewLine;
+              
+                //   NextTick();     
+            }        
         }
 
 
@@ -624,7 +638,8 @@ namespace Bomber_wpf
                             if (gb.Lavas[ii].LiveTime >= tmaxLiveTime)
                             {
                                 tmaxLiveTime = gb.Lavas[ii].LiveTime;
-                                tXYInfo.Lava = gb.Lavas[ii];
+
+                                tXYInfo.Lava = gb.Lavas[ii]; 
                             }
                         }
                     }
@@ -660,22 +675,38 @@ namespace Bomber_wpf
         {      
             isGameOver = true;
 
-            Disconnect();
-            server.Stop();
-
-            game_timer.Stop();
-
-            Thread.Sleep(100);
-            Compiler.DeleteComppiledFiles();
+            for (int i = 0; i < winners.Count; i++)
+            {
+                winners[i].Points += Config.player_win_points;
+            }      
 
             EndGameMessage(winners);
 
             gameBoardStates.Add(gb);
             SaveGameInfoFile();
-            gameBoardStates.Clear();
+
+            StopClearTempFiles();            
         }
 
-        
+
+        void StopClearTempFiles()
+        {
+            gameBoardStates.Clear();
+            game_timer.Stop();
+
+            //Disconnect();
+          //  server.Stop();           
+
+            for (int i = 0; i < usersInfo.Count; i++)
+            {
+                usersInfo[i].compiler.StopContainer();
+            }
+            usersInfo.Clear();
+            Compiler.EndProccess();
+        }
+
+
+
         /// <summary>
         /// Диалоговое окно с информацией о результатах игровой сессии
         /// </summary>
@@ -741,7 +772,7 @@ namespace Bomber_wpf
             //{
             string gameResultDirectoryName = Directory.GetCurrentDirectory() + "\\" + GetInfoAboutThisGame() + "\\";
 
-            Compiler.DeleteDirectory(gameResultDirectoryName);
+            Helper.DeleteDirectory(gameResultDirectoryName);
 
             Directory.CreateDirectory(gameResultDirectoryName);
 
@@ -1211,45 +1242,43 @@ namespace Bomber_wpf
 
             if (pplayer is User)
             {
-                PlayerDisconnect(pplayer);                
+               // PlayerDisconnect(pplayer);                
             } 
         }
 
   
-        /// <summary>
-        /// Отключение игрока-клиента
-        /// </summary>
-        /// <param name="pclient"></param>
-        public void PlayerDisconnect(Player pplayer)
-        {
-            try
-            {
-                TcpClient tempclient = usersInfo.Find(c => c.player == pplayer).client;
-                tempclient.Close();
-                tempclient = null;
-            }
-            catch (Exception e)
-            {
-                Helper.LOG("Ошибка в функции PlayerDisconnect: " + e.Message);
-            }
-        }
+        ///// <summary>
+        ///// Отключение игрока-клиента
+        ///// </summary>
+        ///// <param name="pclient"></param>
+        //public void PlayerDisconnect(Player pplayer)
+        //{
+        //    try
+        //    {
+        //        TcpClient tempclient = usersInfo.Find(c => c.player == pplayer).client;
+        //        tempclient.Close();
+        //        tempclient = null;
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Helper.LOG("Ошибка в функции PlayerDisconnect: " + e.Message);
+        //    }
+        //}
 
-        /// <summary>
-        /// Отключение всех игроков-клиентов
-        /// </summary>
-        /// <param name="pclient"></param>
-        public void Disconnect()
-        {
-            for (int i = 0; i < usersInfo.Count; i++)
-            {
-                if (usersInfo[i].client != null)
-                {
-                    usersInfo[i].client.Close();
-                }
-            }
-
-            usersInfo.Clear();
-        }
+        ///// <summary>
+        ///// Отключение всех игроков-клиентов
+        ///// </summary>
+        ///// <param name="pclient"></param>
+        //public void Disconnect()
+        //{
+        //    for (int i = 0; i < usersInfo.Count; i++)
+        //    {
+        //        if (usersInfo[i].client != null)
+        //        {
+        //            usersInfo[i].client.Close();
+        //        }
+        //    }           
+        //}
 
 
 
@@ -1548,14 +1577,7 @@ namespace Bomber_wpf
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Disconnect();
-            Thread.Sleep(100);
-            Compiler.DeleteComppiledFiles();
-
-            if (server != null)
-            {
-                server.Stop();
-            }
+            StopClearTempFiles();
 
             startPage.Show();
         }
@@ -1569,22 +1591,22 @@ namespace Bomber_wpf
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        bool CompileAndStartUserFiles(string path, int i)
+        Compiler CompileAndStartUserFiles(string path, int i)
         {
             try
             {               
-                Compiler compiler = new Compiler(path, i);                
+                Compiler compiler = new Compiler(path, i);
+                compiler.Compile();
+             //    compiler.StartProccess();
                 Thread.Sleep(1000);
+               compiler.UserClientStart();        
 
-
-
-                //compiler.UserClientStart();
-                return true;
+                return compiler;
             }
             catch (Exception e)
             {
                Helper.LogERROR("Ошибка при работе с пользовательским кодом: " + e.Message);
-                return false;
+                return null;
             }
         }
 
