@@ -17,8 +17,9 @@ namespace User_client
     class Program
     {
       //  static string serverIp = "10.0.2.2";
-      //  static string serverIp = "127.0.0.1";
-       // static TcpClient server;
+        static string serverIp = "127.0.0.1";
+        static int serverPort;
+        static TcpClient server;
         static User myUser;
         static GameBoard gameBoard;
         static bool connected; 
@@ -27,16 +28,14 @@ namespace User_client
         static long sleeptime;
         static object obj = new object();
         static StreamWriter sw;
-        static int GameTimer;
+       static NetworkStream strm;
 
-        //static string gameboardjsonpath = "/cgc/gameboard.json";
-        //static string actionjsonpath = "/cgc/action.txt";
         //static string logpath = "/cgc/log.txt";
-      //  static string userjsonpath = "/cgc/user.json";
+        //static string gameboardjsonpath = "/cgc/gameboard.json";
+        //  static string userjsonpath = "/cgc/user.json";
 
-        static string gameboardjsonpath = "gameboard.json";
-        static string actionjsonpath = "action.txt";
         static string logpath = "log.txt";
+        static string gameboardjsonpath = "gameboard.json";
         static string userjsonpath = "user.json";
 
 
@@ -44,25 +43,31 @@ namespace User_client
         static void Main(string[] args)
         {
             try
-            {
+            { 
+                if (!int.TryParse(args[0], out serverPort))
+                {
+                    throw new Exception("Command parametrs (args) ERROR");
+                }
+
                 sw = new StreamWriter(logpath, true);
                 sw.AutoFlush = true;
 
-                Connect();    
-                           
+                Connect();
+                connected = true;
+                Console.WriteLine("sTART");
                 CommunicateWithServer();
+
                 Console.ReadKey();
             }
             catch (Exception e)
             {
-                Process.Start("notepad");
-                Log("ERROR IN MAIN: " + e.Message);
-                Console.ReadKey();
+                Log(e.Message);
+                Environment.Exit(0);
             }
         }
 
         static void Log(string message)
-        {  
+        {
             string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
             time = "[" + time + "] ";
             sw.WriteLine(time + ": " + message);
@@ -75,29 +80,29 @@ namespace User_client
        /// </summary>
         static void Connect()
         {
-            if (!File.Exists(gameboardjsonpath))
-            {
-                Thread.Sleep(500);
-                Connect();
-            }
-            else
-            {
-                connected = true; 
-                Log("Connected with server");
-            }
-
-
-            //try
-            //{
-            //    //server = new TcpClient(serverIp, 9595);
-            //    //connected = true;
-            //}
-            //catch
+            //if (!File.Exists(gameboardjsonpath))
             //{
             //    Thread.Sleep(500);
-            //    Log("Не удалось подключиться к серверу, повторная попытка");
             //    Connect();
             //}
+            //else
+            //{
+            //    connected = true; 
+            //    Log("Connected with server");
+            //}
+
+
+            try
+            {
+                server = new TcpClient(serverIp, serverPort);
+                connected = true;
+            }
+            catch
+            {
+                Thread.Sleep(500);
+                Log("Не удалось подключиться к серверу, повторная попытка");
+                Connect();
+            }
         }
 
         /// <summary>
@@ -108,25 +113,23 @@ namespace User_client
             while (connected)
             {
                 try
-                {                   
+                {
                     GetInfo();
-                    Log("getinfo end");
 
-                    Thread thr = CreateMyThread();                    
+                    Thread thr = CreateMyThread();
                     thr.Start();
                     Thread.Sleep(TimeLimit);
 
                     if (thr.ThreadState == System.Threading.ThreadState.Running)
                     {
-                        Log("low sentinfo start");
                         SentInfo(TimeLimit);
-                        Log("low sentinfo end");
+                        Log("Strategy work Time: " + TimeLimit);
+
                     }
                     else
                     {
-                        Log("fast sentinfo start");
                         SentInfo(sleeptime);
-                        Log("fast sentinfo start");
+                        Log("Strategy work Time: " + sleeptime);
                     }
 
                     //strm = server.GetStream();
@@ -182,14 +185,14 @@ namespace User_client
                     Log("ERROR: " + e.GetType() + " : " + e.Message);
                     connected = false;
                     sw.Close();
-                    //  server.Close();
+                    server.Close();
                     //Thread.Sleep(200000);
-                    //Environment.Exit(0);
-                    Console.ReadKey();
-
+                    Environment.Exit(0);
+                    // Console.ReadKey();
                 }
             }
         }
+
 
 
         static Thread CreateMyThread()
@@ -207,7 +210,6 @@ namespace User_client
                 {
                     sleeptime = TimeLimit;
                 }
-                Log("Strategy work Time: " + sleeptime);
             });
 
             return thr;
@@ -220,62 +222,39 @@ namespace User_client
         /// </summary>
         static void GetInfo()
         {
+            strm = server.GetStream();
+           
+            string message = readStream();
+           
+
+            if (message !="s")
+            {
+                Thread.Sleep(1000);
+                throw new Exception("Потеря связи с сервером");
+            }
+
+
+
             //IFormatter formatter = new BinaryFormatter();
             ////   gameBoard = (GameBoard)formatter.Deserialize(strm);
             ////  myUser = (User)formatter.Deserialize(strm);
             //int rn = (int)formatter.Deserialize(strm);
 
-            //Log("desiarelize: " + rn);
-           
-            if (!File.Exists(gameboardjsonpath) || !File.Exists(userjsonpath))
-            {
-                Log(" if (!File.Exists(gameboardjsonpath) || !File.Exists(userjsonpath))");
-                Thread.Sleep(100);
-                GetInfo();
-            }           
+            //Log("desiarelize: " + rn);           
 
             try
             {
                 using (StreamReader sr = new StreamReader(gameboardjsonpath))
                 {
-                   int tempGameTimer = int.Parse(sr.ReadLine());
-
-                    
-
-                    if (tempGameTimer == GameTimer)
-                    {
-                        throw new IOException();
-                    }
-                    else
-                    {
-                        GameTimer = tempGameTimer;
-                    }
                     string gameboardjson = sr.ReadToEnd();
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gameboardjson);                  
                 }
 
-                using (StreamReader srr = new StreamReader(userjsonpath))
+                using (StreamReader sr = new StreamReader(userjsonpath))
                 {
-                    int tempGameTimer = int.Parse(srr.ReadLine());
-                    Log(tempGameTimer+ " tempGameTimer");
-                    if (tempGameTimer == GameTimer)
-                    {
-                        throw new IOException();
-                    }
-                    else
-                    {
-                        GameTimer = tempGameTimer;
-                    }
-                    string userjson = srr.ReadToEnd();
-                    myUser = JsonConvert.DeserializeObject<User>(userjson);
-                    
+                    string userjson = sr.ReadToEnd();
+                    myUser = JsonConvert.DeserializeObject<User>(userjson);                    
                 }
-            }
-
-            catch (IOException)
-            {
-                Thread.Sleep(100);
-                GetInfo();
             }
             catch (Exception e)
             {
@@ -300,8 +279,7 @@ namespace User_client
                     return "4";
                    
                 case PlayerAction.Up:
-                    return "5";
-                  
+                    return "5";                  
                 default:
                    return "0";                    
             }           
@@ -315,48 +293,44 @@ namespace User_client
         /// </summary>
         static void SentInfo(long limit)
         {
-            try
+            writeStream(limit + "");
+            if (readStream() == "p")
             {
-                Log("sentinfo start");
-                using (StreamWriter sw = new StreamWriter(actionjsonpath))
-                {
-                    sw.AutoFlush = true;
-                    sw.WriteLine(GameTimer);
-                    sw.WriteLine(limit + "");
-                    sw.WriteLine(ActionToString());
-                }
+                writeStream(ActionToString());
             }
-            catch (IOException)
+            else
             {
-                Log("sentinfo ioexception");
-                Thread.Sleep(100);
-                SentInfo(limit);
-            }            
+                throw new Exception("Неверное промежуточное значение");
+            }
         }
 
         /// <summary>
         /// Cчитать строку из сетевого потока
         /// </summary>
         /// <returns></returns>
-        //static string readStream()
-        //{
-        //    Byte[] serverData = new Byte[50000000];
-        //    int bytes = strm.Read(serverData, 0, serverData.Length);            
-
-        //    string serverMessage = Encoding.Unicode.GetString(serverData, 0, bytes);
-        //    return serverMessage;
-        //}
+        static string readStream()
+        {
+            string serverMessage = "";
+            Byte[] serverData = new Byte[16];
+            if (strm.CanRead)
+            {
+                int bytes = strm.Read(serverData, 0, serverData.Length);
+           
+            serverMessage = Encoding.Unicode.GetString(serverData, 0, bytes);
+            }
+            return serverMessage;
+        }
 
 
         /// <summary>
         /// Отправить строку в сетевой поток
         /// </summary>
-        /// <param name="message">Отправляемая строка</param>
-        //static void writeStream(string message)
-        //{
-        //    Byte[] data = Encoding.Unicode.GetBytes(message);
+        /// <param name = "message" > Отправляемая строка</param>
+        static void writeStream(string message)
+        {
+            Byte[] data = Encoding.Unicode.GetBytes(message);
 
-        //    strm.Write(data, 0, data.Length);
-        //}
+            strm.Write(data, 0, data.Length);
+        }
     }
 }
