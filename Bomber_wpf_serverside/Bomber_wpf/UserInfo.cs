@@ -14,12 +14,14 @@ namespace Bomber_wpf
         public Player player;
         public int globalTimeLimit;
         public Compiler compiler;
+        public TcpClient client;
 
 
         public UserInfo(Player pl, TcpClient cl, Compiler cmp)
         {
             player = pl;           
             compiler = cmp;
+            client = cl;
             globalTimeLimit = 0;
         }
     }
