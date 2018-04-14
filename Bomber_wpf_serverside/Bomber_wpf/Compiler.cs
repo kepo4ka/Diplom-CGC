@@ -226,16 +226,16 @@ namespace Bomber_wpf
             string gbpath = $"{userClient_Path}{user_directory_name}\\{gameboardjsonpath}";
             string uspath = $"{userClient_Path}{user_directory_name}\\{userjsonpath}";
 
-            try
-            {
+            //try
+            //{
                 Helper.WriteDataJson(gameboardinfo, gbpath, k);
                 Helper.WriteDataJson(userinfo, uspath, k);
-            }
-            catch (IOException)
-            {
-                Thread.Sleep(100);
-                SaveTempGameInfo(gameboardinfo, userinfo);
-            }
+            //}
+            //catch (IOException)
+            //{
+            //    Thread.Sleep(100);
+            //    SaveTempGameInfo(gameboardinfo, userinfo);
+            //}
         }
 
         
@@ -328,7 +328,7 @@ namespace Bomber_wpf
         /// <summary>
         /// Запустить tcp-клиент пользователя
         /// </summary>
-        public void UserClientStart()
+        public void UserClientStart(int port)
         {
             if (!File.Exists($"{userClient_Path}{user_directory_name}\\{userClientexe_Name}"))
             {               
@@ -338,7 +338,7 @@ namespace Bomber_wpf
 
             StringBuilder sb = new StringBuilder();
           
-            sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && {userClientexe_Name}");
+            sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && {userClientexe_Name} {port}");
 
             Process.Start("cmd.exe", sb.ToString());
         }
