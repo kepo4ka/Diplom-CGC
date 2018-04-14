@@ -27,9 +27,19 @@ namespace Bomber_wpf
         SolidBrush sb;
         GameBoard gb;
         int GameTimer;
+        int TimeLimit = 5000;
+        int globalTimeLimit = 120000;
 
-        //string serverIp = "127.0.0.1";
-        //TcpListener server;
+        Color[] player_colors = new Color[4]
+        {
+            Color.PaleVioletRed, Color.Green, Color.HotPink, Color.Aqua
+        };
+
+        bool isGameOver = false;
+      
+        IPAddress serverIp = IPAddress.Parse("127.0.0.1");
+        int serverPort;
+        TcpListener server;
         List<UserInfo> usersInfo = new List<UserInfo>();
         List<GameBoard> gameBoardStates = new List<GameBoard>();
         List<GameBoard> savedGameBoardStates = new List<GameBoard>();
@@ -38,15 +48,7 @@ namespace Bomber_wpf
 
         public string gameboardjson; 
 
-        int TimeLimit = 5000;
-        int globalTimeLimit = 120000; 
-
-        Color[] player_colors = new Color[4]
-        {
-            Color.PaleVioletRed, Color.Green, Color.HotPink, Color.Aqua
-        };
-
-        bool isGameOver = false;
+       
 
         Random rn = new Random();     
 
@@ -62,9 +64,10 @@ namespace Bomber_wpf
             p = new Pen(Color.Black);
             sb = new SolidBrush(Color.DimGray);
 
-            //IPAddress ip = IPAddress.Parse(serverIp);
-            //server = new TcpListener(ip, 9595);
-            //server.Start();
+            serverPort = rn.Next(1001, 65001);
+
+            serverStart();
+           
             startPage = pstartPage;
 
             InitGame();
@@ -252,7 +255,7 @@ namespace Bomber_wpf
         public void InitGame()
         {
             isGameOver = false;
-
+            
             GameTimer = Config.gameTicksMax;
             gb = new GameBoard();
 
@@ -261,11 +264,11 @@ namespace Bomber_wpf
            // gameID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
             gameID = "JOPAJOPA";
 
-            CheckUserCodeSourcesPath();
+            CheckUserCodeSourcesPath();            
 
             for (int i = 0; i < usersInfo.Count; i++)
             {
-                usersInfo[i].compiler.WaitClientStart();
+                usersInfo[i].client = server.AcceptTcpClient();
             }
 
             SetGameBoardCast();           
@@ -276,7 +279,8 @@ namespace Bomber_wpf
             game_timer.Interval = 800;
             game_timer.Start();
 
-            initListView();           
+            initListView();
+           // NextTick();  
         }
 
 
@@ -298,9 +302,9 @@ namespace Bomber_wpf
             {
                 try
                 {
-                    // NetworkStream strm = usersInfo[i].client.GetStream();
+                    UserInfo tempUserInfo = usersInfo[i];
 
-                    ////Helper.writeStream(strm, "server");
+                    NetworkStream strm = tempUserInfo.client.GetStream();
 
                     // // IFormatter formatter = new BinaryFormatter();
                     // //  formatter.Serialize(strm, gb);
@@ -309,21 +313,38 @@ namespace Bomber_wpf
                     // log_box.Text += message.Length + Environment.NewLine;               
                     // Helper.writeStream(strm, message);
 
-                    UserInfo tempUserInfo = usersInfo[i];
-                    
 
-                    string userjson = JsonConvert.SerializeObject(usersInfo[i].player);
-                    tempUserInfo.compiler.SaveTempGameInfo(GameTimer + Environment.NewLine + gameboardjson, GameTimer + Environment.NewLine + userjson);
+                    
+                    string userjson = JsonConvert.SerializeObject(tempUserInfo.player);
+                    tempUserInfo.compiler.SaveTempGameInfo(gameboardjson, userjson);
+
+                    Helper.writeStream(strm, "s");
+                   
+
                 }
                 catch (Exception er)
                 {
-                    Helper.LOG("SendGameInfo ERROR: " + er.Message);
-                    // PlayerDisconnect(usersInfo[i].player);
+                    Helper.LogERROR("SendGameInfo ERROR: " + er.Message);
+                    PlayerDisconnect(usersInfo[i].player);
                 }
-            } 
+            }
         }
 
+        public void serverStart()
+        {
+            try
+            {
+                server = new TcpListener(serverIp, serverPort);
+                server.Start();
+            }
+            catch (SocketException)
+            {
+                serverPort = rn.Next(1001, 65001);
+                serverStart();
+            }
+        }
 
+       
 
         public void CheckClientData(UserInfo UI)
         {
@@ -363,11 +384,11 @@ namespace Bomber_wpf
             {
                 try
                 {
-                    CheckClientData(usersInfo[i]);
+                    //    CheckClientData(usersInfo[i]);
 
-                    //NetworkStream strm = usersInfo[i].client.GetStream();
+                    NetworkStream strm = usersInfo[i].client.GetStream();
 
-                    //string message = Helper.readStream(strm);
+                    // string message = Helper.readStream(strm);
                     //message = Helper.readStream(strm);
                     //Player tempPlayer = (Player)JsonConvert.DeserializeObject(message);
                     //log_box.Text += "playerName: " + tempPlayer.Name;
@@ -380,33 +401,27 @@ namespace Bomber_wpf
                     //{
                     //    log_box.Text += "client" + Environment.NewLine;
                     //}
+                    int sleepTime = int.Parse(Helper.readStream(strm));
+                    usersInfo[i].globalTimeLimit += sleepTime;
 
-                    //int sleepTime = int.Parse(Helper.readStream(strm));
+                    if (sleepTime > TimeLimit)
+                    {
+                        throw new Exception("Стратегия игрока " + usersInfo[i].player.Name + " слишком долго думала: " + sleepTime + "ms");
+                    }
 
-                    //if (sleepTime > TimeLimit)
-                    //{
-                    //    throw new Exception("Стратегия игрока " + usersInfo[i].player.Name + " слишком долго думала: " + sleepTime + "ms");
-                    //}
+                    if (usersInfo[i].globalTimeLimit > globalTimeLimit)
+                    {
+                        throw new Exception("Стратегия игрока " + usersInfo[i].player.Name + " превысила общий лимит времени");
+                    }
 
-                    //usersInfo[i].globalTimeLimit += sleepTime;
-                    //if (usersInfo[i].globalTimeLimit> globalTimeLimit)
-                    //{
-                    //    throw new Exception("Стратегия игрока " + usersInfo[i].player.Name + " превысила общий лимит времени");
-                    //}
+                    Helper.writeStream(strm, "p");
 
-                    //string message = Helper.readStream(strm);
-                    //Helper.DiscoverAction(message, ref usersInfo, i);
-
-                }
-                catch (IOException)
-                {
-                    Thread.Sleep(100);
-                    CheckClientData(usersInfo[i]);
-                }
-
+                    string message = Helper.readStream(strm);
+                    usersInfo[i].player.ACTION = Helper.DiscoverAction(message);
+                }    
                 catch (Exception er)
                 {
-                    Helper.LOG($"{er.Message} - {usersInfo[i].player.Name}:{usersInfo[i].compiler.containerName}");
+                    Helper.LogERROR($"{er.Message} - {usersInfo[i].player.Name}:{usersInfo[i].compiler.containerName}");
                     usersInfo[i].player.ACTION = PlayerAction.Wait;
                 }
             }      
@@ -577,7 +592,7 @@ namespace Bomber_wpf
                 CheckGameOver();
 
                 panel1.Refresh();
-                UpdateListView();
+                
 
                 this.Text = "Тик - " + GameTimer;
 
@@ -590,13 +605,15 @@ namespace Bomber_wpf
                 SetGameBoardCast();
 
                 SendGameInfo();
+                Helper.LOG("before");
                 RecieveUserInfo();
-
+               
+                UpdateListView();
 
                 //  Helper.writeStream(usersInfo[0].client.GetStream(), "server");
                 //log_box.Text+= Helper.readStream(usersInfo[0].client.GetStream()) + Environment.NewLine;
-              
-                //   NextTick();     
+
+                // NextTick();     
             }        
         }
 
@@ -694,8 +711,8 @@ namespace Bomber_wpf
             gameBoardStates.Clear();
             game_timer.Stop();
 
-            //Disconnect();
-          //  server.Stop();           
+            Disconnect();
+            server.Stop();
 
             for (int i = 0; i < usersInfo.Count; i++)
             {
@@ -1242,43 +1259,43 @@ namespace Bomber_wpf
 
             if (pplayer is User)
             {
-               // PlayerDisconnect(pplayer);                
+               PlayerDisconnect(pplayer);                
             } 
         }
 
-  
-        ///// <summary>
-        ///// Отключение игрока-клиента
-        ///// </summary>
-        ///// <param name="pclient"></param>
-        //public void PlayerDisconnect(Player pplayer)
-        //{
-        //    try
-        //    {
-        //        TcpClient tempclient = usersInfo.Find(c => c.player == pplayer).client;
-        //        tempclient.Close();
-        //        tempclient = null;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Helper.LOG("Ошибка в функции PlayerDisconnect: " + e.Message);
-        //    }
-        //}
 
-        ///// <summary>
-        ///// Отключение всех игроков-клиентов
-        ///// </summary>
-        ///// <param name="pclient"></param>
-        //public void Disconnect()
-        //{
-        //    for (int i = 0; i < usersInfo.Count; i++)
-        //    {
-        //        if (usersInfo[i].client != null)
-        //        {
-        //            usersInfo[i].client.Close();
-        //        }
-        //    }           
-        //}
+        /// <summary>
+        /// Отключение игрока-клиента
+        /// </summary>
+        /// <param name="pclient"></param>
+        public void PlayerDisconnect(Player pplayer)
+        {
+            try
+            {
+                TcpClient tempclient = usersInfo.Find(c => c.player == pplayer).client;
+                tempclient.Close();
+                tempclient = null;
+            }
+            catch (Exception e)
+            {
+                Helper.LOG("Ошибка в функции PlayerDisconnect: " + e.Message);
+            }
+        }
+
+        /// <summary>
+        /// Отключение всех игроков-клиентов
+        /// </summary>
+        /// <param name="pclient"></param>
+        public void Disconnect()
+        {
+            for (int i = 0; i < usersInfo.Count; i++)
+            {
+                if (usersInfo[i].client != null)
+                {
+                    usersInfo[i].client.Close();
+                }
+            }
+        }
 
 
 
@@ -1599,7 +1616,7 @@ namespace Bomber_wpf
                 compiler.Compile();
              //    compiler.StartProccess();
                 Thread.Sleep(1000);
-               compiler.UserClientStart();        
+               compiler.UserClientStart(serverPort);        
 
                 return compiler;
             }
