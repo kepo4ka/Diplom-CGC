@@ -4,10 +4,6 @@ using System.Text;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
-using ClassLibrary_CGC;
-using User_class;
-using Newtonsoft.Json;
 
 namespace Bomber_wpf
 {
@@ -15,10 +11,11 @@ namespace Bomber_wpf
     {
       static  string main_Path;
        static string CscEXE_Path;
-       static string HostUserPath;
-        static string gameboardjsonpath = "gameboard.json";
-        static string actionfile = "action.txt";
-        static string userjsonpath = "user.json";
+        static string dockerImage;
+      public static string HostUserPath;
+        public static string LogPath;       
+        static string gameboardjsonpath;
+        static string userjsonpath;   
 
         string userClass_Path;
         string userClient_Path;
@@ -43,11 +40,17 @@ namespace Bomber_wpf
             if (_userClass_sourceName == "" || _userClass_sourceName == null)
             {
                 throw new Exception("Неверное имя файла исходного кода");
-            }           
+            }
+
+            dockerImage = "kepo4ka/ubuntu_mono";
 
             main_Path = Directory.GetCurrentDirectory();
             HostUserPath = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
             HostUserPath += $"\\docker_temp\\{Form1.gameID}";
+            LogPath = $"{HostUserPath}\\log.txt";
+
+            gameboardjsonpath = "gameboard.json";
+            userjsonpath = "user.json";
 
             if (main_Path.Contains("\\bin\\"))
             {
@@ -69,19 +72,7 @@ namespace Bomber_wpf
             ClassLibrary_CGC = "ClassLibrary_CGC.dll";
             newtonjson = "Newtonsoft.Json.dll";
             containerName = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPA");           
-        }
-
-
-        //public Compiler(string main_path, string cscExe_path, string source_name)
-        //{
-        //    main_Path = "D:\\Cloudmail\\Исходники\\C#\\Diplom-CGC";
-        //    CscEXE_Path = "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe";
-        //    userClass_Path = main_Path + "\\User_class\\User_class";
-        //    userClient_Path = main_Path + "\\User_client\\User_client";
-        //    userClass_sourceName = source_name + ".cs";
-        //    userClientexe_Name = source_name + ".exe";
-        //    userClass_dllName = source_name + ".dll";
-        //}
+        }    
 
 
         /// <summary>
@@ -105,17 +96,22 @@ namespace Bomber_wpf
         /// <summary>
         /// Работа с Docker
         /// </summary>
-        public void StartProccess()
+        public void StartProccess(int serverPort)
         {
             DockerPreparation();
             DockerStart();
-            Docker.Exec(containerName, "mono /cgc/Program.exe");
+            Docker.Exec(containerName, $"mono /cgc/{userClientexe_Name} {serverPort}");
         }
 
 
         static void DeleteDockerTempDirectory()
         {
-            Helper.DeleteDirectory(HostUserPath);
+            DirectoryInfo di = new DirectoryInfo(HostUserPath);
+            DirectoryInfo[] diA = di.GetDirectories();
+            foreach (DirectoryInfo df in diA)
+            {
+                Helper.DeleteDirectory(df.FullName);
+            }
         }
 
 
@@ -148,15 +144,9 @@ namespace Bomber_wpf
         /// </summary>
         void DockerStart()
         {
-            string hostPath = $"{HostUserPath}\\{containerName}";
-
-            hostPath = Docker.VolumeFormat(hostPath);
-
-            Docker.Run("kepo4ka/ubuntu_mono", hostPath, containerName);
+            string hostPath = $"{HostUserPath}\\{containerName}"; 
+            Docker.Run(dockerImage, hostPath, containerName);
         }      
-
-
-
 
 
         /// <summary>
@@ -181,12 +171,10 @@ namespace Bomber_wpf
         /// </summary>
         void CopyDependenciesToTempDirectory()
         {
-            File.Copy($"{userClient_Path}{user_directory_name}\\{ClassLibrary_CGC}",$"{HostUserPath}\\{containerName}\\{ClassLibrary_CGC}");
+            File.Copy($"{userClient_Path}{user_directory_name}\\{ClassLibrary_CGC}", $"{HostUserPath}\\{containerName}\\{ClassLibrary_CGC}");
             File.Copy($"{userClient_Path}{user_directory_name}\\{userClass_dllName}", $"{HostUserPath}\\{containerName}\\{userClass_dllName}");
             File.Copy($"{userClient_Path}{user_directory_name}\\{userClientexe_Name}", $"{HostUserPath}\\{containerName}\\{userClientexe_Name}");
-            
             File.Copy($"{userClient_Path}{user_directory_name}\\{newtonjson}", $"{HostUserPath}\\{containerName}\\{newtonjson}");
-
         }
 
         /// <summary>
@@ -220,67 +208,26 @@ namespace Bomber_wpf
         /// Записать инфjрмацию о GameBoard в файл, внутри временной папки польвателя
         /// </summary>
         /// <param name="data">Слепок Gamboard, сериализованный в json</param>
-        public void SaveTempGameInfo(string gameboardinfo, string userinfo,  bool k=false)
+        public void SaveTempGameInfo(string gameboardinfo, string userinfo, bool k = false)
         {
-            
-            string gbpath = $"{userClient_Path}{user_directory_name}\\{gameboardjsonpath}";
-            string uspath = $"{userClient_Path}{user_directory_name}\\{userjsonpath}";
+            //   string gbpath = $"{userClient_Path}{user_directory_name}\\{gameboardjsonpath}";
+            //   string uspath = $"{userClient_Path}{user_directory_name}\\{userjsonpath}";
 
-            //try
-            //{
-                Helper.WriteDataJson(gameboardinfo, gbpath, k);
-                Helper.WriteDataJson(userinfo, uspath, k);
-            //}
-            //catch (IOException)
-            //{
-            //    Thread.Sleep(100);
-            //    SaveTempGameInfo(gameboardinfo, userinfo);
-            //}
+            string gbpath = $"{HostUserPath}\\{containerName}\\{gameboardjsonpath}";
+            string uspath = $"{HostUserPath}\\{containerName}\\{userjsonpath}";
+                     
+            Helper.WriteDataJson(gameboardinfo, gbpath, k);
+            Helper.WriteDataJson(userinfo, uspath, k);           
         }
 
-        
-        /// <summary>
-        /// Получить информацию от пользователя
-        /// </summary>
-        /// <returns>Информация от клиента</returns>
-        public string[] ReadClientDataFile()
-        {           
-            string path = $"{userClient_Path}{user_directory_name}\\{actionfile}";
-            try
-            {
-                return Helper.ReadFile(path); 
-            }
-            catch (IOException)
-            {
-                Thread.Sleep(100);
-                return ReadClientDataFile();
-            }
-            
-        }
 
-        /// <summary>
-        /// Проверить готов ли клиент к началу игры
-        /// </summary>
-        /// <returns></returns>
-        public void WaitClientStart()
-        {
-            string file = "log.txt";
-            string path = $"{userClient_Path}{user_directory_name}\\{file}";
-
-            if (!File.Exists(file))
-            {
-                Thread.Sleep(100);
-                WaitClientStart();
-            }
-           
-        }
 
         /// <summary>
         /// Компиляция пользовательского класса в dll и перещение его в папку программы Tcp-клиента
         /// </summary>
         void UserClassDLLCompile()
         {
-           Helper.DeleteFile(userClass_Path + userClass_dllName);
+            Helper.DeleteFile(userClass_Path + userClass_dllName);
             output = "";
             errorput = "";
 
@@ -290,19 +237,12 @@ namespace Bomber_wpf
                 $"/target:library " +
                 $"/out:{userClass_dllName} {userClass_sourceName}";
 
-            ////code = $"cd {userClient_Path}{user_directory_name} && " +
-            ////    "dir &&" +
-            ////    "ping 127.0.0.1 -n 6 > nul";
+            Helper.startProccess(code, out output, out errorput);
 
-            //Process.Start("cmd.exe", code);
-
-           Helper.startProccess(code, out output, out errorput);
-
-            if (errorput!= "")
-            {                
+            if (errorput != "")
+            {
                 throw new Exception($"Ошибка при компиляции пользовательской стратегии в DLL: {errorput}");
             }
-           
         }
 
         /// <summary>
