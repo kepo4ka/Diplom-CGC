@@ -199,7 +199,11 @@ namespace Bomber_wpf
         public void NextTickInVisualizingGame()
         {           
             gb = savedGameBoardStates[GameTimer];           
-            GameTimer++;           
+            GameTimer++;
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                gb.Players[i].Color = player_colors[i];
+            }     
             DrawAll();
 
             CheckVisualizingGameOver();
@@ -615,7 +619,7 @@ namespace Bomber_wpf
 
                     for (int ii = 0; ii < gb.Bonuses.Count; ii++)
                     {
-                        if (gb.Bonuses[ii].X == i && gb.Bonuses[ii].Y == j)
+                        if (gb.Bonuses[ii].X == i && gb.Bonuses[ii].Y == j && gb.Bonuses[ii].Visible)
                         {
                             tXYInfo.Bonus = gb.Bonuses[ii];
                             break;
@@ -980,23 +984,7 @@ namespace Bomber_wpf
             return tbombs_mass;
         }
 
-        /// <summary>
-        /// Перевести список в матрицу координат игроков
-        /// </summary>
-        /// <param name="pplayers"></param>
-        /// <returns></returns>
-        public Player[,] ListToMass(List<Player> pplayers)
-        {
-            Player[,] tplayers_mass = new Player[gb.W, gb.H];
-
-            for (int i = 0; i < pplayers.Count; i++)
-            {
-
-                tplayers_mass[pplayers[i].X, pplayers[i].Y] = pplayers[i];
-            }
-            return tplayers_mass;
-        }
-
+     
 
         /// <summary>
         /// Перевести список в матрицу координат бонусов 
@@ -1211,7 +1199,7 @@ namespace Bomber_wpf
                 var tplayer = gb.Players[i];
                 if (tplayer.ID != plava.PlayerID)
                 {
-                 //   tplayer.Points += Config.player_kill_points;
+                  //  tplayer.Points += Config.player_kill_points;
                     break;
                 }
             }
@@ -1356,8 +1344,6 @@ namespace Bomber_wpf
         /// </summary>
         public void LavasProccess()
         {
-
-
             for (int k = 0; k < gb.Lavas.Count; k++)
             {
                 var tlava = gb.Lavas[k];
@@ -1369,8 +1355,6 @@ namespace Bomber_wpf
                 }
                 tlava.LiveTime--;
             }
-
-
         }
 
         /// <summary>

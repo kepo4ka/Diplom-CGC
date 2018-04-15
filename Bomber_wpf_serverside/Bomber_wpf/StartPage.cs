@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Windows.Forms;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
 using System.IO;
-using System.Diagnostics;
+
+using Newtonsoft.Json;
 
 
 namespace Bomber_wpf
@@ -74,13 +69,14 @@ namespace Bomber_wpf
         private void savedGameButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Serialized file | *.dat; *.json";
+            ofd.Filter = "Serialized file | *.dat; *.json; *.gz";
             ofd.InitialDirectory = Directory.GetCurrentDirectory();
 
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 List<GameBoard> gbstates = GetGameBoardStatesFromFile(ofd.FileName);
+               
                 Form1 saveGameForm = new Form1(this, gbstates);
 
                 this.Hide();
@@ -96,12 +92,39 @@ namespace Bomber_wpf
         /// <returns>Список, содержащий состояния игры в каждый момент времени</returns>
         private List<GameBoard> GetGameBoardStatesFromFile(string psource)
         {
+            string[] splitedFile = psource.Split('.');
+            string[] splitPath = psource.Split('\\');
+            string fileExtension = splitedFile[splitedFile.Length-1];
+            string filePath = splitPath[splitPath.Length - 1];
+
             List<GameBoard> gameBoardStates = new List<GameBoard>();
-            StreamReader sr = new StreamReader(psource);
+          //  MessageBox.Show("psource " + psource);
 
-            IFormatter formatter = new BinaryFormatter();
-            gameBoardStates = (List<GameBoard>)formatter.Deserialize(sr.BaseStream);
+            switch (fileExtension)
+            {
+                case "dat":
+                    using (StreamReader sr = new StreamReader(psource))
+                    {
+                        IFormatter formatter = new BinaryFormatter();
+                        gameBoardStates = (List<GameBoard>)formatter.Deserialize(sr.BaseStream);
+                    }
+                    break;
+                case "json":
+                    using (StreamReader sr = new StreamReader(psource))
+                    {
+                        string json = sr.ReadToEnd();
+                        Helper.LOG("C:\\log.txt", json);
+                        gameBoardStates = JsonConvert.DeserializeObject<List<GameBoard>>(json);
+                    }
+                    break;
 
+                case "gz":
+                    string jsonPath = psource.Replace(".gz", ".dat");
+                    Helper.Decompress(psource, jsonPath);
+                    gameBoardStates = GetGameBoardStatesFromFile(jsonPath);
+                    break;
+            }
+            
             return gameBoardStates;
         }
 

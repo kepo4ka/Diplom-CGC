@@ -10,6 +10,7 @@ using ClassLibrary_CGC;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.IO;
+using System.IO.Compression;
 
 namespace Bomber_wpf
 {
@@ -174,13 +175,12 @@ namespace Bomber_wpf
         /// <param name="message"></param>
         public static void LOG(string filename, string message)
         {
-            StreamWriter sw = new StreamWriter("LOG.txt",true);
-
-            string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
-            time = "[" + time + "] ";
-
-            sw.WriteLine($"{time}: {message} \n");
-            sw.Close();
+            using (StreamWriter sw = new StreamWriter(filename, true))
+            {
+                string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
+                time = "[" + time + "] ";
+                sw.WriteLine($"{time}: {message} \n");
+            }
         }      
 
         /// <summary>
@@ -332,6 +332,44 @@ namespace Bomber_wpf
                 }
             }              
             return data;
+        }
+
+
+        public static void Compress(string sourceFile, string compressedFile)
+        {
+            // поток для чтения исходного файла
+            using (FileStream sourceStream = new FileStream(sourceFile, FileMode.OpenOrCreate))
+            {
+                // поток для записи сжатого файла
+                using (FileStream targetStream = File.Create(compressedFile))
+                {
+                    // поток архивации
+                    using (GZipStream compressionStream = new GZipStream(targetStream, CompressionMode.Compress))
+                    {
+                        sourceStream.CopyTo(compressionStream); // копируем байты из одного потока в другой
+                        Console.WriteLine("Сжатие файла {0} завершено. Исходный размер: {1}  сжатый размер: {2}.",
+                            sourceFile, sourceStream.Length.ToString(), targetStream.Length.ToString());
+                    }
+                }
+            }
+        }
+
+        public static void Decompress(string compressedFile, string targetFile)
+        {
+            // поток для чтения из сжатого файла
+            using (FileStream sourceStream = new FileStream(compressedFile, FileMode.OpenOrCreate))
+            {
+                // поток для записи восстановленного файла
+                using (FileStream targetStream = File.Create(targetFile))
+                {
+                    // поток разархивации
+                    using (GZipStream decompressionStream = new GZipStream(sourceStream, CompressionMode.Decompress))
+                    {
+                        decompressionStream.CopyTo(targetStream);
+                        Console.WriteLine("Восстановлен файл: {0}", targetFile);
+                    }
+                }
+            }
         }
     }
 }

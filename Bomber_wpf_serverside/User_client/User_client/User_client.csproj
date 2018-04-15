@@ -36,6 +36,10 @@
     <Reference Include="ClassLibrary_CGC">
       <HintPath>..\..\ClassLibrary_CGC\ClassLibrary_CGC\bin\Debug\ClassLibrary_CGC.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
