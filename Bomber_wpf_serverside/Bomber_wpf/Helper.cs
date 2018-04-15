@@ -24,7 +24,7 @@ namespace Bomber_wpf
         /// <param name="message">Данная строка</param>
         /// <param name="usersInfo">Список, в элемент которого необходимо передать команду</param>
         /// <param name="i">Индекс элемента в Списке, который получает команду</param>
-        public static PlayerAction DiscoverAction(string message)
+        public static PlayerAction DecryptAction(string message)
         {    
             switch (message)
             {
@@ -49,31 +49,57 @@ namespace Bomber_wpf
         }
 
         /// <summary>
+        /// Распознать Команду из строки
+        /// </summary>
+        /// <param name="message">Данная строка</param>
+        /// <param name="usersInfo">Список, в элемент которого необходимо передать команду</param>
+        /// <param name="i">Индекс элемента в Списке, который получает команду</param>
+        public static string EncryptAction(PlayerAction action)
+        {
+            switch (action)
+            {
+                case PlayerAction.Bomb:
+                    return "1";
+
+                case PlayerAction.Down:
+                    return "2";
+
+                case PlayerAction.Left:
+                    return "3";
+
+                case PlayerAction.Right:
+                    return "4";
+
+                case PlayerAction.Up:
+                    return "5";
+
+                default:
+                    return "0";
+            }
+        }
+
+
+        /// <summary>
         /// Случайный md5 хеш
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
         public static string CalculateMD5Hash(string input)
         {
-
             MD5 md5 = MD5.Create();
-
             byte[] inputBytes = Encoding.ASCII.GetBytes(input);
-
             byte[] hash = md5.ComputeHash(inputBytes);
 
             StringBuilder sb = new StringBuilder();
 
             for (int i = 0; i < hash.Length; i++)
-
             {
                 sb.Append(hash[i].ToString("X2"));
             }
 
             return sb.ToString();
         }
-
-
+        
 
         /// <summary>
         /// Выделить из Пути файла имя этого Файла
@@ -94,7 +120,6 @@ namespace Bomber_wpf
                     break;
                 }
             }
-
             tindex--;
 
             for (; tindex >= 0; tindex--)
@@ -128,7 +153,6 @@ namespace Bomber_wpf
         {
             Byte[] serverData = new Byte[16];
             int bytes = strm.Read(serverData, 0, serverData.Length);
-
             string serverMessage = Encoding.Unicode.GetString(serverData, 0, bytes);
             return serverMessage;
         }
@@ -140,7 +164,6 @@ namespace Bomber_wpf
         public static void writeStream(NetworkStream strm, string message)
         {
             Byte[] data = Encoding.Unicode.GetBytes(message);
-
             strm.Write(data, 0, data.Length);
         }
 
@@ -149,7 +172,7 @@ namespace Bomber_wpf
         /// Добавить информацию в лог на форме
         /// </summary>
         /// <param name="message"></param>
-        public static void LOG(string message)
+        public static void LOG(string filename, string message)
         {
             StreamWriter sw = new StreamWriter("LOG.txt",true);
 
@@ -157,25 +180,8 @@ namespace Bomber_wpf
             time = "[" + time + "] ";
 
             sw.WriteLine($"{time}: {message} \n");
-
             sw.Close();
-        }
-
-        /// <summary>
-        /// Добавить информацию в лог на форме
-        /// </summary>
-        /// <param name="message"></param>
-        public static void LogERROR(string message)
-        {
-            StreamWriter sw = new StreamWriter("ERRORS.txt", true);
-
-            string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
-            time = "[" + time + "] ";
-
-            sw.WriteLine($"{time} ERROR: {message} \n");
-
-            sw.Close();
-        }
+        }      
 
         /// <summary>
         /// Запустить процесс со специфичными настройками
@@ -193,7 +199,7 @@ namespace Bomber_wpf
             procStartInfo.RedirectStandardError = true;
             procStartInfo.UseShellExecute = false;
             // не создавать окно CMD
-            procStartInfo.CreateNoWindow = false;
+            procStartInfo.CreateNoWindow = true;
 
             Process proc = new Process();
             // Получение текста в виде кодировки 866 win
@@ -266,7 +272,7 @@ namespace Bomber_wpf
             }
             catch (Exception e)
             {
-                Helper.LOG("DeleteDirectory ERROR: " + e.Message);
+                Helper.LOG(Compiler.LogPath, "DeleteDirectory ERROR: " + e.Message);
             }
         }       
 
@@ -298,7 +304,6 @@ namespace Bomber_wpf
                 }
             }
         }
-
 
       
         /// <summary>
