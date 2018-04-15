@@ -407,6 +407,10 @@ namespace ClassLibrary_CGC
 
             for (int i = 0; i < this.Bonuses.Count; i++)
             {
+                if (this.bonuses[i].Visible == false)
+                {
+                    continue;
+                }
                 Bonus nbonus;
                 if (this.Bonuses[i] is Bonus_big)
                 {
@@ -972,10 +976,10 @@ namespace ClassLibrary_CGC
 
         public XYInfo()
         {
-            Player = new Player();
-            Bomb = new Bomb();
-            Bonus = new Bonus();
-            Lava = new Lava();
+            Player = null;
+            Bomb = null;
+            Bonus = null;
+            Lava = null;
         }
 
         public XYInfo(XYInfo origin)
@@ -1002,7 +1006,11 @@ namespace ClassLibrary_CGC
         {
             get
             {
-                return bonus;
+                if (bonus.Visible == true)
+                {
+                    return bonus;
+                }
+                return null;
             }
             set
             {
