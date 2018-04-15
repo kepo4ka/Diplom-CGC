@@ -117,7 +117,6 @@ namespace Bomber_wpf
                 }  
             }
         }
-
      
 
         /// <summary>
@@ -185,8 +184,8 @@ namespace Bomber_wpf
             game_timer.Tick += visualizing_game_Tick;
             game_timer.Interval = 1000;
             game_timer.Start();
-            GameTimer = savedGameBoardStates.Count;
-            visualizeGameCadrNumber = 0;
+            GameTimer = 0;
+            
         }
 
         public void visualizing_game_Tick(object sender, EventArgs e)
@@ -198,18 +197,14 @@ namespace Bomber_wpf
         /// Следующий "Кадр" воспроизведения
         /// </summary>
         public void NextTickInVisualizingGame()
-        {
-            visualizeGameCadrNumber = savedGameBoardStates.Count - GameTimer;
-            gb = savedGameBoardStates[visualizeGameCadrNumber];
-
-            panel1.Refresh();
-            UpdateListView();
-
-            this.Text = "Тик - " + GameTimer;
+        {           
+            gb = savedGameBoardStates[GameTimer];           
+            GameTimer++;           
             DrawAll();
 
             CheckVisualizingGameOver();
-            GameTimer--;
+            
+            UpdateListView();
         }
 
         /// <summary>
@@ -217,7 +212,7 @@ namespace Bomber_wpf
         /// </summary>
         public void CheckVisualizingGameOver()
         {
-            if (GameTimer <= 1)
+            if (GameTimer >= savedGameBoardStates.Count)
             {
                 VisualizingGameOver();
             }
@@ -258,7 +253,6 @@ namespace Bomber_wpf
             
             GameTimer = Config.gameTicksMax;
             gb = new GameBoard();
-
            
 
            // gameID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
@@ -275,12 +269,12 @@ namespace Bomber_wpf
 
             gameBoardStates.Add((GameBoard)gb.Clone());
 
-            game_timer.Tick += game_timer_Tick;
-            game_timer.Interval = 800;
-            game_timer.Start();
+            //game_timer.Tick += game_timer_Tick;
+            //game_timer.Interval = 800;
+          //  game_timer.Start();
 
-            initListView();
-           // NextTick();  
+         //   initListView();
+            NextTick();  
         }
 
 
@@ -303,28 +297,15 @@ namespace Bomber_wpf
                 try
                 {
                     UserInfo tempUserInfo = usersInfo[i];
-
                     NetworkStream strm = tempUserInfo.client.GetStream();
-
-                    // // IFormatter formatter = new BinaryFormatter();
-                    // //  formatter.Serialize(strm, gb);
-                    // // formatter.Serialize(strm, usersInfo[i].player);
-                    //string message = JsonConvert.SerializeObject(gb);
-                    // log_box.Text += message.Length + Environment.NewLine;               
-                    // Helper.writeStream(strm, message);
-
-
-                    
                     string userjson = JsonConvert.SerializeObject(tempUserInfo.player);
                     tempUserInfo.compiler.SaveTempGameInfo(gameboardjson, userjson);
 
-                    Helper.writeStream(strm, "s");
-                   
-
+                    Helper.writeStream(strm, "s");  
                 }
                 catch (Exception er)
                 {
-                    Helper.LogERROR("SendGameInfo ERROR: " + er.Message);
+                    Helper.LOG(Compiler.LogPath, "SendGameInfo ERROR: " + er.Message);
                     PlayerDisconnect(usersInfo[i].player);
                 }
             }
@@ -344,36 +325,6 @@ namespace Bomber_wpf
             }
         }
 
-       
-
-        public void CheckClientData(UserInfo UI)
-        {
-            string[] userData = UI.compiler.ReadClientDataFile();
-
-            int clientGameTime = int.Parse(userData[0]);
-            clientGameTime--;
-
-            if (clientGameTime != GameTimer)
-            {
-                throw new IOException();
-            }
-
-            int sleepTime = int.Parse(userData[1]);
-
-            if (sleepTime > TimeLimit)
-            {
-                throw new Exception("Стратегия клиента слишком долго думала: " + sleepTime + "ms");
-            }
-
-           UI.globalTimeLimit += sleepTime;
-
-            if (UI.globalTimeLimit > globalTimeLimit)
-            {
-                throw new Exception("Стратегия клиента превысила общий лимит времени");
-            }
-
-            UI.player.ACTION = Helper.DiscoverAction(userData[3]);
-        }
 
         /// <summary>
         /// Получить информацию об Игроках (класс Player) от Клиентов
@@ -401,7 +352,9 @@ namespace Bomber_wpf
                     //{
                     //    log_box.Text += "client" + Environment.NewLine;
                     //}
-                    int sleepTime = int.Parse(Helper.readStream(strm));
+                    string sleeptimeStr = Helper.readStream(strm);
+                    int sleepTime = int.Parse(sleeptimeStr);
+
                     usersInfo[i].globalTimeLimit += sleepTime;
 
                     if (sleepTime > TimeLimit)
@@ -417,11 +370,11 @@ namespace Bomber_wpf
                     Helper.writeStream(strm, "p");
 
                     string message = Helper.readStream(strm);
-                    usersInfo[i].player.ACTION = Helper.DiscoverAction(message);
+                    usersInfo[i].player.ACTION = Helper.DecryptAction(message);
                 }    
                 catch (Exception er)
                 {
-                    Helper.LogERROR($"{er.Message} - {usersInfo[i].player.Name}:{usersInfo[i].compiler.containerName}");
+                    Helper.LOG(Compiler.LogPath, $"ERROR: {er.Message} - {usersInfo[i].player.Name}:{usersInfo[i].compiler.containerName}");
                     usersInfo[i].player.ACTION = PlayerAction.Wait;
                 }
             }      
@@ -496,7 +449,7 @@ namespace Bomber_wpf
 
         private void game_timer_Tick(object sender, EventArgs e)
         {
-           NextTick();
+         //  NextTick();
         }
 
         /// <summary>
@@ -504,6 +457,8 @@ namespace Bomber_wpf
         /// </summary>
         public void DrawAll()
         {
+            panel1.Refresh();
+            this.Text = "Тик - " + GameTimer;
             DrawCells();
             DrawLavas();
             DrawBonuses();
@@ -591,13 +546,10 @@ namespace Bomber_wpf
             {
                 CheckGameOver();
 
-                panel1.Refresh();
-                
-
-                this.Text = "Тик - " + GameTimer;
+               
 
                 GameProccess();
-                DrawAll();
+              //  DrawAll();
 
                 gameBoardStates.Add((GameBoard)gb.Clone());
 
@@ -605,15 +557,14 @@ namespace Bomber_wpf
                 SetGameBoardCast();
 
                 SendGameInfo();
-                Helper.LOG("before");
                 RecieveUserInfo();
                
-                UpdateListView();
+            //    UpdateListView();
 
                 //  Helper.writeStream(usersInfo[0].client.GetStream(), "server");
                 //log_box.Text+= Helper.readStream(usersInfo[0].client.GetStream()) + Environment.NewLine;
 
-                // NextTick();     
+                 NextTick();     
             }        
         }
 
@@ -679,8 +630,6 @@ namespace Bomber_wpf
                             break;
                         }
                     }
-
-
                 }
             }
         }
@@ -708,20 +657,35 @@ namespace Bomber_wpf
 
         void StopClearTempFiles()
         {
-            gameBoardStates.Clear();
-            game_timer.Stop();
-
-            Disconnect();
-            server.Stop();
-
-            for (int i = 0; i < usersInfo.Count; i++)
+            try
             {
-                usersInfo[i].compiler.StopContainer();
-            }
-            usersInfo.Clear();
-            Compiler.EndProccess();
-        }
+                game_timer.Stop();
+                gameBoardStates.Clear();
 
+                Disconnect();
+                server.Stop();
+
+                Compiler.EndProccess();
+
+                for (int i = 0; i < usersInfo.Count; i++)
+                {
+                    try
+                    {
+                        usersInfo[i].compiler.StopContainer();
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
+                usersInfo.Clear();
+               
+            }
+            catch (Exception e)
+            {
+                Helper.LOG(Compiler.LogPath, "StopClearTempFiles ERROR: " + e.Message);
+            }    
+        }
 
 
         /// <summary>
@@ -790,23 +754,38 @@ namespace Bomber_wpf
             string gameResultDirectoryName = Directory.GetCurrentDirectory() + "\\" + GetInfoAboutThisGame() + "\\";
 
             Helper.DeleteDirectory(gameResultDirectoryName);
-
             Directory.CreateDirectory(gameResultDirectoryName);
 
 
             string gameStaterVisualizerFileName = "Visualizer.dat";
+            string gameStaterVisualizerJSONFileName = "Visualizer.json";
+            string userComandsFileName = "UserCommands.json";
+
             string gameResultsFileName = "gameResults.json";
 
             BinaryFormatter form = new BinaryFormatter();
-            using (FileStream fs = new FileStream(gameResultDirectoryName + gameStaterVisualizerFileName, FileMode.OpenOrCreate))
+            using (FileStream fs = new FileStream($"{Compiler.HostUserPath}\\{gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
             {
                 form.Serialize(fs, gameBoardStates);
             }
 
-            StreamWriter sw = new StreamWriter(gameResultDirectoryName + gameResultsFileName, false);
-            string GameResultsJson = JsonConvert.SerializeObject(GetPlayerResult());
-            sw.Write(GameResultsJson);
-            sw.Close();
+            using (StreamWriter sw = new StreamWriter($"{Compiler.HostUserPath}\\{gameStaterVisualizerJSONFileName}", false))
+            {
+                string visualizer = JsonConvert.SerializeObject(gameBoardStates);
+                sw.Write(visualizer);
+            }
+
+            using (StreamWriter sw = new StreamWriter($"{Compiler.HostUserPath}\\{gameResultsFileName}", false))
+            {
+                string GameResultsJson = JsonConvert.SerializeObject(GetPlayerResult());
+                sw.Write(GameResultsJson);
+            }
+
+            using (StreamWriter sw = new StreamWriter($"{Compiler.HostUserPath}\\{userComandsFileName}", false))
+            {
+                string allTicksPlayersStats = JsonConvert.SerializeObject(GetPlayersInfoAllTicks());
+                sw.Write(allTicksPlayersStats);
+            }
 
             //}
             //catch (Exception e)
@@ -868,6 +847,18 @@ namespace Bomber_wpf
 
             return gameStatesFileName;
         }
+
+        public List<List<Player>> GetPlayersInfoAllTicks()
+        {
+            List<List<Player>> AllPlayersStates = new List<List<Player>>();
+
+            for (int i = 0; i < gameBoardStates.Count; i++)
+            {
+                AllPlayersStates.Add(gameBoardStates[i].Players);
+            }
+            return AllPlayersStates;
+        }
+        
 
 
 
@@ -1278,7 +1269,7 @@ namespace Bomber_wpf
             }
             catch (Exception e)
             {
-                Helper.LOG("Ошибка в функции PlayerDisconnect: " + e.Message);
+                Helper.LOG(Compiler.LogPath, "Ошибка в функции PlayerDisconnect: " + e.Message);
             }
         }
 
@@ -1611,18 +1602,18 @@ namespace Bomber_wpf
         Compiler CompileAndStartUserFiles(string path, int i)
         {
             try
-            {               
+            {
                 Compiler compiler = new Compiler(path, i);
                 compiler.Compile();
-             //    compiler.StartProccess();
-                Thread.Sleep(1000);
-               compiler.UserClientStart(serverPort);        
+                compiler.StartProccess(serverPort);
+                //  Thread.Sleep(1000);
+                //   compiler.UserClientStart(serverPort);        
 
                 return compiler;
             }
             catch (Exception e)
             {
-               Helper.LogERROR("Ошибка при работе с пользовательским кодом: " + e.Message);
+                Helper.LOG(Compiler.LogPath, "ERROR in CompileAndStartUserFiles: " + e.Message);
                 return null;
             }
         }
