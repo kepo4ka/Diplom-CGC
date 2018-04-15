@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 
 namespace Bomber_wpf
 {
      class Docker
     {
-
         static string output = "";
-        static string errorput = "";
-        
+        static string errorput = "";        
 
         /// <summary>
         /// Запустить Docker контейнер
@@ -25,7 +19,6 @@ namespace Bomber_wpf
             string containerId = "";
             output = "";
             errorput = "";
-
             hostPath = VolumeFormat(hostPath);
 
             Helper.startProccess($"docker-machine ssh default docker run -it -d --network=host --name={name} --rm --volume {hostPath}:{contPath} {image}", out output, out errorput);           
@@ -39,7 +32,6 @@ namespace Bomber_wpf
                 throw new Exception($"Run ERROR: не получен ID контейнера");
             }
 
-        //    MessageBox.Show(output);
             containerId = output;
             return containerId;
         }
@@ -97,6 +89,5 @@ namespace Bomber_wpf
                 throw new Exception($"StopContainer ERROR: {errorput}");
             }
         }
-
     }
 }
