@@ -18,12 +18,12 @@ namespace ClassLibrary_CGC
     [Serializable]
     public class GameBoard : ICloneable
     {
-        int w, h;
-        Cell[,] cells;
-        List<Player> players;
-        List<Bonus> bonuses;
-        List<Bomb> bombs;
-        List<Lava> lavas;
+       private int w, h;
+        private Cell[,] cells;
+        private List<Player> players;
+        private List<Bonus> bonuses;
+        private List<Bomb> bombs;
+        private List<Lava> lavas;
         public XYInfo[,] XYinfo = new XYInfo[15,15];        
 
         Random rn = new Random();
@@ -326,16 +326,16 @@ namespace ClassLibrary_CGC
             {
                 List<Bonus> visible_bombs = new List<Bonus>();
 
-                //for (int k = 0; k < bonuses.Count; k++)
-                //{
-                //    if (bonuses[k].Visible == true)
-                //    {
-                //        visible_bombs.Add(bonuses[k]);
-                //    }
-                //}
-                //return visible_bombs;
+                for (int k = 0; k < bonuses.Count; k++)
+                {
+                    if (bonuses[k].Visible == true)
+                    {
+                        visible_bombs.Add(bonuses[k]);
+                    }
+                }
+                return visible_bombs;
 
-                return bonuses;
+               // return bonuses;
             }
             set
             {
@@ -1006,7 +1006,7 @@ namespace ClassLibrary_CGC
         {
             get
             {
-                if (bonus.Visible == true)
+                if (bonus != null && bonus.Visible == true)
                 {
                     return bonus;
                 }

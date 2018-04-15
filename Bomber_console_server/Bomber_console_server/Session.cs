@@ -248,7 +248,8 @@ namespace Bomber_console_server
         /// </summary>
         public void SetGameBoardCast()
         {
-            gameboardjson = JsonConvert.SerializeObject(gb);
+            GameBoard tempGB =(GameBoard) gb.Clone();
+            gameboardjson = JsonConvert.SerializeObject(tempGB); 
         }
 
         /// <summary>
