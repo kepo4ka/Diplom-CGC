@@ -16,62 +16,65 @@ namespace User_client
 {
     class Program
     {
-      //  static string serverIp = "10.0.2.2";
-        static string serverIp = "127.0.0.1";
+        static string serverIp = "10.0.2.2";
+      //  static string serverIp = "127.0.0.1";
         static int serverPort;
         static TcpClient server;
+        static StreamWriter sw;
+        static NetworkStream strm;
+        static bool connected;
+        static object obj = new object();
+
         static User myUser;
-        static GameBoard gameBoard;
-        static bool connected; 
-   
+        static GameBoard gameBoard;           
         static int TimeLimit = 1000;
         static long sleeptime;
-        static object obj = new object();
-        static StreamWriter sw;
-       static NetworkStream strm;
+        static bool sended;
 
-        //static string logpath = "/cgc/log.txt";
-        //static string gameboardjsonpath = "/cgc/gameboard.json";
-        //  static string userjsonpath = "/cgc/user.json";
+        static string logpath = "/cgc/log.txt";
+        static string gameboardjsonpath = "/cgc/gameboard.json";
+        static string userjsonpath = "/cgc/user.json";
 
-        static string logpath = "log.txt";
-        static string gameboardjsonpath = "gameboard.json";
-        static string userjsonpath = "user.json";
+       // static string logpath = "log.txt";
+       // static string gameboardjsonpath = "gameboard.json";
+       // static string userjsonpath = "user.json";
 
 
 
         static void Main(string[] args)
         {
             try
-            { 
+            {
                 if (!int.TryParse(args[0], out serverPort))
                 {
                     throw new Exception("Command parametrs (args) ERROR");
                 }
-
                 sw = new StreamWriter(logpath, true);
                 sw.AutoFlush = true;
 
                 Connect();
                 connected = true;
-                Console.WriteLine("sTART");
+                Log("start: " + serverIp + ":" + serverPort);
                 CommunicateWithServer();
-
-                Console.ReadKey();
             }
             catch (Exception e)
             {
-                Log(e.Message);
+                server.Close();
+                Log(e.Message);                            
+                sw.Close();
                 Environment.Exit(0);
             }
         }
+
+
+
 
         static void Log(string message)
         {
             string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
             time = "[" + time + "] ";
             sw.WriteLine(time + ": " + message);
-            Console.WriteLine(time + ": " + message);
+           // Console.WriteLine(time + ": " + message);
         }
 
 
@@ -116,20 +119,28 @@ namespace User_client
                 {
                     GetInfo();
 
+                    sended = false;
                     Thread thr = CreateMyThread();
                     thr.Start();
-                    Thread.Sleep(TimeLimit);
+                    int waittime = 0;
+
+                    while (waittime < TimeLimit)
+                    {
+                        waittime += 5;
+                        Thread.Sleep(5);
+
+                        if (thr.ThreadState == System.Threading.ThreadState.Stopped)
+                        {
+                            SentInfo(sleeptime);
+                            Log("Strategy work Time: " + sleeptime);
+                            break;                      
+                        }                      
+                    }
 
                     if (thr.ThreadState == System.Threading.ThreadState.Running)
                     {
                         SentInfo(TimeLimit);
                         Log("Strategy work Time: " + TimeLimit);
-
-                    }
-                    else
-                    {
-                        SentInfo(sleeptime);
-                        Log("Strategy work Time: " + sleeptime);
                     }
 
                     //strm = server.GetStream();
@@ -183,12 +194,8 @@ namespace User_client
                 catch (Exception e)
                 {
                     Log("ERROR: " + e.GetType() + " : " + e.Message);
-                    connected = false;
-                    sw.Close();
-                    server.Close();
-                    //Thread.Sleep(200000);
-                    Environment.Exit(0);
-                    // Console.ReadKey();
+                    connected = false;      
+                    throw new Exception("exit");                   
                 }
             }
         }
@@ -201,17 +208,22 @@ namespace User_client
             {
                 Stopwatch a = new Stopwatch();
                 a.Start();
-                myUser.ACTION = myUser.Play(gameBoard);
-                myUser.ACTION = PlayerAction.Down;
+                try
+                {
+                    myUser.ACTION = myUser.Play(gameBoard);
+                }
+                catch (Exception e)
+                {
+                Log("user_error: " + e.Message);
+                }       
                 a.Stop();
 
                 sleeptime = a.ElapsedMilliseconds;
                 if (sleeptime > TimeLimit)
                 {
                     sleeptime = TimeLimit;
-                }
+                }     
             });
-
             return thr;
         }
 
@@ -222,18 +234,13 @@ namespace User_client
         /// </summary>
         static void GetInfo()
         {
-            strm = server.GetStream();
-           
-            string message = readStream();
-           
+            strm = server.GetStream();           
+            string message = readStream();           
 
             if (message !="s")
-            {
-                Thread.Sleep(1000);
+            {              
                 throw new Exception("Потеря связи с сервером");
             }
-
-
 
             //IFormatter formatter = new BinaryFormatter();
             ////   gameBoard = (GameBoard)formatter.Deserialize(strm);
@@ -315,8 +322,7 @@ namespace User_client
             if (strm.CanRead)
             {
                 int bytes = strm.Read(serverData, 0, serverData.Length);
-           
-            serverMessage = Encoding.Unicode.GetString(serverData, 0, bytes);
+                serverMessage = Encoding.Unicode.GetString(serverData, 0, bytes);
             }
             return serverMessage;
         }
@@ -329,7 +335,6 @@ namespace User_client
         static void writeStream(string message)
         {
             Byte[] data = Encoding.Unicode.GetBytes(message);
-
             strm.Write(data, 0, data.Length);
         }
     }
