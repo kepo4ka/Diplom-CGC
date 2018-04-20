@@ -182,7 +182,7 @@ namespace AutoCompiler
         /// Добавить информацию в лог на форме
         /// </summary>
         /// <param name="message"></param>
-        public static void LOG(string filename, string message)
+        public static void LOG(string message, string filename = "log.txt")
         {
             using (StreamWriter sw = new StreamWriter(filename, true))
             {
@@ -218,7 +218,7 @@ namespace AutoCompiler
             proc.StartInfo = procStartInfo;
             proc.Start();
             //чтение результата
-            output = proc.StandardOutput.ReadToEnd();
+            output = "";
             errorput = proc.StandardError.ReadToEnd();
 
           while (proc.StandardOutput.Peek()>=0)
@@ -226,7 +226,11 @@ namespace AutoCompiler
                 output = proc.StandardOutput.ReadLine();
                 if (output.Contains("error"))
                 {
-                    errorput += Environment.NewLine + output + Environment.NewLine + proc.StandardOutput.ReadToEnd();
+                    if (errorput=="")
+                    {
+                        errorput += Environment.NewLine;
+                    }
+                    errorput += output + Environment.NewLine + proc.StandardOutput.ReadToEnd();
                     break;
                 }
             }
@@ -282,7 +286,7 @@ namespace AutoCompiler
             }
             catch (Exception e)
             {
-                Helper.LOG(Compiler.LogPath, "DeleteDirectory ERROR: " + e.Message);
+                Helper.LOG("errors.txt", "DeleteDirectory ERROR: " + e.Message);
             }
         }       
 
@@ -296,25 +300,7 @@ namespace AutoCompiler
             DeleteDirectory(ppath);
             Directory.CreateDirectory(ppath);
         }
-
-        /// <summary>
-        /// Записать строку в файл
-        /// </summary>
-        /// <param name="data">Строка</param>
-        /// <param name="path">Полный путь до файла, включая имя файла и расширение</param>
-        /// <param name="k">Если true, то данные добавляются в конец файла, не перезаписывая файл</param>
-        public static void WriteDataJson(string data, string path, bool k)
-        {
-            if (data != null)
-            {
-                using (StreamWriter sw = new StreamWriter(path, k))
-                {
-                    sw.AutoFlush = true;
-                    sw.WriteLine(data);
-                }
-            }
-        }
-
+       
       
         /// <summary>
         /// Считать данные из файла
@@ -388,5 +374,59 @@ namespace AutoCompiler
                 }
             }
         }
+
+
+        public static string EncodingChange(string text, bool k= true)
+        {
+            Encoding sourceEncoding;
+            Encoding resultEncoding;
+
+            if (k)
+            {
+                sourceEncoding = Encoding.GetEncoding("Windows-1251");
+                resultEncoding = Encoding.GetEncoding("UTF-8");
+            }
+            else
+            {
+                resultEncoding = Encoding.GetEncoding("Windows-1251");
+                sourceEncoding = Encoding.GetEncoding("UTF-8");
+            }
+
+            byte[] sourceBytes = sourceEncoding.GetBytes(text);
+                byte[] resultBytes = Encoding.Convert(resultEncoding, sourceEncoding, sourceBytes);
+            string result = resultEncoding.GetString(resultBytes);
+
+            return result;
+        }
+
+
+        public static string StreamReadFile(string path)
+        {
+            string res = "";
+
+            if (!File.Exists(path))
+            {
+                return res;
+            }
+
+            using (StreamReader sr = new StreamReader(path, Encoding.GetEncoding("UTF-8")))
+            {
+                res = sr.ReadToEnd();
+                return res;
+            }
+        }
+
+
+        public static void StreamWriteFile(string text, string path, bool k = false)
+        {
+            using (StreamWriter sw = new StreamWriter(path, false))
+            {
+                sw.AutoFlush =true;
+                sw.Write(text);
+            }
+        }
+
+
+
     }
 }
