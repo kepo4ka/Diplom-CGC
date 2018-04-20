@@ -1,4 +1,4 @@
-﻿using System;
+﻿sing System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,7 @@ namespace User_class
     {
         public override PlayerAction Play(GameBoard gb)
         {
-            Random rn = new Random();
+            andom rn = new Random();
             PlayerAction action;
             action = PlayerAction.Down;
             /*
