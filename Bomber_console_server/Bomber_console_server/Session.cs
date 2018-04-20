@@ -27,7 +27,7 @@ namespace Bomber_console_server
         List<UserInfo> usersInfo;
         List<GameBoard> gameBoardStates;
         List<GameBoard> savedGameBoardStates;
-        string[] user_source_paths;
+        string[] php_compiled_path;
 
         public static string gameID;
         public string gameboardjson;
@@ -36,7 +36,7 @@ namespace Bomber_console_server
 
 
 
-        public Session(string[] _user_source_paths)
+        public Session(string[] _php_compiled_path)
         {
             globalTimeLimit = 120000;
             TimeLimit = 1000;
@@ -46,7 +46,7 @@ namespace Bomber_console_server
             gameBoardStates = new List<GameBoard>();
             savedGameBoardStates = new List<GameBoard>();
 
-            user_source_paths = _user_source_paths;
+            php_compiled_path = _php_compiled_path;
 
             serverPort = rn.Next(1001, 65001);
             serverStart();
@@ -82,9 +82,9 @@ namespace Bomber_console_server
 
         void CheckUserCodeSourcesPath()
         {
-            for (int i = 0; i < user_source_paths.Length; i++)
+            for (int i = 0; i < php_compiled_path.Length; i++)
             {
-                switch (user_source_paths[i])
+                switch (php_compiled_path[i])
                 {
                     case null:
                         continue;
@@ -92,7 +92,7 @@ namespace Bomber_console_server
                         gb.Players.Add(InitPlayersInfo(false, i));
                         break;
                     default:
-                        Compiler cmp = CompileAndStartUserFiles(user_source_paths[i], i);
+                        Compiler cmp = MoveStartUserExe(php_compiled_path[i], i);
                         User tuser = (User)InitPlayersInfo(true, i);
                         if (cmp == null)
                         {
@@ -1075,12 +1075,12 @@ namespace Bomber_console_server
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        Compiler CompileAndStartUserFiles(string path, int i)
+        Compiler MoveStartUserExe(string php_exe_path, int i)
         {
             try
             {
-                Compiler compiler = new Compiler(path, i);
-                compiler.Compile();
+                Compiler compiler = new Compiler(php_exe_path, i);
+               // compiler.Compile();
                 compiler.StartProccess(serverPort);
                 //  Thread.Sleep(1000);
                 //   compiler.UserClientStart(serverPort);        
@@ -1089,7 +1089,7 @@ namespace Bomber_console_server
             }
             catch (Exception e)
             {
-                Helper.LOG(Compiler.LogPath, "ERROR in CompileAndStartUserFiles: " + e.Message);
+                Helper.LOG(Compiler.LogPath, "ERROR in MoveStartUserExe: " + e.Message);
                 return null;
             }
         }

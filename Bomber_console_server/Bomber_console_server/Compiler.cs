@@ -11,6 +11,8 @@ namespace Bomber_console_server
     {
       static  string main_Path;
        static string CscEXE_Path;
+        static string assets_Path;
+
         static string dockerImage;
       public static string HostUserPath;
         public static string LogPath;       
@@ -29,17 +31,20 @@ namespace Bomber_console_server
         string userClientexe_Name;
         string output;
         string errorput;
-        public string containerName;    
-            
+        public string containerName;
+
+        string user_exe_php_path;
+
+
 
         public static List<string> compileDirectories = new List<string>();
 
 
-        public Compiler(string _userClass_sourceName, int i)
+        public Compiler(string user_exe_path, int i)
         {           
-            if (_userClass_sourceName == "" || _userClass_sourceName == null)
+            if (user_exe_path == "" || user_exe_path == null)
             {
-                throw new Exception("Неверное имя файла исходного кода");
+                throw new Exception("Неверное имя exe файла");
             }
 
             dockerImage = "kepo4ka/ubuntu_mono";
@@ -51,23 +56,28 @@ namespace Bomber_console_server
 
             gameboardjsonpath = "gameboard.json";
             userjsonpath = "user.json";
+            
+            assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\") + "\\assets");
 
             if (main_Path.Contains("\\bin\\"))
             {
+                assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
                 main_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\.."));
             }         
   
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
-            userClass_Path = Helper.SpliteEndPath(_userClass_sourceName,true);
+           // userClass_Path = Helper.SpliteEndPath(user_exe_path,true);
             userClient_Path = main_Path + "\\" + "User_client\\User_client\\";
             
-            userClass_sourceName = Helper.SpliteEndPath(_userClass_sourceName) + ".cs";
+           // userClass_sourceName = Helper.SpliteEndPath(user_exe_path) + ".cs";
             userClass_dllName = "User_class.dll";
 
             user_directory_name = "User_" + i;
 
-            userClient_sourceName = "Program.cs";
+        //    userClient_sourceName = "Program.cs";
             userClientexe_Name = "Program.exe";
+
+            user_exe_php_path = user_exe_path;
 
             ClassLibrary_CGC = "ClassLibrary_CGC.dll";
             newtonjson = "Newtonsoft.Json.dll";
@@ -187,10 +197,12 @@ namespace Bomber_console_server
         /// </summary>
         void CopyDependenciesToTempDirectory()
         {
-            File.Copy($"{userClient_Path}{user_directory_name}\\{ClassLibrary_CGC}", $"{HostUserPath}\\{containerName}\\{ClassLibrary_CGC}");
-            File.Copy($"{userClient_Path}{user_directory_name}\\{userClass_dllName}", $"{HostUserPath}\\{containerName}\\{userClass_dllName}");
-            File.Copy($"{userClient_Path}{user_directory_name}\\{userClientexe_Name}", $"{HostUserPath}\\{containerName}\\{userClientexe_Name}");
-            File.Copy($"{userClient_Path}{user_directory_name}\\{newtonjson}", $"{HostUserPath}\\{containerName}\\{newtonjson}");
+            File.Copy($"{assets_Path}\\{ClassLibrary_CGC}", $"{HostUserPath}\\{containerName}\\{ClassLibrary_CGC}");
+            File.Copy($"{assets_Path}\\{userClass_dllName}", $"{HostUserPath}\\{containerName}\\{userClass_dllName}");
+            File.Copy($"{assets_Path}\\{newtonjson}", $"{HostUserPath}\\{containerName}\\{newtonjson}");
+          
+            File.Copy($"{user_exe_php_path}", $"{HostUserPath}\\{containerName}\\{userClientexe_Name}");
+
         }
 
         /// <summary>
