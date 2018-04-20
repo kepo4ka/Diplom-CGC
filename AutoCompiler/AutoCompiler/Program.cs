@@ -11,7 +11,9 @@ namespace AutoCompiler
 {
     class Program
     {
-        static string binDir = "C:\\xampp\\htdocs\\cgc\\sources\\";
+        static string binDir = "C:\\xampp\\htdocs\\sources";
+        static string source_file_name = "strategy.cs";
+        static string exe_file_name = "Program.exe";
         static MySQL mysql;
 
 
@@ -37,29 +39,31 @@ namespace AutoCompiler
             while (true)
             {      
                 int count = mysql.GetWaitCount();
+                Helper.LOG("Количество ждущих :" + count);
 
                 while (count > 0)
-                {
+                {                   
+                    int source_id = -1;
+                    int user_id = -1;
+                    mysql.GetWaitSourcesId(out source_id, out user_id);
 
-                    string source_path = "";
-                    int user_id = 0;
-                    mysql.GetSource(out source_path, out user_id);
-                    source_path = $"{source_path}\\{Compiler.userClientexe_Name}";
-
-                    if (mysql.SetWorkStatus(user_id, "work"))
+                    if (source_id>0  && mysql.SetWorkStatus(source_id, "work"))
                     {
-                        string fullpath = GetSourceFullName(source_path);
+                        string fullpath = GetSourceFullName(source_id);
+
                         try
                         {
+                            Helper.LOG($"Start COmpile: user_id - {user_id},  source_id - {source_id}");
                             CompileProccess(fullpath);
+
+                            Helper.LOG($"Compiled Success: user_id - {user_id}, source_id - {source_id}");
+                            mysql.SetCompiledStatus(source_id);
                         }
                         catch (Exception er)
                         {
-                            mysql.SetErrorStatus(user_id, er.Message);
+                            Helper.LOG($"Compile ERROR: user_id - {user_id}, source_id -{source_id} : {er.Message}");                            
+                            mysql.SetErrorStatus(source_id, er.Message);
                         }
-                        fullpath = fullpath.Replace(binDir, "").Replace("\\", "/").Substring(1);
-
-                        mysql.SetCompiledStatus(user_id, fullpath);
                     }
                     count--;
                 }
@@ -78,9 +82,9 @@ namespace AutoCompiler
         }
 
 
-        static string GetSourceFullName(string source_path)
+        static string GetSourceFullName(int user_id)
         {            
-            string fullPath = $"{binDir}\\{source_path}";
+            string fullPath = $"{binDir}/{user_id}/{source_file_name}";
             fullPath = fullPath.Replace('/', '\\');
             if (!File.Exists(fullPath))
             {
@@ -90,7 +94,7 @@ namespace AutoCompiler
         }
 
 
-
+     
 
     }
 }

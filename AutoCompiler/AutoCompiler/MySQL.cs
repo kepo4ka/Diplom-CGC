@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Data;
+using System.IO;
 
 namespace AutoCompiler
 {
    public class MySQL
     {
        public MySqlConnection myConnection;
-        string Connect = "Database=test;Data Source=127.0.0.1;User Id=root;Password=''";
+        string Connect = "Database=test;Data Source=127.0.0.1;User Id=root;Password=''; CharSet=utf8";
 
         public MySQL()
         {
@@ -44,11 +45,11 @@ namespace AutoCompiler
             }
         }
 
-        public void GetSource(out string source_path, out int user_id)
-        {
-            source_path = "";
-            user_id = 0;
-            string sql = "Select id, source_path FROM sources WHERE status='wait' LIMIT 1";
+        public void GetWaitSourcesId(out int id, out int user_id)
+        {          
+            id = -1;
+            user_id = -1;
+            string sql = "Select id,user_id FROM sources WHERE status='wait' LIMIT 1";
 
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = myConnection;
@@ -59,11 +60,11 @@ namespace AutoCompiler
                 if (reader.HasRows)
                 {
                     reader.Read();
-
-                    source_path = reader.GetString(1);
-                    user_id = reader.GetInt16(0);
+                    id = reader.GetInt16(0);
+                    user_id = reader.GetInt16(1);                  
                 }
-            }
+            }           
+          
         }
 
         public int GetWaitCount()
@@ -88,17 +89,17 @@ namespace AutoCompiler
         }
 
 
-        public bool SetWorkStatus(int user_id, string status)
+        public bool SetWorkStatus(int id, string status)
         {
             //   string sql = "UPDATE sources SET error='', exe_path='', status=@status WHERE user_id=@user_id";
-            string sql = $"UPDATE sources SET status='{status}' WHERE user_id=@user_id";
+            string sql = $"UPDATE sources SET status='{status}' WHERE id=@id";
 
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = myConnection;
             cmd.CommandText = sql;
 
             cmd.Parameters.AddWithValue("@status", SqlDbType.VarChar).Value = status;
-            cmd.Parameters.AddWithValue("@user_id", SqlDbType.Int).Value = user_id;
+            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = id;
 
             int affected_rows = cmd.ExecuteNonQuery();
             if (affected_rows==1)
@@ -109,15 +110,15 @@ namespace AutoCompiler
         }
 
 
-        public bool SetCompiledStatus(int user_id, string exe_Path)
+        public bool SetCompiledStatus(int id)
         {
-            string sql = $"UPDATE sources SET error='', exe_path='{exe_Path}', status='compiled' WHERE user_id=@user_id";
+            string sql = $"UPDATE sources SET error='', status='ok' WHERE id=@id";
 
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = myConnection;
             cmd.CommandText = sql;
 
-            cmd.Parameters.AddWithValue("@user_id", SqlDbType.Int).Value = user_id;
+            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = id;
 
             int affected_rows = cmd.ExecuteNonQuery();
             if (affected_rows == 1)
@@ -128,16 +129,15 @@ namespace AutoCompiler
         }
 
 
-        public bool SetErrorStatus(int user_id, string error)
-        {
-            string sql = "UPDATE sources SET error=@error, exe_path='', status='error' WHERE user_id=@user_id";
+        public bool SetErrorStatus(int id, string error)
+        {           
+            string sql = $"UPDATE sources SET error='{error}', status='error' WHERE id=@id";
 
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = myConnection;
             cmd.CommandText = sql;
 
-            cmd.Parameters.AddWithValue("@error", SqlDbType.Text).Value = error;
-            cmd.Parameters.AddWithValue("@user_id", SqlDbType.Int).Value = user_id;
+            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = id;
 
             int affected_rows = cmd.ExecuteNonQuery();
             if (affected_rows == 1)
