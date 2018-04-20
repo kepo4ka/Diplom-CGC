@@ -9,11 +9,11 @@ namespace AutoCompiler
 {
     public class Compiler
     {
-        static string main_Path;
-        static string assets_Path;
-        static string CscEXE_Path;
+        static string main_Path = Directory.GetCurrentDirectory();
+        static string assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
+        static string CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
         public static string HostUserPath;
-        public static string LogPath;
+      //  public static string LogPath = $"{HostUserPath}\\log.txt";
       
 
         string userClass_Path;
@@ -25,7 +25,7 @@ namespace AutoCompiler
         string ClassLibrary_CGC;
         string newtonjson;      
         string userClient_sourceName;
-       public static string userClientexe_Name;
+       public static string userClientexe_Name = "Program.exe";
         string output;
         string errorput;
         public string containerName;
@@ -42,18 +42,15 @@ namespace AutoCompiler
             }
            
 
-            main_Path = Directory.GetCurrentDirectory();          
-            LogPath = $"{HostUserPath}\\log.txt";
+          //  LogPath = $"{HostUserPath}\\log.txt";
 
             //if (main_Path.Contains("\\bin\\"))
             //{
             //    main_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\.."));
             //}
-            assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\.."));
-            assets_Path += "\\assets";
-
-
-            CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
+          ;
+          
+        
             userClass_Path = Helper.SpliteEndPath(_userClass_sourceName, true);
             userClient_Path = main_Path + "\\compiler";
 
@@ -61,7 +58,7 @@ namespace AutoCompiler
             userClass_dllName = "User_class.dll";           
 
             userClient_sourceName = "Program.cs";
-            userClientexe_Name = "Program.exe";
+          //  userClientexe_Name = "Program.exe";
 
             ClassLibrary_CGC = "ClassLibrary_CGC.dll";
             newtonjson = "Newtonsoft.Json.dll";
