@@ -208,7 +208,7 @@ namespace Bomber_console_server
             proc.StartInfo = procStartInfo;
             proc.Start();
             //чтение результата
-            output = proc.StandardOutput.ReadToEnd();
+            output = "";
             errorput = proc.StandardError.ReadToEnd();
 
           while (proc.StandardOutput.Peek()>=0)
@@ -216,7 +216,11 @@ namespace Bomber_console_server
                 output = proc.StandardOutput.ReadLine();
                 if (output.Contains("error"))
                 {
-                    errorput += Environment.NewLine + proc.StandardOutput.ReadToEnd();
+                    if (errorput == "")
+                    {
+                        errorput += Environment.NewLine;
+                    }
+                    errorput += output + Environment.NewLine + proc.StandardOutput.ReadToEnd();
                     break;
                 }
             }
