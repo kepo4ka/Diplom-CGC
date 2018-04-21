@@ -521,7 +521,7 @@ namespace Bomber_console_server
                     PlayerMove(gb.Players[i]);
                 }
 
-                gb.Players[i].ACTION = PlayerAction.Wait;
+               // gb.Players[i].ACTION = PlayerAction.Wait;
             }
         }
 

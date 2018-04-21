@@ -238,6 +238,8 @@ namespace Bomber_wpf
             game_timer.Start();
             GameTimer = savedGameBoardStates.Count;
             visualizeGameCadrNumber = 0;
+          
+
         }
 
         public void visualizing_game_Tick(object sender, EventArgs e)
@@ -252,7 +254,10 @@ namespace Bomber_wpf
         {
             visualizeGameCadrNumber = savedGameBoardStates.Count - GameTimer;
             gb = savedGameBoardStates[visualizeGameCadrNumber];
-
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                gb.Players[i].Color = player_colors[i];
+            }
             panel1.Refresh();
             UpdateListView();
 
@@ -622,8 +627,7 @@ namespace Bomber_wpf
         public void NextTick()
         {
             if (isGameOver == false)
-            {
-                
+            {               
 
                 panel1.Refresh();
                 UpdateListView();
@@ -736,7 +740,7 @@ namespace Bomber_wpf
 
             game_timer.Stop();
 
-            Thread.Sleep(100);
+            Thread.Sleep(200);
             Compiler.DeleteComppiledFiles();
 
             EndGameMessage(winners);

@@ -35,16 +35,16 @@ namespace Bomber_wpf
             }
 
             main_Path = Directory.GetCurrentDirectory();
-            if (main_Path.Contains("\\bin\\"))
-            {
-                main_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\.."));
-            }
+            //if (main_Path.Contains("\\bin\\"))
+            //{
+            //    main_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\.."));
+            //}
            
             main_Path += "\\";            
            
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
             userClass_Path = Form1.SpliteEndPath(_userClass_sourceName,true);
-            userClient_Path = main_Path + "User_client\\User_client\\";
+            userClient_Path = main_Path;
             
             userClass_sourceName = Form1.SpliteEndPath(_userClass_sourceName) + ".cs";
             userClass_dllName = "User_class.dll";
@@ -227,6 +227,7 @@ namespace Bomber_wpf
                 {
                     tfile.Delete();
                 }
+               
                 Directory.Delete(DirectoryPath);
             }
         }
