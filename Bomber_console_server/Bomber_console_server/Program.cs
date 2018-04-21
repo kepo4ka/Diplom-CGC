@@ -35,8 +35,8 @@ namespace Bomber_console_server
 
         static void MonitoringGames()
         {
-            while (true)
-            {
+            //while (true)
+            //{
                 List<SandboxGame> waitGames = mysql.GetWaitGameSandBox();
                 for (int i = 0; i < waitGames.Count; i++)
                 {
@@ -45,13 +45,13 @@ namespace Bomber_console_server
                     for (int j = 0; j < waitGames[i].usergroup.users.Count; j++)
                     {
                         User tempUser = waitGames[i].usergroup.users[j];
-                        tempUser.phpPath = $"{binDir}\\{waitGames[i].id}\\{tempUser.id}\\{exe_file_name}";
+                        tempUser.phpPath = $"{binDir}\\{waitGames[i].id}\\{tempUser.id}";
                         temp_compiled_exe_path[j] = tempUser.phpPath;
                     }                          
-                    Session session = new Session(temp_compiled_exe_path);
+                    Session session = new Session(temp_compiled_exe_path, waitGames[i].id, $"{binDir}\\{waitGames[i].id}");
                     session.InitGame();
                 }    
-            }
+            //}
         }
 
 

@@ -4,6 +4,9 @@ using System.Text;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using Newtonsoft.Json;
+using ClassLibrary_CGC;
 
 namespace Bomber_console_server
 {
@@ -32,17 +35,27 @@ namespace Bomber_console_server
         string output;
         string errorput;
         public string containerName;
+       public int gameid;
 
         string user_exe_php_path;
+       static string php_dir_path;
+        static string main_php_path;
 
+
+        public static string gameStaterVisualizerFileName = "Visualizer.dat";
+        public static string gameStaterVisualizerJSONFileName = "Visualizer.json";
+        public static string userComandsFileName = "UserCommands.json";
+        public static string gameStaterVisualizeFileNamerDATtoGZ = "VisualizerDAT.gz";
+        public static string gameStaterVisualizeFileNamerJSONtoGZ = "VisualizerJSON.gz";
+        public static string gameResultsFileName = "gameResults.json";
 
 
         public static List<string> compileDirectories = new List<string>();
 
 
-        public Compiler(string user_exe_path, int i)
+        public Compiler(string _php_dir_path, int i, string _main_php_path)
         {           
-            if (user_exe_path == "" || user_exe_path == null)
+            if (_php_dir_path == "" || _php_dir_path == null)
             {
                 throw new Exception("Неверное имя exe файла");
             }
@@ -56,7 +69,9 @@ namespace Bomber_console_server
 
             gameboardjsonpath = "gameboard.json";
             userjsonpath = "user.json";
-            
+
+            main_php_path = _main_php_path;
+
             assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\") + "\\assets");
 
             if (main_Path.Contains("\\bin\\"))
@@ -66,10 +81,10 @@ namespace Bomber_console_server
             }         
   
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
-           // userClass_Path = Helper.SpliteEndPath(user_exe_path,true);
+           // userClass_Path = Helper.SpliteEndPath(_php_dir_path,true);
             userClient_Path = main_Path + "\\" + "User_client\\User_client\\";
             
-           // userClass_sourceName = Helper.SpliteEndPath(user_exe_path) + ".cs";
+           // userClass_sourceName = Helper.SpliteEndPath(_php_dir_path) + ".cs";
             userClass_dllName = "User_class.dll";
 
             user_directory_name = "User_" + i;
@@ -77,7 +92,8 @@ namespace Bomber_console_server
         //    userClient_sourceName = "Program.cs";
             userClientexe_Name = "Program.exe";
 
-            user_exe_php_path = user_exe_path;
+            php_dir_path = _php_dir_path;
+            user_exe_php_path = $"{php_dir_path}\\{userClientexe_Name}";
 
             ClassLibrary_CGC = "ClassLibrary_CGC.dll";
             newtonjson = "Newtonsoft.Json.dll";
@@ -114,9 +130,21 @@ namespace Bomber_console_server
         }
 
 
-        static void DeleteDockerTempDirectory()
+        static void CopyFileDockerToPHP()
         {
             DirectoryInfo di = new DirectoryInfo(HostUserPath);
+            FileInfo[] fiA = di.GetFiles();
+            foreach (FileInfo fi in fiA)
+            {
+                File.Copy(fi.FullName, $"{main_php_path}\\{fi.Name}");
+            }
+        }
+
+
+
+        static void DeleteOnlyDirectories(string path)
+        {
+            DirectoryInfo di = new DirectoryInfo(path);
             DirectoryInfo[] diA = di.GetDirectories();
             foreach (DirectoryInfo df in diA)
             {
@@ -130,22 +158,82 @@ namespace Bomber_console_server
         {
             try
             {
-
                 DeleteComppiledFiles();
             }
             catch
             {
-                Console.WriteLine("DeleteComppiledFiles Error");
+                Helper.LOG("log.txt", "DeleteComppiledFiles Error");
             }
             try
             {
-                DeleteDockerTempDirectory();
+                CopyFileDockerToPHP();
             }
             catch
             {
-                Console.WriteLine("DeleteDockerTempDirectory Error");
+                Helper.LOG("log.txt", "CopyFileDockerToPHP ERROR");
+            }
+
+            try
+            {
+                DeleteOnlyDirectories(HostUserPath);
+                DeleteOnlyDirectories($"{main_php_path}");
+            }
+            catch
+            {
+                Helper.LOG("log.txt", "DeleteOnlyDirectories Error");
             }
         }
+       
+
+
+        void MoveGameResultstoPHP()
+        {
+        //    if (!File.Exists($"{HostUserPath}\\{gameboardjsonpath}"))
+        }
+
+
+        public static void SaveGameStatesForVisualizer(List<GameBoard> gameBoardStates)
+        {
+
+            BinaryFormatter form = new BinaryFormatter();
+            using (FileStream fs = new FileStream($"{Compiler.HostUserPath}\\{gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
+            {
+                form.Serialize(fs, gameBoardStates);
+            }
+
+            using (StreamWriter sw = new StreamWriter($"{Compiler.HostUserPath}\\{gameStaterVisualizerJSONFileName}", false))
+            {
+                string visualizer = JsonConvert.SerializeObject(gameBoardStates);
+                sw.Write(visualizer);
+            }
+        }
+
+        public static void SaveGameResult(List<Player> players)
+        {
+            using (StreamWriter sw = new StreamWriter($"{Compiler.HostUserPath}\\{gameResultsFileName}", false))
+            {
+                string GameResultsJson = JsonConvert.SerializeObject(players);
+                sw.Write(GameResultsJson);
+            }
+        }
+
+
+        public static void SavePlayersAllCommands(List<List<Player>> players)
+        {
+            using (StreamWriter sw = new StreamWriter($"{Compiler.HostUserPath}\\{userComandsFileName}", false))
+            {
+                string allTicksPlayersStats = JsonConvert.SerializeObject(players);
+                sw.Write(allTicksPlayersStats);
+            }
+        }
+
+
+        public static void Compress()
+        {           
+            Helper.Compress($"{Compiler.HostUserPath}\\{gameStaterVisualizerFileName}", $"{Compiler.HostUserPath}\\{gameStaterVisualizeFileNamerDATtoGZ}");
+            Helper.Compress($"{Compiler.HostUserPath}\\{gameStaterVisualizerJSONFileName}", $"{Compiler.HostUserPath}\\{gameStaterVisualizeFileNamerJSONtoGZ}");
+        }
+
 
 
         public void StopContainer()
@@ -323,5 +411,8 @@ namespace Bomber_console_server
             }
             compileDirectories.Clear();
         }
+
+
+     
     }
 }

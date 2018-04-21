@@ -28,16 +28,22 @@ namespace Bomber_console_server
         List<GameBoard> gameBoardStates;
         List<GameBoard> savedGameBoardStates;
         string[] php_compiled_path;
+        static int gameId;
+        static string main_php_path;
 
         public static string gameID;
-        public string gameboardjson;
+        public string gameboardTempJsonForClient;    
 
         Random rn = new Random();
 
 
 
-        public Session(string[] _php_compiled_path)
+        public Session(string[] _php_compiled_path, int game_id, string _main_php_path)
         {
+            gameId = game_id;
+            php_compiled_path = _php_compiled_path;
+            main_php_path = _main_php_path;
+
             globalTimeLimit = 120000;
             TimeLimit = 1000;
             isGameOver = false;
@@ -45,9 +51,7 @@ namespace Bomber_console_server
             usersInfo = new List<UserInfo>();
             gameBoardStates = new List<GameBoard>();
             savedGameBoardStates = new List<GameBoard>();
-
-            php_compiled_path = _php_compiled_path;
-
+            
             serverPort = rn.Next(1001, 65001);
             serverStart();
         }
@@ -93,6 +97,7 @@ namespace Bomber_console_server
                         break;
                     default:
                         Compiler cmp = MoveStartUserExe(php_compiled_path[i], i);
+                        cmp.gameid = gameId;
                         User tuser = (User)InitPlayersInfo(true, i);
                         if (cmp == null)
                         {
@@ -249,7 +254,7 @@ namespace Bomber_console_server
         public void SetGameBoardCast()
         {
             GameBoard tempGB =(GameBoard) gb.Clone();
-            gameboardjson = JsonConvert.SerializeObject(tempGB); 
+            gameboardTempJsonForClient = JsonConvert.SerializeObject(tempGB); 
         }
 
         /// <summary>
@@ -264,7 +269,7 @@ namespace Bomber_console_server
                     UserInfo tempUserInfo = usersInfo[i];
                     NetworkStream strm = tempUserInfo.client.GetStream();
                     string userjson = JsonConvert.SerializeObject(tempUserInfo.player);
-                    tempUserInfo.compiler.SaveTempGameInfo(gameboardjson, userjson);
+                    tempUserInfo.compiler.SaveTempGameInfo(gameboardTempJsonForClient, userjson);
 
                     Helper.writeStream(strm, "s");
                 }
@@ -418,53 +423,22 @@ namespace Bomber_console_server
 
 
         /// <summary>
-        /// Сохранение "слепков" игры в виде списка, где индекс - это номер Тика игры
+        /// Сохранение итогов игры
         /// </summary>
         public void SaveGameInfoFile()
         {
             //try
             //{
-            string gameResultDirectoryName = Directory.GetCurrentDirectory() + "\\" + GetInfoAboutThisGame() + "\\";
+            //string gameResultDirectoryName = Directory.GetCurrentDirectory() + "\\" + GetInfoAboutThisGame() + "\\";
 
-            Helper.DeleteDirectory(gameResultDirectoryName);
-            Directory.CreateDirectory(gameResultDirectoryName);
+            //Helper.DeleteDirectory(gameResultDirectoryName);
+            //Directory.CreateDirectory(gameResultDirectoryName);
 
-
-            string gameStaterVisualizerFileName = "Visualizer.dat";
-            string gameStaterVisualizerJSONFileName = "Visualizer.json";
-            string userComandsFileName = "UserCommands.json";
-            string gameStaterVisualizeFileNamerDATtoGZ = "VisualizerDAT.gz";
-            string gameStaterVisualizeFileNamerJSONtoGZ = "VisualizerJSON.gz";
-
-            string gameResultsFileName = "gameResults.json";
-
-            BinaryFormatter form = new BinaryFormatter();
-            using (FileStream fs = new FileStream($"{Compiler.HostUserPath}\\{gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
-            {
-                form.Serialize(fs, gameBoardStates);
-            }
-
-            using (StreamWriter sw = new StreamWriter($"{Compiler.HostUserPath}\\{gameStaterVisualizerJSONFileName}", false))
-            {
-                string visualizer = JsonConvert.SerializeObject(gameBoardStates);
-                sw.Write(visualizer);
-            }
-
-            using (StreamWriter sw = new StreamWriter($"{Compiler.HostUserPath}\\{gameResultsFileName}", false))
-            {
-                string GameResultsJson = JsonConvert.SerializeObject(GetPlayerResult());
-                sw.Write(GameResultsJson);
-            }
-
-            using (StreamWriter sw = new StreamWriter($"{Compiler.HostUserPath}\\{userComandsFileName}", false))
-            {
-                string allTicksPlayersStats = JsonConvert.SerializeObject(GetPlayersInfoAllTicks());
-                sw.Write(allTicksPlayersStats);
-            }
-
-            Helper.Compress($"{Compiler.HostUserPath}\\{gameStaterVisualizerFileName}", $"{Compiler.HostUserPath}\\{gameStaterVisualizeFileNamerDATtoGZ}");
-            Helper.Compress($"{Compiler.HostUserPath}\\{gameStaterVisualizerJSONFileName}", $"{Compiler.HostUserPath}\\{gameStaterVisualizeFileNamerJSONtoGZ}");
-
+            Compiler.SaveGameStatesForVisualizer(gameBoardStates);
+            Compiler.SaveGameResult(GetPlayerResult());
+            Compiler.SavePlayersAllCommands(GetPlayersInfoAllTicks());
+            Compiler.Compress();
+         
         }
 
 
@@ -1079,7 +1053,7 @@ namespace Bomber_console_server
         {
             try
             {
-                Compiler compiler = new Compiler(php_exe_path, i);
+                Compiler compiler = new Compiler(php_exe_path, i, main_php_path);
                // compiler.Compile();
                 compiler.StartProccess(serverPort);
                 //  Thread.Sleep(1000);
