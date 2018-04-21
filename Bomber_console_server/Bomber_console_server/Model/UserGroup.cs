@@ -10,6 +10,6 @@ namespace Bomber_console_server.Model
     {     
        public int group_id;
 
-        public List<User> users = new List<User>();
+        public List<dbUser> users = new List<dbUser>();
     }
 }

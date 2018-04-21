@@ -12,6 +12,6 @@ namespace Bomber_console_server.Model
        public int datetime;
         public UserGroup usergroup = new UserGroup();
        public string status;
-        public User creator = new User();
+        public dbUser creator = new dbUser();
     }
 }

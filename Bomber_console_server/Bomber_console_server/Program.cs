@@ -7,51 +7,88 @@ using System.IO;
 using MySql.Data.MySqlClient;
 using MySql.Data;
 using Bomber_console_server.Model;
+using System.Threading;
 
 
 namespace Bomber_console_server
 {
     class Program
-    {
-        static string binDir = "C:\\xampp\\htdocs\\sandbox";
-        static string source_file_name = "strategy.cs";
-        static string exe_file_name = "Program.exe";
+    {  
         static MySQL mysql;
 
         static void Main(string[] args)
         {
-
-            //Session session = new Session(GetUserSourcePathsFromFile());
-            //session.InitGame();
-            //Console.WriteLine("ССЕсСИЯ игры завершена");
-            //Console.ReadKey();
-
-            mysql = new MySQL();
-
-            MonitoringGames();
-            
-
+            try
+            {
+                Helper.LOG("log.txt", "Начало работы");
+                MonitoringGames();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                mysql.myConnection.Close();
+                MonitoringGames();
+            }   
         }
 
         static void MonitoringGames()
         {
-            //while (true)
-            //{
+            mysql = new MySQL();
+
+            while (true)
+            {
                 List<SandboxGame> waitGames = mysql.GetWaitGameSandBox();
+                Helper.LOG("log.txt", "Поиск ожидающих игровых сессий...");
+                Helper.LOG("log.txt", $"Ожидающий сессий - {waitGames.Count}");
+
                 for (int i = 0; i < waitGames.Count; i++)
                 {
-                    string[] temp_compiled_exe_path = new string[waitGames[i].usergroup.users.Count];
-
-                    for (int j = 0; j < waitGames[i].usergroup.users.Count; j++)
+                    try
                     {
-                        User tempUser = waitGames[i].usergroup.users[j];
-                        tempUser.phpPath = $"{binDir}\\{waitGames[i].id}\\{tempUser.id}";
-                        temp_compiled_exe_path[j] = tempUser.phpPath;
-                    }                          
-                    Session session = new Session(temp_compiled_exe_path, waitGames[i].id, $"{binDir}\\{waitGames[i].id}");
-                    session.InitGame();
-                }    
-            //}
+                        Helper.LOG("log.txt", $"Работа с сессией №{waitGames[i].id}");
+                        mysql.SetSandboxGameWorkStatus(waitGames[i].id);
+                        string[] temp_compiled_exe_path = new string[waitGames[i].usergroup.users.Count];
+
+                        for (int j = 0; j < waitGames[i].usergroup.users.Count; j++)
+                        {
+                            dbUser tempUser = waitGames[i].usergroup.users[j];
+                            tempUser.user_exe_phppath = $"{MyPath.binDir}\\{waitGames[i].id}\\{tempUser.id}\\{MyPath.exe_file_name}";
+                        }
+                        Session session = new Session(waitGames[i]);
+                        session.InitGame();
+
+                        mysql.SetSandboxGameCompiledStatus(waitGames[i].id, OpenGameResultFile(waitGames[i].id));
+                        Helper.LOG("log.txt", $"Игровая сессия № {waitGames[i].id} успешно завершена");
+                        
+                    }
+                    catch (Exception e)
+                    {
+                        Helper.LOG("log.txt", $"При работе игровой сессии №{waitGames[i].id} возникла Ошибка: {e.Message}");
+
+                        mysql.SetSandboxGameErrorStatus(waitGames[i].id, e.Message);
+                    }
+                }
+
+                Helper.LOG("log.txt", "Ждём...");
+                Thread.Sleep(5000);
+            }
+        }
+
+
+        /// <summary>
+        /// Считать в строку из файла итоги игры
+        /// </summary>
+        /// <param name="sandbox_id">id игры</param>
+        /// <returns></returns>
+        static string OpenGameResultFile(int sandbox_id)
+        {
+            string json = "{}";
+
+            using (StreamReader sr = new StreamReader($"{MyPath.binDir}\\{sandbox_id}\\{MyPath.gameResultsFileName}"))
+            {
+                json = sr.ReadToEnd();
+            }
+            return json;
         }
 
 

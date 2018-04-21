@@ -63,9 +63,10 @@
     <Compile Include="Docker.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Model\SandboxGame.cs" />
-    <Compile Include="Model\User.cs" />
+    <Compile Include="Model\dbUser.cs" />
     <Compile Include="Model\UserGroup.cs" />
     <Compile Include="MySQL.cs" />
+    <Compile Include="MyPath.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Session.cs" />

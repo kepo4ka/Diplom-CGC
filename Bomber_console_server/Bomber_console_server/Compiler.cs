@@ -28,26 +28,25 @@ namespace Bomber_console_server
         string userClass_sourceName;        
         string userClass_dllName;
         string ClassLibrary_CGC;
-        string newtonjson;
+        string NewtonJsonLibraryName;
         string user_directory_name;
         string userClient_sourceName;
         string userClientexe_Name;
         string output;
         string errorput;
-        public string containerName;
-       public int gameid;
+        public string containerName;       
 
         string user_exe_php_path;
        static string php_dir_path;
         static string main_php_path;
 
 
-        public static string gameStaterVisualizerFileName = "Visualizer.dat";
-        public static string gameStaterVisualizerJSONFileName = "Visualizer.json";
-        public static string userComandsFileName = "UserCommands.json";
-        public static string gameStaterVisualizeFileNamerDATtoGZ = "VisualizerDAT.gz";
-        public static string gameStaterVisualizeFileNamerJSONtoGZ = "VisualizerJSON.gz";
-        public static string gameResultsFileName = "gameResults.json";
+        static string gameStaterVisualizerFileName = MyPath.gameStaterVisualizerFileName;
+         static string gameStaterVisualizerJSONFileName = MyPath.gameStaterVisualizerJSONFileName;
+         static string userComandsFileName = MyPath.userComandsFileName;
+         static string gameStaterVisualizeFileNamerDATtoGZ = MyPath.gameStaterVisualizeFileNamerDATtoGZ;
+         static string gameStaterVisualizeFileNamerJSONtoGZ = MyPath.gameStaterVisualizeFileNamerJSONtoGZ;
+         static string gameResultsFileName = MyPath.gameResultsFileName;
 
 
         public static List<string> compileDirectories = new List<string>();
@@ -60,15 +59,15 @@ namespace Bomber_console_server
                 throw new Exception("Неверное имя exe файла");
             }
 
-            dockerImage = "kepo4ka/ubuntu_mono";
+            dockerImage = MyPath.dockerImage;
 
             main_Path = Directory.GetCurrentDirectory();
             HostUserPath = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
             HostUserPath += $"\\docker_temp\\{Session.gameID}";
             LogPath = $"{HostUserPath}\\log.txt";
 
-            gameboardjsonpath = "gameboard.json";
-            userjsonpath = "user.json";
+            gameboardjsonpath = MyPath.gameboardjsonpath;
+            userjsonpath = MyPath.userjsonpath;
 
             main_php_path = _main_php_path;
 
@@ -85,18 +84,18 @@ namespace Bomber_console_server
             userClient_Path = main_Path + "\\" + "User_client\\User_client\\";
             
            // userClass_sourceName = Helper.SpliteEndPath(_php_dir_path) + ".cs";
-            userClass_dllName = "User_class.dll";
+            userClass_dllName =MyPath.userClass_dllName;
 
             user_directory_name = "User_" + i;
 
         //    userClient_sourceName = "Program.cs";
-            userClientexe_Name = "Program.exe";
+            userClientexe_Name = MyPath.exe_file_name;
 
             php_dir_path = _php_dir_path;
-            user_exe_php_path = $"{php_dir_path}\\{userClientexe_Name}";
+            user_exe_php_path = $"{php_dir_path}";
 
-            ClassLibrary_CGC = "ClassLibrary_CGC.dll";
-            newtonjson = "Newtonsoft.Json.dll";
+            ClassLibrary_CGC = MyPath.ClassLibrary_CGC;
+            NewtonJsonLibraryName = MyPath.NewtonJsonLibraryName;
             containerName = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPA");           
         }    
 
@@ -287,7 +286,7 @@ namespace Bomber_console_server
         {
             File.Copy($"{assets_Path}\\{ClassLibrary_CGC}", $"{HostUserPath}\\{containerName}\\{ClassLibrary_CGC}");
             File.Copy($"{assets_Path}\\{userClass_dllName}", $"{HostUserPath}\\{containerName}\\{userClass_dllName}");
-            File.Copy($"{assets_Path}\\{newtonjson}", $"{HostUserPath}\\{containerName}\\{newtonjson}");
+            File.Copy($"{assets_Path}\\{NewtonJsonLibraryName}", $"{HostUserPath}\\{containerName}\\{NewtonJsonLibraryName}");
           
             File.Copy($"{user_exe_php_path}", $"{HostUserPath}\\{containerName}\\{userClientexe_Name}");
 
@@ -304,7 +303,7 @@ namespace Bomber_console_server
             {
                 tfile.Delete();
             }
-            File.Copy(userClient_Path + newtonjson, userClient_Path + user_directory_name + "\\" + newtonjson);
+            File.Copy(userClient_Path + NewtonJsonLibraryName, userClient_Path + user_directory_name + "\\" + NewtonJsonLibraryName);
 
             File.Copy(userClient_Path + ClassLibrary_CGC, userClient_Path + user_directory_name+"\\" + ClassLibrary_CGC);
             File.Copy(userClient_Path + userClient_sourceName, userClient_Path + user_directory_name +"\\" + userClient_sourceName);
@@ -369,7 +368,7 @@ namespace Bomber_console_server
             output = "";
             errorput = "";
             Helper.startProccess($"cd {userClient_Path}{user_directory_name} && " +
-               $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName};{newtonjson} {userClient_sourceName}", out output, out errorput);
+               $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName};{NewtonJsonLibraryName} {userClient_sourceName}", out output, out errorput);
 
             if (errorput!="")
             {               

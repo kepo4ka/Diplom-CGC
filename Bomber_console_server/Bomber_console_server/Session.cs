@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
+using Bomber_console_server.Model;
 
 namespace Bomber_console_server
 {
@@ -28,21 +29,20 @@ namespace Bomber_console_server
         List<GameBoard> gameBoardStates;
         List<GameBoard> savedGameBoardStates;
         string[] php_compiled_path;
-        static int gameId;
+        static int phpgameID;
         static string main_php_path;
 
         public static string gameID;
-        public string gameboardTempJsonForClient;    
+        public string gameboardTempJsonForClient;
+        static SandboxGame sandboxgame;
 
         Random rn = new Random();
 
-
-
-        public Session(string[] _php_compiled_path, int game_id, string _main_php_path)
+        public Session(SandboxGame _sandboxgame)
         {
-            gameId = game_id;
-            php_compiled_path = _php_compiled_path;
-            main_php_path = _main_php_path;
+            sandboxgame = _sandboxgame;
+
+            main_php_path = $"{MyPath.binDir}\\{sandboxgame.id}";  
 
             globalTimeLimit = 120000;
             TimeLimit = 1000;
@@ -51,9 +51,17 @@ namespace Bomber_console_server
             usersInfo = new List<UserInfo>();
             gameBoardStates = new List<GameBoard>();
             savedGameBoardStates = new List<GameBoard>();
-            
+
+            // gameID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
+            gameID = "JOPAJOPA";
+
+            GameTimer = Config.gameTicksMax;
+
+            isGameOver = false;
+
             serverPort = rn.Next(1001, 65001);
-            serverStart();
+
+           
         }
 
         /// <summary>
@@ -61,83 +69,59 @@ namespace Bomber_console_server
         /// </summary>
         public void InitGame()
         {
-            isGameOver = false;
-
-            GameTimer = Config.gameTicksMax;
             gb = new GameBoard();
 
-
-            // gameID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
-            gameID = "JOPAJOPA";
-
-            CheckUserCodeSourcesPath();
-
-            for (int i = 0; i < usersInfo.Count; i++)
-            {
-                usersInfo[i].client = server.AcceptTcpClient();
-            }
+            serverStart(); 
+            initUsersInfo();       
 
             SetGameBoardCast();
-
             gameBoardStates.Add((GameBoard)gb.Clone());
-                     
+
             NextTick();
         }
 
-        void CheckUserCodeSourcesPath()
+        void initUsersInfo()
         {
-            for (int i = 0; i < php_compiled_path.Length; i++)
+            for (int i = 0; i < sandboxgame.usergroup.users.Count; i++)
             {
-                switch (php_compiled_path[i])
+                Compiler cmp = MoveStartUserExe(sandboxgame.usergroup.users[i].user_exe_phppath, i);
+                if (cmp == null)
                 {
-                    case null:
-                        continue;
-                    case "":
-                        gb.Players.Add(InitPlayersInfo(false, i));
-                        break;
-                    default:
-                        Compiler cmp = MoveStartUserExe(php_compiled_path[i], i);
-                        cmp.gameid = gameId;
-                        User tuser = (User)InitPlayersInfo(true, i);
-                        if (cmp == null)
-                        {
-                            continue;
-                        }
-
-                        usersInfo.Add(new UserInfo(tuser, null, cmp));
-                        gb.Players.Add(tuser);
-                        break;
+                    continue;
                 }
+                TcpClient tcp = server.AcceptTcpClient();
+                if (tcp==null)
+                {
+                    continue;
+                }
+
+                User player = InitPlayersInfo(sandboxgame.usergroup.users[i], i);
+
+                usersInfo.Add(new UserInfo(player, tcp, cmp));
+                gb.Players.Add(player);
             }
         }
+    
+
+
 
         /// <summary>
         /// Создание игрока на основе данных из формы
         /// </summary>
         /// <param name="i"></param>
-        Player InitPlayersInfo(bool k, int i)
-        {
-            Player pplayer;
+        User InitPlayersInfo(dbUser user, int i)
+        {         
+            User pplayer = new User();
 
-            if (!k)
-            {
-                pplayer = new Bot();
-                pplayer.Name = "Bot_" + (i + 1);
-            }
-            else
-            {
-                pplayer = new User();
-                pplayer.Name = "User_" + (i + 1);
-            }
+            pplayer.ID = user.id + "";
+            pplayer.Name = user.name;         
 
-            pplayer.ID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * rn.NextDouble() + "JOPA" + pplayer.Name);
             pplayer.Color = System.Drawing.Color.Black;
             pplayer.Points = 0;
             //    pplayer.Health = Config.player_health;
             pplayer.Health = 1;
             pplayer.Bang_radius = Config.bang_start_radius;
-            pplayer.BombsCount = Config.player_bombs_count_start;
-            pplayer.Bang_radius = 3;
+            pplayer.BombsCount = Config.player_bombs_count_start;           
 
             switch (i)
             {

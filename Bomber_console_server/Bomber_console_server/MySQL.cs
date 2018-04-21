@@ -16,143 +16,15 @@ namespace Bomber_console_server
    public class MySQL
     {
        public MySqlConnection myConnection;
-        string Connect = "Database=test;Data Source=127.0.0.1;User Id=root;Password=''; CharSet=utf8";
-        static string binDir = "C:\\xampp\\htdocs\\sources";
-        static string source_file_name = "strategy.cs";
-        static string exe_file_name = "Program.exe";
+        string Connect = "Database=test;Data Source=127.0.0.1;User Id=root;Password=''; CharSet=utf8";       
+        static string binDir = MyPath.binDir;
+        static string exe_file_name = MyPath.exe_file_name;
 
         public MySQL()
         {
             myConnection = new MySqlConnection(Connect);
             myConnection.Open();    
         }
-
-        public void GetUsers()
-        {
-            string sql = "Select name, is_bot FROM users";
-
-            MySqlCommand cmd = new MySqlCommand();
-            cmd.Connection = myConnection;
-            cmd.CommandText = sql;
-
-            using (System.Data.Common.DbDataReader reader = cmd.ExecuteReader())
-            {
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                     
-                        string name = reader.GetString(0);
-                        bool is_bot = reader.GetBoolean(1);
-                        Console.WriteLine(name + " is bot - " + is_bot.ToString());
-                    }
-
-                }
-            }
-        }
-
-        public void GetWaitSourcesId(out int id, out int user_id)
-        {          
-            id = -1;
-            user_id = -1;
-            string sql = "Select id,user_id FROM sources WHERE status='wait' LIMIT 1";
-
-            MySqlCommand cmd = new MySqlCommand();
-            cmd.Connection = myConnection;
-            cmd.CommandText = sql;
-
-            using (System.Data.Common.DbDataReader reader = cmd.ExecuteReader())
-            {
-                if (reader.HasRows)
-                {
-                    reader.Read();
-                    id = reader.GetInt16(0);
-                    user_id = reader.GetInt16(1);                  
-                }
-            }           
-          
-        }
-
-        public int GetWaitCount()
-        {           
-            string sql = "Select COUNT(id) FROM sources WHERE status='wait'";
-
-            MySqlCommand cmd = new MySqlCommand();
-            cmd.Connection = myConnection;
-            cmd.CommandText = sql;
-            int count = 0;
-
-            using (System.Data.Common.DbDataReader reader = cmd.ExecuteReader())
-            {
-                
-                if (reader.HasRows)
-                {
-                    reader.Read();
-                    count = reader.GetInt16(0);                  
-                }
-            }
-            return count;
-        }
-
-
-        public bool SetWorkStatus(int id, string status)
-        {
-            //   string sql = "UPDATE sources SET error='', exe_path='', status=@status WHERE user_id=@user_id";
-            string sql = $"UPDATE sources SET status='{status}' WHERE id=@id";
-
-            MySqlCommand cmd = new MySqlCommand();
-            cmd.Connection = myConnection;
-            cmd.CommandText = sql;
-
-            cmd.Parameters.AddWithValue("@status", SqlDbType.VarChar).Value = status;
-            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = id;
-
-            int affected_rows = cmd.ExecuteNonQuery();
-            if (affected_rows==1)
-            {
-                return true;
-            }
-            return false;
-        }
-
-
-        public bool SetCompiledStatus(int id)
-        {
-            string sql = $"UPDATE sources SET error='', status='ok' WHERE id=@id";
-
-            MySqlCommand cmd = new MySqlCommand();
-            cmd.Connection = myConnection;
-            cmd.CommandText = sql;
-
-            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = id;
-
-            int affected_rows = cmd.ExecuteNonQuery();
-            if (affected_rows == 1)
-            {
-                return true;
-            }
-            return false;
-        }
-
-
-        public bool SetErrorStatus(int id, string error)
-        {           
-            string sql = $"UPDATE sources SET error='{error}', status='error' WHERE id=@id";
-
-            MySqlCommand cmd = new MySqlCommand();
-            cmd.Connection = myConnection;
-            cmd.CommandText = sql;
-
-            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = id;
-
-            int affected_rows = cmd.ExecuteNonQuery();
-            if (affected_rows == 1)
-            {
-                return true;
-            }
-            return false;
-        }
-
 
 
         public UserGroup GetUsersInGroup(int group_id)
@@ -172,7 +44,7 @@ namespace Bomber_console_server
                     while (reader.Read())
                     {                       
                         ug.group_id = reader.GetInt16(0);   
-                        User us = new User();
+                        dbUser us = new dbUser();
                         us.id = reader.GetInt16(1);
                         ug.users.Add(us);
                     }
@@ -210,7 +82,7 @@ namespace Bomber_console_server
                         ug.group_id = reader.GetInt16(2);                        
                         sb.usergroup = ug;
                         sb.status = reader.GetString(3);
-                        User us = new User();
+                        dbUser us = new dbUser();
                         us.id = reader.GetInt16(4);
                         sb.creator = us;
                         games_list.Add(sb);
@@ -231,9 +103,9 @@ namespace Bomber_console_server
 
 
 
-        public User GetUserSourceInfo(int user_id)
+        public dbUser GetUserSourceInfo(int user_id)
         {
-            User us = new User();
+            dbUser us = new dbUser();
 
             string sql = $"SELECT users.id, users.name, sources.id, sources.upload_time FROM users,sources WHERE sources.user_id=users.id AND users.id={user_id} AND used=1 AND sources.status='ok'";
 
@@ -258,8 +130,63 @@ namespace Bomber_console_server
         }
 
 
+        public bool SetSandboxGameWorkStatus(int id)
+        {
+            //   string sql = "UPDATE sources SET error='', exe_path='', status=@status WHERE user_id=@user_id";
+            string sql = $"UPDATE sandbox_game_session SET status='work' WHERE id=@id";
+
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = myConnection;
+            cmd.CommandText = sql;
+
+            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = id;
+
+            int affected_rows = cmd.ExecuteNonQuery();
+            if (affected_rows == 1)
+            {
+                return true;
+            }
+            return false;
+        }
 
 
+
+        public bool SetSandboxGameCompiledStatus(int id, string gameresult)
+        {
+            string sql = $"UPDATE sandbox_game_session SET result='{gameresult}', errors='', status='ok' WHERE id=@id";
+
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = myConnection;
+            cmd.CommandText = sql;
+
+            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = id;
+
+            int affected_rows = cmd.ExecuteNonQuery();
+            if (affected_rows == 1)
+            {
+                return true;
+            }
+            return false;
+        }
+
+
+        public bool SetSandboxGameErrorStatus(int id, string error)
+        {
+            string sql = $"UPDATE sandbox_game_session SET errors='{error}', status='error' WHERE id=@id";
+
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = myConnection;
+            cmd.CommandText = sql;
+
+            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = id;
+
+            int affected_rows = cmd.ExecuteNonQuery();
+            if (affected_rows == 1)
+            {
+                return true;
+            }
+            return false;
+        }
 
     }
 }
