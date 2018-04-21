@@ -113,7 +113,7 @@ namespace Bomber_wpf
         /// Добавить информацию в лог на форме
         /// </summary>
         /// <param name="message"></param>
-        public static void logForm(string message)
+        public void logForm(string message)
         {
             string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
             time = "[" + time + "] ";
@@ -412,14 +412,14 @@ namespace Bomber_wpf
                             
                             byte[] data = new byte[4];
                             strm.Read(data, 0, data.Length);  
-                            string message = Encoding.ASCII.GetString(data);
+                            string message = Encoding.Unicode.GetString(data);
 
                             if (message.Length<1 || message=="")
                             {
                                 throw new Exception("Сообщение от стратегии игрока " + tclient.Key.Name + " неверное");
                             }
 
-                            switch (message)
+                            switch (int.Parse(message) + "")
                             {
                                 case "1":
                                     tclient.Key.ACTION = PlayerAction.Bomb;
@@ -950,7 +950,7 @@ namespace Bomber_wpf
                     PlayerMove(gb.Players[i]);
                 }
 
-                gb.Players[i].ACTION = PlayerAction.Wait;
+              //  gb.Players[i].ACTION = PlayerAction.Wait;
             }
         }
 

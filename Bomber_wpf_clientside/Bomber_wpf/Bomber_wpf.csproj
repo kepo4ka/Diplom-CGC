@@ -54,12 +54,11 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ClassLibrary_CGC, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\ClassLibrary_CGC.dll</HintPath>
+    <Reference Include="ClassLibrary_CGC">
+      <HintPath>..\..\assets\ClassLibrary_CGC.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\assets\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -70,7 +69,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="User_class">
-      <HintPath>..\..\User_class\User_class\bin\Debug\User_class.dll</HintPath>
+      <HintPath>..\..\assets\User_class.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

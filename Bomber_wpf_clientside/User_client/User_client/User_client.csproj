@@ -34,7 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClassLibrary_CGC">
-      <HintPath>..\..\ClassLibrary_CGC\ClassLibrary_CGC\bin\Debug\ClassLibrary_CGC.dll</HintPath>
+      <HintPath>..\..\..\assets\ClassLibrary_CGC.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -44,9 +44,8 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="User_class, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\User_class.dll</HintPath>
+    <Reference Include="User_class">
+      <HintPath>..\..\..\assets\User_class.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
