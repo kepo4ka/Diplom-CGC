@@ -25,7 +25,7 @@ namespace AutoCompiler
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+               Helper.LOG(e.Message);
                 mysql.myConnection.Close();
                 Monitoring();
             }            
@@ -35,14 +35,15 @@ namespace AutoCompiler
         static void Monitoring()
         {
             mysql = new MySQL();
+            Helper.LOG("Старт поиска...");
 
             while (true)
             {      
-                int count = mysql.GetWaitCount();
-                Helper.LOG("Количество ждущих :" + count);
-
+                int count = mysql.GetWaitCount();             
+                
                 while (count > 0)
-                {                   
+                {
+                    Helper.LOG("Количество ждущих :" + count);                    
                     int source_id = -1;
                     int user_id = -1;
                     mysql.GetWaitSourcesId(out source_id, out user_id);
@@ -53,10 +54,9 @@ namespace AutoCompiler
 
                         try
                         {
-                            Helper.LOG($"Start COmpile: user_id - {user_id},  source_id - {source_id}");
                             CompileProccess(fullpath);
 
-                            Helper.LOG($"Compiled Success: user_id - {user_id}, source_id - {source_id}");
+                            Helper.LOG($"Compile Success: user_id - {user_id}, source_id - {source_id}");
                             mysql.SetCompiledStatus(source_id);
                         }
                         catch (Exception er)
@@ -67,7 +67,6 @@ namespace AutoCompiler
                     }
                     count--;
                 }
-
                 Thread.Sleep(5000);
             }
         }

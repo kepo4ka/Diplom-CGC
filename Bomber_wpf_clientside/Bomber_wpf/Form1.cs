@@ -260,7 +260,7 @@ namespace Bomber_wpf
             }
             panel1.Refresh();
             UpdateListView();
-
+           
             this.Text = "Тик - " + GameTimer;
             DrawAll();
 

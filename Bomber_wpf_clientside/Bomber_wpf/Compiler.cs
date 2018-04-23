@@ -76,7 +76,7 @@ namespace Bomber_wpf
             procStartInfo.UseShellExecute = false;
             // не создавать окно CMD
             procStartInfo.CreateNoWindow = true;
-
+            
             Process proc = new Process();
             // Получение текста в виде кодировки 866 win
             procStartInfo.StandardOutputEncoding = Encoding.GetEncoding(866);
