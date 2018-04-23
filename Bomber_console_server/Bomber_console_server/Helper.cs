@@ -25,27 +25,11 @@ namespace Bomber_console_server
         /// <param name="usersInfo">Список, в элемент которого необходимо передать команду</param>
         /// <param name="i">Индекс элемента в Списке, который получает команду</param>
         public static PlayerAction DecryptAction(string message)
-        {    
-            switch (message)
-            {
-                case "1":
-                    return PlayerAction.Bomb;
-                   
-                case "2":
-                   return PlayerAction.Down;
-                   
-                case "3":
-                    return PlayerAction.Left;
-                   
-                case "4":
-                   return PlayerAction.Right;
-                   
-                case "5":
-                    return PlayerAction.Up;
-                   
-                default:
-                    return PlayerAction.Wait;                   
-            }
+        {
+            PlayerAction pa = new PlayerAction();
+            int actionInt = int.Parse(message);
+            pa = (PlayerAction)actionInt;
+            return pa;     
         }
 
         /// <summary>
@@ -56,26 +40,9 @@ namespace Bomber_console_server
         /// <param name="i">Индекс элемента в Списке, который получает команду</param>
         public static string EncryptAction(PlayerAction action)
         {
-            switch (action)
-            {
-                case PlayerAction.Bomb:
-                    return "1";
-
-                case PlayerAction.Down:
-                    return "2";
-
-                case PlayerAction.Left:
-                    return "3";
-
-                case PlayerAction.Right:
-                    return "4";
-
-                case PlayerAction.Up:
-                    return "5";
-
-                default:
-                    return "0";
-            }
+            int actionInt = (int)action;
+            string actionString = actionInt.ToString();
+            return actionString;
         }
 
 

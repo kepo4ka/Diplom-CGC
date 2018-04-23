@@ -34,42 +34,42 @@ namespace Bomber_console_server
         static void MonitoringGames()
         {
             mysql = new MySQL();
+            Helper.LOG("log.txt", "Поиск ожидающих игровых сессий...");
 
             while (true)
             {
                 List<SandboxGame> waitGames = mysql.GetWaitGameSandBox();
-                Helper.LOG("log.txt", "Поиск ожидающих игровых сессий...");
-                Helper.LOG("log.txt", $"Ожидающий сессий - {waitGames.Count}");
 
-                for (int i = 0; i < waitGames.Count; i++)
+                if (waitGames.Count > 0)
                 {
-                    try
-                    {
-                        Helper.LOG("log.txt", $"Работа с сессией №{waitGames[i].id}");
-                        mysql.SetSandboxGameWorkStatus(waitGames[i].id);
-                        string[] temp_compiled_exe_path = new string[waitGames[i].usergroup.users.Count];
+                    Helper.LOG("log.txt", $"Ожидающий сессий - {waitGames.Count}");
 
-                        for (int j = 0; j < waitGames[i].usergroup.users.Count; j++)
+                    for (int i = 0; i < waitGames.Count; i++)
+                    {
+                        try
                         {
-                            dbUser tempUser = waitGames[i].usergroup.users[j];
-                            tempUser.user_exe_phppath = $"{MyPath.binDir}\\{waitGames[i].id}\\{tempUser.id}\\{MyPath.exe_file_name}";
+                            Helper.LOG("log.txt", $"Работа с сессией №{waitGames[i].id}...");
+                            mysql.SetSandboxGameWorkStatus(waitGames[i].id);
+                            string[] temp_compiled_exe_path = new string[waitGames[i].usergroup.users.Count];
+
+                            for (int j = 0; j < waitGames[i].usergroup.users.Count; j++)
+                            {
+                                dbUser tempUser = waitGames[i].usergroup.users[j];
+                                tempUser.user_exe_phppath = $"{MyPath.binDir}\\{waitGames[i].id}\\{tempUser.id}";
+                            }
+                            Session session = new Session(waitGames[i]);
+                            session.InitGame();
+
+                            mysql.SetSandboxGameCompiledStatus(waitGames[i].id, OpenGameResultFile(waitGames[i].id));
+                            Helper.LOG("log.txt", $"Игровая сессия № {waitGames[i].id} успешно завершена!");
                         }
-                        Session session = new Session(waitGames[i]);
-                        session.InitGame();
-
-                        mysql.SetSandboxGameCompiledStatus(waitGames[i].id, OpenGameResultFile(waitGames[i].id));
-                        Helper.LOG("log.txt", $"Игровая сессия № {waitGames[i].id} успешно завершена");
-                        
-                    }
-                    catch (Exception e)
-                    {
-                        Helper.LOG("log.txt", $"При работе игровой сессии №{waitGames[i].id} возникла Ошибка: {e.Message}");
-
-                        mysql.SetSandboxGameErrorStatus(waitGames[i].id, e.Message);
+                        catch (Exception e)
+                        {
+                            Helper.LOG("log.txt", $"При работе игровой сессии №{waitGames[i].id} возникла Ошибка: {e.Message}");
+                            mysql.SetSandboxGameErrorStatus(waitGames[i].id, e.Message);
+                        }
                     }
                 }
-
-                Helper.LOG("log.txt", "Ждём...");
                 Thread.Sleep(5000);
             }
         }
