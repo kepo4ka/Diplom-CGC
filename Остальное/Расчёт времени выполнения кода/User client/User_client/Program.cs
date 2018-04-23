@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace User_client
 {
@@ -43,42 +44,54 @@ namespace User_client
 
 
         static void CommunicateWithServer()
-        {
-
-            Random rn = new Random();
-            int i = 4;
-
+        {           
             while (connected)
             {
                 try
-                {
+                {                   
                     string serverMessage = readStream();
+                    Console.WriteLine(serverMessage);
 
-                    if (serverMessage != "next")
+                    if (serverMessage != "n")
                     {
                         continue;
                     }
 
-                    int rnumber = 0;
-                    if (i >2)
-                    {
-                        rnumber = 990;
-                    }
-                    else
-                    {
-                        rnumber = 1050;
-                    }
-                    i--;
+
                     //     Console.WriteLine(rnumber);
                     //      Thread.Sleep(rnumber);
-                   
 
-                    writeStream("start");
+                    int timelimit = 1000;
+               
+                    Thread thr = new Thread(() =>
+                    {
+                        Stopwatch a = new Stopwatch();
 
-                    Thread.Sleep(rnumber);
+                        a.Start();
+                        generatePause();
+                        a.Stop();
 
-                    writeStream(rnumber.ToString());
-                              
+                        long sleeptime = a.ElapsedMilliseconds;
+                        Console.WriteLine(sleeptime);
+                        if (sleeptime > timelimit)
+                        {
+                            sleeptime = timelimit;
+                        }
+                        writeStream(sleeptime.ToString());
+                    });
+
+                    writeStream("s");
+                    thr.Start();
+                    Thread.Sleep(timelimit);
+
+                    if (thr.ThreadState == System.Threading.ThreadState.Running)
+                    {
+                        thr.Abort();
+                        writeStream(timelimit.ToString());                        
+                        continue;
+                    }
+
+                //    writeStream(sleeptime.ToString());
 
                 }
                 catch (Exception e)
@@ -91,6 +104,15 @@ namespace User_client
                 }
             }
         }
+
+        static int generatePause()
+        {
+            Random rn = new Random();
+            int sleeptime= rn.Next(100, 1500);
+            Thread.Sleep(sleeptime);            
+            return sleeptime;
+        }
+
 
 
         static void writeStream(string message)
@@ -105,10 +127,10 @@ namespace User_client
         {
             NetworkStream stream = server.GetStream();
 
-            Byte[] serverData = new Byte[512];
+            Byte[] serverData = new Byte[2];
             Int32 bytes = stream.Read(serverData, 0, serverData.Length);
 
-            string serverMessage = Encoding.Default.GetString(serverData, 0, bytes);
+            string serverMessage = Encoding.Default.GetString(serverData, 0, bytes);           
             return serverMessage;
         }
     }
