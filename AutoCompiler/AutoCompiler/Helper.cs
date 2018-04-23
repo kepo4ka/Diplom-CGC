@@ -16,91 +16,6 @@ namespace AutoCompiler
     class Helper
     {
 
-       public static Random rn = new Random();
-
-        /// <summary>
-        /// Распознать Команду из строки
-        /// </summary>
-        /// <param name="message">Данная строка</param>
-        /// <param name="usersInfo">Список, в элемент которого необходимо передать команду</param>
-        /// <param name="i">Индекс элемента в Списке, который получает команду</param>
-        public static PlayerAction DecryptAction(string message)
-        {    
-            switch (message)
-            {
-                case "1":
-                    return PlayerAction.Bomb;
-                   
-                case "2":
-                   return PlayerAction.Down;
-                   
-                case "3":
-                    return PlayerAction.Left;
-                   
-                case "4":
-                   return PlayerAction.Right;
-                   
-                case "5":
-                    return PlayerAction.Up;
-                   
-                default:
-                    return PlayerAction.Wait;                   
-            }
-        }
-
-        /// <summary>
-        /// Распознать Команду из строки
-        /// </summary>
-        /// <param name="message">Данная строка</param>
-        /// <param name="usersInfo">Список, в элемент которого необходимо передать команду</param>
-        /// <param name="i">Индекс элемента в Списке, который получает команду</param>
-        public static string EncryptAction(PlayerAction action)
-        {
-            switch (action)
-            {
-                case PlayerAction.Bomb:
-                    return "1";
-
-                case PlayerAction.Down:
-                    return "2";
-
-                case PlayerAction.Left:
-                    return "3";
-
-                case PlayerAction.Right:
-                    return "4";
-
-                case PlayerAction.Up:
-                    return "5";
-
-                default:
-                    return "0";
-            }
-        }
-
-
-        /// <summary>
-        /// Случайный md5 хеш
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static string CalculateMD5Hash(string input)
-        {
-            MD5 md5 = MD5.Create();
-            byte[] inputBytes = Encoding.ASCII.GetBytes(input);
-            byte[] hash = md5.ComputeHash(inputBytes);
-
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < hash.Length; i++)
-            {
-                sb.Append(hash[i].ToString("X2"));
-            }
-
-            return sb.ToString();
-        }
-        
-
         /// <summary>
         /// Выделить из Пути файла имя этого Файла
         /// </summary>
@@ -110,9 +25,8 @@ namespace AutoCompiler
         {
             Stack<char> tsymbols = new Stack<char>();
             string nfileName = "";
-
-            int tindex = ppath.Length - 1;
-
+           
+            int tindex = ppath.Length - 1;          
             for (; tindex >= 0; tindex--)
             {
                 if (ppath[tindex] == '.')
@@ -300,36 +214,6 @@ namespace AutoCompiler
             DeleteDirectory(ppath);
             Directory.CreateDirectory(ppath);
         }
-       
-      
-        /// <summary>
-        /// Считать данные из файла
-        /// </summary>
-        /// <param name="path">Полный путь до файла, включая имя файла и расширение</param>
-        /// <returns>Полученные данные</returns>
-        public static string[] ReadFile(string path)
-        {
-            string[] data = new string[3];
-
-            if (!File.Exists(path))
-            {
-                return null;
-            }
-
-            using (StreamReader sr = new StreamReader(path))
-            {
-                for (int i = 0; i < data.Length; i++)
-                {
-                    data[i] = sr.ReadLine();
-                    if (String.IsNullOrWhiteSpace(data[i]))
-                    {
-                        return null;
-                    }
-                }
-            }              
-            return data;
-        }
-
 
         public static void Compress(string sourceFile, string compressedFile)
         {
@@ -348,12 +232,6 @@ namespace AutoCompiler
                     }
                 }
             }
-        }
-
-
-        public static void FileMove(string from, string to)
-        {           
-                File.Move(from, to); 
         }
 
 
@@ -376,57 +254,9 @@ namespace AutoCompiler
         }
 
 
-        public static string EncodingChange(string text, bool k= true)
-        {
-            Encoding sourceEncoding;
-            Encoding resultEncoding;
-
-            if (k)
-            {
-                sourceEncoding = Encoding.GetEncoding("Windows-1251");
-                resultEncoding = Encoding.GetEncoding("UTF-8");
-            }
-            else
-            {
-                resultEncoding = Encoding.GetEncoding("Windows-1251");
-                sourceEncoding = Encoding.GetEncoding("UTF-8");
-            }
-
-            byte[] sourceBytes = sourceEncoding.GetBytes(text);
-                byte[] resultBytes = Encoding.Convert(resultEncoding, sourceEncoding, sourceBytes);
-            string result = resultEncoding.GetString(resultBytes);
-
-            return result;
-        }
-
-
-        public static string StreamReadFile(string path)
-        {
-            string res = "";
-
-            if (!File.Exists(path))
-            {
-                return res;
-            }
-
-            using (StreamReader sr = new StreamReader(path, Encoding.GetEncoding("UTF-8")))
-            {
-                res = sr.ReadToEnd();
-                return res;
-            }
-        }
-
-
-        public static void StreamWriteFile(string text, string path, bool k = false)
-        {
-            using (StreamWriter sw = new StreamWriter(path, false))
-            {
-                sw.AutoFlush =true;
-                sw.Write(text);
-            }
-        }
-
-
-
+        public static void FileMove(string from, string to)
+        {           
+                File.Move(from, to); 
+        }  
     }
 }
