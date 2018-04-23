@@ -29,8 +29,7 @@ namespace Bomber_console_server
         List<GameBoard> gameBoardStates;
         List<GameBoard> savedGameBoardStates;
         string[] php_compiled_path;
-        static int phpgameID;
-        static string main_php_path;
+        static int phpgameID;       
 
         public static string gameID;
         public string gameboardTempJsonForClient;
@@ -40,9 +39,7 @@ namespace Bomber_console_server
 
         public Session(SandboxGame _sandboxgame)
         {
-            sandboxgame = _sandboxgame;
-
-            main_php_path = $"{MyPath.binDir}\\{sandboxgame.id}";  
+            sandboxgame = _sandboxgame;           
 
             globalTimeLimit = 120000;
             TimeLimit = 1000;
@@ -69,36 +66,51 @@ namespace Bomber_console_server
         /// </summary>
         public void InitGame()
         {
-            gb = new GameBoard();
+            try
+            {
+                gb = new GameBoard();
 
-            serverStart(); 
-            initUsersInfo();       
+                serverStart();
+                initUsersInfo();
 
-            SetGameBoardCast();
-            gameBoardStates.Add((GameBoard)gb.Clone());
+                SetGameBoardCast();
+                gameBoardStates.Add((GameBoard)gb.Clone());
 
-            NextTick();
+                NextTick();
+            }
+            catch (Exception er)
+            {
+                StopClearTempFiles();
+                throw new Exception(er.Message);
+            }
         }
 
         void initUsersInfo()
         {
-            for (int i = 0; i < sandboxgame.usergroup.users.Count; i++)
+            try
             {
-                Compiler cmp = MoveStartUserExe(sandboxgame.usergroup.users[i].user_exe_phppath, i);
-                if (cmp == null)
+                for (int i = 0; i < sandboxgame.usergroup.users.Count; i++)
                 {
-                    continue;
-                }
-                TcpClient tcp = server.AcceptTcpClient();
-                if (tcp==null)
-                {
-                    continue;
-                }
+                    Compiler cmp = MoveStartUserExe(sandboxgame.usergroup.users[i].user_exe_phppath, i);
+                    if (cmp == null)
+                    {
+                        continue;
+                    }
+                    TcpClient tcp = server.AcceptTcpClient();
+                    if (tcp == null)
+                    {
+                        continue;
+                    }
 
-                User player = InitPlayersInfo(sandboxgame.usergroup.users[i], i);
+                    User player = InitPlayersInfo(sandboxgame.usergroup.users[i], i);
 
-                usersInfo.Add(new UserInfo(player, tcp, cmp));
-                gb.Players.Add(player);
+                    usersInfo.Add(new UserInfo(player, tcp, cmp));
+                    gb.Players.Add(player);
+                }
+            }
+            catch (Exception er)
+            {               
+                throw new Exception(er.Message);
             }
         }
     
@@ -173,7 +185,13 @@ namespace Bomber_console_server
             for (int i = 0; i < usersInfo.Count; i++)
             {
                 try
-                {           
+                {        
+                    if (usersInfo[i].client==null)
+                    {
+                        usersInfo[i].player.ACTION = PlayerAction.Wait;
+                        continue;
+                    }   
+
                     NetworkStream strm = usersInfo[i].client.GetStream();
 
                     string sleeptimeStr = Helper.readStream(strm);
@@ -198,7 +216,7 @@ namespace Bomber_console_server
                 }
                 catch (Exception er)
                 {
-                    Helper.LOG(Compiler.LogPath, $"ERROR: {er.Message} - {usersInfo[i].player.Name}:{usersInfo[i].compiler.containerName}");
+                    Helper.LOG(Compiler.LogPath, $"RecieveUserInfo ERROR: {er.Message} - {usersInfo[i].player.Name}:{usersInfo[i].compiler.containerName}");
                     usersInfo[i].player.ACTION = PlayerAction.Wait;
                 }
             }
@@ -215,16 +233,16 @@ namespace Bomber_console_server
             if (isGameOver == false)
             {
                 Console.WriteLine("TICK - " + GameTimer);
-                GameProccess();                
-
-                gameBoardStates.Add((GameBoard)gb.Clone());
+                GameProccess();
 
                 SetXYInfo();
                 SetGameBoardCast();
 
+                gameBoardStates.Add((GameBoard)gb.Clone());
+
                 SendGameInfo();
                 RecieveUserInfo();
-               NextTick();
+                NextTick();
             }
             else
             {
@@ -249,7 +267,11 @@ namespace Bomber_console_server
             for (int i = 0; i < usersInfo.Count; i++)
             {
                 try
-                {
+                {   
+                    if (usersInfo[i].client == null)
+                    {
+                        continue;
+                    }       
                     UserInfo tempUserInfo = usersInfo[i];
                     NetworkStream strm = tempUserInfo.client.GetStream();
                     string userjson = JsonConvert.SerializeObject(tempUserInfo.player);
@@ -290,12 +312,13 @@ namespace Bomber_console_server
             for (int i = 0; i < winners.Count; i++)
             {
                 winners[i].Points += Config.player_win_points;
-            }           
+            }
 
             gameBoardStates.Add(gb);
             SaveGameInfoFile();
-
             StopClearTempFiles();
+
+
         }
 
         /// <summary>
@@ -972,13 +995,24 @@ namespace Bomber_console_server
         /// <param name="pclient"></param>
         public void Disconnect()
         {
+
             for (int i = 0; i < usersInfo.Count; i++)
             {
-                if (usersInfo[i].client != null)
+                try
                 {
-                    usersInfo[i].client.Close();
+                    if (usersInfo[i].client != null)
+                    {
+                        usersInfo[i].client.Close();
+                    }
+                }
+                catch (Exception er)
+                {
+                    throw new Exception($"Disconnect ERROR ({usersInfo[i].player.Name})");
+
                 }
             }
+
+
         }
 
 
@@ -988,16 +1022,18 @@ namespace Bomber_console_server
         /// <param name="pclient"></param>
         public void PlayerDisconnect(Player pplayer)
         {
+            TcpClient tempclient;
             try
             {
-                TcpClient tempclient = usersInfo.Find(c => c.player == pplayer).client;
-                tempclient.Close();
-                tempclient = null;
+                tempclient = usersInfo.Find(c => c.player == pplayer).client;           
+                tempclient.Close();                
             }
             catch (Exception e)
             {
-                Helper.LOG(Compiler.LogPath, "Ошибка в функции PlayerDisconnect: " + e.Message);
+                Helper.LOG(Compiler.LogPath, "Ошибка в функции PlayerDisconnect: " + e.Message);               
             }
+            tempclient = null;
+            usersInfo.Find(c => c.player == pplayer).client = tempclient;
         }
 
 
@@ -1037,7 +1073,7 @@ namespace Bomber_console_server
         {
             try
             {
-                Compiler compiler = new Compiler(php_exe_path, i, main_php_path);
+                Compiler compiler = new Compiler(php_exe_path, i, sandboxgame.id);
                // compiler.Compile();
                 compiler.StartProccess(serverPort);
                 //  Thread.Sleep(1000);
@@ -1047,8 +1083,8 @@ namespace Bomber_console_server
             }
             catch (Exception e)
             {
-                Helper.LOG(Compiler.LogPath, "ERROR in MoveStartUserExe: " + e.Message);
-                return null;
+                throw new Exception("ERROR in MoveStartUserExe: " + e.Message);
+               // return null;
             }
         }
     }
