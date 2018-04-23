@@ -203,12 +203,9 @@ namespace User_client
         /// </summary>
         static void SentInfo(long limit)
         {
-			Log("SentInfo start " + myUser.ACTION);
             writeStream(limit + "");
             if (readStream() == "p")
-            {
-				Log(myUser.ACTION+"");
-                Log("sentInfo " + ActionToString());
+            {				
                 writeStream(ActionToString());
             }
             else

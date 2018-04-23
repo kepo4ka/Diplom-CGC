@@ -12,13 +12,10 @@ namespace AutoCompiler
         static string main_Path = Directory.GetCurrentDirectory();
         static string assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
         static string CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
-        public static string HostUserPath;
-      //  public static string LogPath = $"{HostUserPath}\\log.txt";
-      
+        public static string HostUserPath;      
 
         string userClass_Path;
-        string userClient_Path;
-        
+        string userClient_Path;        
 
         string userClass_sourceName;
         string userClass_dllName;
@@ -39,17 +36,7 @@ namespace AutoCompiler
             if (String.IsNullOrWhiteSpace(_userClass_sourceName))
             {
                 throw new Exception("Неверное имя файла исходного кода");
-            }
-           
-
-          //  LogPath = $"{HostUserPath}\\log.txt";
-
-            //if (main_Path.Contains("\\bin\\"))
-            //{
-            //    main_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\.."));
-            //}
-          ;
-          
+            }           
         
             userClass_Path = Helper.SpliteEndPath(_userClass_sourceName, true);
             userClient_Path = main_Path + "\\compiler";
@@ -87,7 +74,9 @@ namespace AutoCompiler
         public void BackFile(string to)
         {
             Helper.DeleteFile($"{to}\\{userClientexe_Name}");
+            Helper.DeleteFile($"{to}\\{userClass_dllName}");
             Helper.FileMove($"{userClient_Path}\\{userClientexe_Name}", $"{to}\\{userClientexe_Name}");
+            Helper.FileMove($"{userClient_Path}\\{userClass_dllName}", $"{to}\\{userClass_dllName}");
         }
 
 
@@ -96,7 +85,6 @@ namespace AutoCompiler
         {
             try
             {
-
                 DeleteComppiledFiles();
             }
             catch
@@ -139,7 +127,7 @@ namespace AutoCompiler
         /// </summary>
         void UserClassDLLCompile()
         {
-            Helper.DeleteFile(userClass_Path + userClass_dllName);
+         //   Helper.DeleteFile(userClass_Path + userClass_dllName);
             output = "";
             errorput = "";
 
