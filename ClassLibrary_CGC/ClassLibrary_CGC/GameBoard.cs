@@ -6,7 +6,7 @@ namespace ClassLibrary_CGC
 {
     public enum PlayerAction
     {
-        Right, Left, Up, Down, Bomb, Wait
+       Wait, Bomb, Left, Up, Right, Down
     }
 
     public enum BonusType
