@@ -1063,7 +1063,7 @@ namespace ClassLibrary_CGC
         public static int player_survive_points = 20;
         public static int player_cell_destroy_points = 1;
         public static int player_win_points = 100;
-        public static int player_bonus_find_points = 10;
+        public static int player_bonus_find_points = 4;
 
 
         public static Color cell_destructible_color = Color.Bisque;

@@ -297,8 +297,8 @@ namespace Bomber_console_server
             PlayerBonusCollision();
 
             BombsProccess();
-            LavasProccess();
-            LavaCollision();
+			LavaCollision();
+            LavasProccess();           
         }
 
 
