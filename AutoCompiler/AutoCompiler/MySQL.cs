@@ -112,7 +112,7 @@ namespace AutoCompiler
 
         public bool SetCompiledStatus(int id)
         {
-            string sql = $"UPDATE sources SET error='', status='ok' WHERE id=@id";
+            string sql = $"UPDATE sources SET error='', status='ok', used=1 WHERE id=@id";
 
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = myConnection;
