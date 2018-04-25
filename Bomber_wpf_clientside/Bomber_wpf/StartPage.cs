@@ -12,7 +12,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
 using System.IO;
 using System.Diagnostics;
-
+using Bomber_console_server;
+using Newtonsoft.Json;
 
 namespace Bomber_wpf
 {
@@ -92,11 +93,38 @@ namespace Bomber_wpf
         /// <returns>Список, содержащий состояния игры в каждый момент времени</returns>
         private List<GameBoard> GetGameBoardStatesFromFile(string psource)
         {
-            List<GameBoard> gameBoardStates = new List<GameBoard>();
-            StreamReader sr = new StreamReader(psource);
+            string[] splitedFile = psource.Split('.');
+            string[] splitPath = psource.Split('\\');
+            string fileExtension = splitedFile[splitedFile.Length - 1];
+            string filePath = splitPath[splitPath.Length - 1];
 
-            IFormatter formatter = new BinaryFormatter();
-            gameBoardStates = (List<GameBoard>)formatter.Deserialize(sr.BaseStream);
+            List<GameBoard> gameBoardStates = new List<GameBoard>();
+            //  MessageBox.Show("psource " + psource);
+
+            switch (fileExtension)
+            {
+                case "dat":
+                    using (StreamReader sr = new StreamReader(psource))
+                    {
+                        IFormatter formatter = new BinaryFormatter();
+                        gameBoardStates = (List<GameBoard>)formatter.Deserialize(sr.BaseStream);
+                    }
+                    break;
+                case "json":
+                    using (StreamReader sr = new StreamReader(psource))
+                    {
+                        string json = sr.ReadToEnd();
+                        Helper.LOG("C:\\log.txt", json);
+                        gameBoardStates = JsonConvert.DeserializeObject<List<GameBoard>>(json);
+                    }
+                    break;
+
+                case "gz":
+                    string jsonPath = psource.Replace(".gz", ".dat");
+                    Helper.Decompress(psource, jsonPath);
+                    gameBoardStates = GetGameBoardStatesFromFile(jsonPath);
+                    break;
+            }
 
             return gameBoardStates;
         }

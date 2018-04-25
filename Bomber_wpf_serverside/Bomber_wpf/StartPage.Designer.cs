@@ -83,7 +83,6 @@
             this.groupBox1.Controls.Add(this.path2_btn);
             this.groupBox1.Controls.Add(this.path1_btn);
             this.groupBox1.Controls.Add(this.realGameButton);
-            this.groupBox1.Enabled = false;
             this.groupBox1.Location = new System.Drawing.Point(11, 12);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(274, 244);

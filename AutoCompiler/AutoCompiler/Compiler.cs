@@ -18,11 +18,13 @@ namespace AutoCompiler
         string userClient_Path;        
 
         string userClass_sourceName;
+        public string userClass_Default_sourceName = "user.cs";
+        public static string userClientexe_Name = "Program.exe";
+
         string userClass_dllName;
         string ClassLibrary_CGC;
         string newtonjson;      
         string userClient_sourceName;
-       public static string userClientexe_Name = "Program.exe";
         string output;
         string errorput;
         public string containerName;
@@ -114,7 +116,7 @@ namespace AutoCompiler
 
             if (File.Exists($"{userClass_Path}{userClass_sourceName}"))
             {
-                File.Copy($"{userClass_Path}{userClass_sourceName}", $"{userClient_Path}\\{userClass_sourceName}");
+                File.Copy($"{userClass_Path}{userClass_sourceName}", $"{userClient_Path}\\{userClass_Default_sourceName}");
             }
             else
             {
@@ -135,7 +137,7 @@ namespace AutoCompiler
                 $"{CscEXE_Path} " +
                 $"/r:{ClassLibrary_CGC} " +
                 $"/target:library " +
-                $"/out:{userClass_dllName} {userClass_sourceName}";
+                $"/out:{userClass_dllName} {userClass_Default_sourceName}";
 
             Helper.startProccess(code, out output, out errorput);
 

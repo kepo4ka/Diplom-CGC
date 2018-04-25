@@ -14,6 +14,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
+using Bomber_console_server;
 
 namespace Bomber_wpf
 {
@@ -1790,5 +1791,10 @@ namespace Bomber_wpf
         {
             log_box.Clear();
         }
+
+
+
+
+       
     }
 }

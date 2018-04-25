@@ -9,27 +9,31 @@ namespace Bomber_wpf
 {
     public class Compiler
     {
-      static  string main_Path;
-       static string CscEXE_Path;
-        static string dockerImage;
-      public static string HostUserPath;
-        public static string LogPath;       
-        static string gameboardjsonpath;
-        static string userjsonpath;   
+      public static  string main_Path;
+        static string CscEXE_Path = CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
+        static string assets_Path;
+
+
+
+        public static string LogPath = "log.txt";       
+    
 
         string userClass_Path;
-        string userClient_Path;
+       public static string TempGamePath;
 
-        string userClass_sourceName;        
-        string userClass_dllName;
-        string ClassLibrary_CGC;
-        string newtonjson;
+        string userClass_sourceName;
+        public string userClass_Default_sourceName = "user.cs";
+        public static string userClientexe_Name = "Program.exe";
+        string userClientLocal_sourceName = "ProgramLocal.cs";
+
+        string userClass_dllName = "User_class.dll";
+        string ClassLibrary_CGC = "ClassLibrary_CGC.dll";
+        string newtonjson = "Newtonsoft.Json.dll";
         string user_directory_name;
-        string userClient_sourceName;
-        string userClientexe_Name;
+      
+
         string output;
         string errorput;
-        public string containerName;    
             
 
         public static List<string> compileDirectories = new List<string>();
@@ -41,37 +45,31 @@ namespace Bomber_wpf
             {
                 throw new Exception("Неверное имя файла исходного кода");
             }
+            DirectoryInfo main_di = new DirectoryInfo(Directory.GetCurrentDirectory());
+            main_Path = main_di.FullName;
 
-            dockerImage = "kepo4ka/ubuntu_mono";
-
-            main_Path = Directory.GetCurrentDirectory();
-            HostUserPath = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
-            HostUserPath += $"\\docker_temp\\{Form1.gameID}";
-            LogPath = $"{HostUserPath}\\log.txt";
-
-            gameboardjsonpath = "gameboard.json";
-            userjsonpath = "user.json";
-
-            if (main_Path.Contains("\\bin\\"))
+            if (main_di.Name == "Debug")
             {
-                main_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\.."));
-            }         
-  
-            CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
-            userClass_Path = Helper.SpliteEndPath(_userClass_sourceName,true);
-            userClient_Path = main_Path + "\\" + "User_client\\User_client\\";
+                assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
+            }
+            else
+            {
+                assets_Path = Path.GetFullPath(main_Path + "\\assets");
+            }
             
+            userClass_Path = Helper.SpliteEndPath(_userClass_sourceName,true);
+            TempGamePath = main_Path + "\\" + "compiler";
+            LogPath = $"{TempGamePath}\\log.txt";
+
             userClass_sourceName = Helper.SpliteEndPath(_userClass_sourceName) + ".cs";
-            userClass_dllName = "User_class.dll";
+           
 
             user_directory_name = "User_" + i;
 
-            userClient_sourceName = "Program.cs";
-            userClientexe_Name = "Program.exe";
-
-            ClassLibrary_CGC = "ClassLibrary_CGC.dll";
-            newtonjson = "Newtonsoft.Json.dll";
-            containerName = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPA");           
+         
+           
+            
+            
         }    
 
 
@@ -93,109 +91,36 @@ namespace Bomber_wpf
         }
 
 
-        /// <summary>
-        /// Работа с Docker
-        /// </summary>
-        public void StartProccess(int serverPort)
-        {
-            DockerPreparation();
-            DockerStart();
-            Docker.Exec(containerName, $"mono /cgc/{userClientexe_Name} {serverPort}");
-        }
-
-
-        static void DeleteDockerTempDirectory()
-        {
-            DirectoryInfo di = new DirectoryInfo(HostUserPath);
-            DirectoryInfo[] diA = di.GetDirectories();
-            foreach (DirectoryInfo df in diA)
-            {
-                Helper.DeleteDirectory(df.FullName);
-            }
-        }
-
-
         public static void EndProccess()
         {
-            DeleteComppiledFiles();
-            DeleteDockerTempDirectory();
+            DeleteComppiledFiles();            
         }
 
 
-        public void StopContainer()
-        {
-            Docker.StopContainer(containerName);
-        }
 
-
-        /// <summary>
-        /// Подготовка к запуску Docker контейнера
-        /// </summary>
-        void DockerPreparation()
-        {
-           // CreateDirectoryInAppData();
-            CreateDockerTempDirectory(containerName);
-            CopyDependenciesToTempDirectory();           
-        }
-
-
-        /// <summary>
-        /// Запустить Docker контейнер
-        /// </summary>
-        void DockerStart()
-        {
-            string hostPath = $"{HostUserPath}\\{containerName}"; 
-            Docker.Run(dockerImage, hostPath, containerName);
-        }      
-
-
-        /// <summary>
-        /// Создать временную папку, необходимую для Docker
-        /// </summary>
-        public static void CreateDirectoryInAppData()
-        {
-            Helper.CreateEmptyDirectory(HostUserPath);
-        }
-
-        /// <summary>
-        /// Создать папку tcp-клиента внутри временной папки Docker
-        /// </summary>
-        /// <param name="dirName">Имя создаваемой папки</param>
-        void CreateDockerTempDirectory(string dirName)
-        {
-            Helper.CreateEmptyDirectory($"{HostUserPath}\\{dirName}");          
-        }
-
-        /// <summary>
-        /// Скопировать необходимые файлы в папку tcp-клиента
-        /// </summary>
-        void CopyDependenciesToTempDirectory()
-        {
-            File.Copy($"{userClient_Path}{user_directory_name}\\{ClassLibrary_CGC}", $"{HostUserPath}\\{containerName}\\{ClassLibrary_CGC}");
-            File.Copy($"{userClient_Path}{user_directory_name}\\{userClass_dllName}", $"{HostUserPath}\\{containerName}\\{userClass_dllName}");
-            File.Copy($"{userClient_Path}{user_directory_name}\\{userClientexe_Name}", $"{HostUserPath}\\{containerName}\\{userClientexe_Name}");
-            File.Copy($"{userClient_Path}{user_directory_name}\\{newtonjson}", $"{HostUserPath}\\{containerName}\\{newtonjson}");
-        }
+   
 
         /// <summary>
         /// Создать папки для компиляции
         /// </summary>
         void CreateUserDirectory()
         {
-            compileDirectories.Add(userClient_Path + user_directory_name);
+            compileDirectories.Add($"{TempGamePath}\\{user_directory_name}");
 
-            foreach(FileInfo tfile in Directory.CreateDirectory(userClient_Path + user_directory_name).GetFiles())
+            Helper.DeleteDirectory($"{TempGamePath}\\{user_directory_name}");
+
+            Directory.CreateDirectory($"{TempGamePath}\\{user_directory_name}");
+          
+            File.Copy($"{assets_Path}\\{newtonjson}", $"{TempGamePath}\\{user_directory_name}\\{newtonjson}");
+
+            File.Copy($"{assets_Path}\\{ClassLibrary_CGC}", $"{TempGamePath}\\{user_directory_name}\\{ClassLibrary_CGC}");
+            File.Copy($"{assets_Path}\\{userClientLocal_sourceName}", $"{TempGamePath}\\{user_directory_name}\\{userClientLocal_sourceName}");
+
+
+
+            if (File.Exists($"{userClass_Path}\\{userClass_sourceName}"))
             {
-                tfile.Delete();
-            }
-            File.Copy(userClient_Path + newtonjson, userClient_Path + user_directory_name + "\\" + newtonjson);
-
-            File.Copy(userClient_Path + ClassLibrary_CGC, userClient_Path + user_directory_name+"\\" + ClassLibrary_CGC);
-            File.Copy(userClient_Path + userClient_sourceName, userClient_Path + user_directory_name +"\\" + userClient_sourceName);
-
-            if (File.Exists(userClass_Path + userClass_sourceName))
-            {
-                File.Copy(userClass_Path + userClass_sourceName, userClient_Path + user_directory_name + "\\" + userClass_sourceName);
+                File.Copy($"{userClass_Path}\\{userClass_sourceName}", $"{TempGamePath}\\{user_directory_name}\\{userClass_Default_sourceName}");
             }
             else
             {
@@ -204,38 +129,20 @@ namespace Bomber_wpf
         }
 
 
-        /// <summary>
-        /// Записать инфjрмацию о GameBoard в файл, внутри временной папки польвателя
-        /// </summary>
-        /// <param name="data">Слепок Gamboard, сериализованный в json</param>
-        public void SaveTempGameInfo(string gameboardinfo, string userinfo, bool k = false)
-        {
-            //   string gbpath = $"{userClient_Path}{user_directory_name}\\{gameboardjsonpath}";
-            //   string uspath = $"{userClient_Path}{user_directory_name}\\{userjsonpath}";
-
-            string gbpath = $"{HostUserPath}\\{containerName}\\{gameboardjsonpath}";
-            string uspath = $"{HostUserPath}\\{containerName}\\{userjsonpath}";
-                     
-            Helper.WriteDataJson(gameboardinfo, gbpath, k);
-            Helper.WriteDataJson(userinfo, uspath, k);           
-        }
-
-
 
         /// <summary>
         /// Компиляция пользовательского класса в dll и перещение его в папку программы Tcp-клиента
         /// </summary>
         void UserClassDLLCompile()
-        {
-            Helper.DeleteFile(userClass_Path + userClass_dllName);
+        {           
             output = "";
             errorput = "";
 
-            string code = $"cd {userClient_Path}{user_directory_name} && " +
+            string code = $"cd {TempGamePath}\\{user_directory_name} && " +
                 $"{CscEXE_Path} " +
                 $"/r:{ClassLibrary_CGC} " +
                 $"/target:library " +
-                $"/out:{userClass_dllName} {userClass_sourceName}";
+                $"/out:{userClass_dllName} {userClass_Default_sourceName}";
 
             Helper.startProccess(code, out output, out errorput);
 
@@ -252,15 +159,13 @@ namespace Bomber_wpf
         {
             output = "";
             errorput = "";
-            Helper.startProccess($"cd {userClient_Path}{user_directory_name} && " +
-               $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName};{newtonjson} {userClient_sourceName}", out output, out errorput);
+            Helper.startProccess($"cd {TempGamePath}\\{user_directory_name} && " +
+               $"{CscEXE_Path} /r:{ClassLibrary_CGC};{userClass_dllName};{newtonjson} /out:{userClientexe_Name} {userClientLocal_sourceName}", out output, out errorput);
 
             if (errorput!="")
             {               
                 throw new Exception($"Ошибка при компиляции exe tcp-клиента: {errorput}");
-            }
-
-            
+            }            
         }
 
  
@@ -268,19 +173,25 @@ namespace Bomber_wpf
         /// <summary>
         /// Запустить tcp-клиент пользователя
         /// </summary>
-        public void UserClientStart(int port)
+        public void UserClientStart()
         {
-            if (!File.Exists($"{userClient_Path}{user_directory_name}\\{userClientexe_Name}"))
+            if (!File.Exists($"{TempGamePath}\\{user_directory_name}\\{userClientexe_Name}"))
             {               
                 throw new Exception($"Не удалось запустить exe tcp-клиента");
             }
 
-
-            StringBuilder sb = new StringBuilder();
+           
+            //StringBuilder sb = new StringBuilder();
           
-            sb.AppendFormat($"/C cd {userClient_Path}{user_directory_name} && {userClientexe_Name} {port}");
+            //sb.AppendFormat($"/C cd {TempGamePath}\\{user_directory_name} && {userClientexe_Name}");
 
-            Process.Start("cmd.exe", sb.ToString());
+            //Process.Start("cmd.exe", sb.ToString());
+
+
+
+          
+            Helper.startProccess($"{TempGamePath}\\{user_directory_name}\\{userClientexe_Name}");
+
         }
 
 

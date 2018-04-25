@@ -8,11 +8,10 @@ using System.Net.Sockets;
 
 using ClassLibrary_CGC;
 using System.Diagnostics;
-using System.Windows.Forms;
 using System.IO;
 using System.IO.Compression;
 
-namespace Bomber_wpf
+namespace Bomber_console_server
 {
     class Helper
     {
@@ -30,7 +29,7 @@ namespace Bomber_wpf
             PlayerAction pa = new PlayerAction();
             int actionInt = int.Parse(message);
             pa = (PlayerAction)actionInt;
-            return pa;
+            return pa;     
         }
 
         /// <summary>
@@ -45,7 +44,6 @@ namespace Bomber_wpf
             string actionString = actionInt.ToString();
             return actionString;
         }
-
 
 
         /// <summary>
@@ -122,7 +120,7 @@ namespace Bomber_wpf
         {
             Byte[] serverData = new Byte[16];
             int bytes = strm.Read(serverData, 0, serverData.Length);
-            string serverMessage = Encoding.ASCII.GetString(serverData, 0, bytes);
+            string serverMessage = Encoding.Unicode.GetString(serverData, 0, bytes);
             return serverMessage;
         }
 
@@ -132,7 +130,7 @@ namespace Bomber_wpf
         /// <param name="message">Отправляемая строка</param>
         public static void writeStream(NetworkStream strm, string message)
         {
-            Byte[] data = Encoding.ASCII.GetBytes(message);
+            Byte[] data = Encoding.Unicode.GetBytes(message);
             strm.Write(data, 0, data.Length);
         }
 
@@ -147,7 +145,8 @@ namespace Bomber_wpf
             {
                 string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
                 time = "[" + time + "] ";
-                sw.WriteLine($"{time}: {message} \n");
+                sw.WriteLine($"{time}: {message}");
+                Console.WriteLine($"{time}: {message}");
             }
         }
 
@@ -171,7 +170,7 @@ namespace Bomber_wpf
 
             Process proc = new Process();
             // Получение текста в виде кодировки 866 win
-          //  procStartInfo.StandardOutputEncoding = Encoding.GetEncoding();
+            procStartInfo.StandardOutputEncoding = Encoding.GetEncoding(866);
             //запуск CMD
             proc.StartInfo = procStartInfo;
             proc.Start();
@@ -179,7 +178,7 @@ namespace Bomber_wpf
             output = "";
             errorput = proc.StandardError.ReadToEnd();
 
-            while (proc.StandardOutput.Peek() >= 0)
+          while (proc.StandardOutput.Peek()>=0)
             {
                 output = proc.StandardOutput.ReadLine();
                 if (output.Contains("error"))
@@ -193,33 +192,6 @@ namespace Bomber_wpf
                 }
             }
         }
-
-        /// <summary>
-        /// Запустить процесс со специфичными настройками
-        /// </summary>
-        /// <param name="stroke">Команда и её параметры</param>
-        /// <returns>Результат выполнения процесса</returns>
-        public static void startProccess(string stroke)
-        {
-            ProcessStartInfo procStartInfo =
-                new ProcessStartInfo(
-                    "cmd", "/c " + stroke);
-           
-            procStartInfo.UseShellExecute = false;
-            // не создавать окно CMD
-            procStartInfo.CreateNoWindow = true;
-
-            Process proc = new Process();
-            // Получение текста в виде кодировки 866 win
-            //  procStartInfo.StandardOutputEncoding = Encoding.GetEncoding();
-            //запуск CMD
-            proc.StartInfo = procStartInfo;
-            proc.Start();
-         
-           
-        }
-
-
 
 
         /// <summary>
@@ -253,7 +225,12 @@ namespace Bomber_wpf
                     {
                         f.Delete();
                     }
-    
+
+                    foreach (FileInfo tfile in di.GetFiles())
+                    {
+                        tfile.Delete();
+                    }
+
                     foreach (DirectoryInfo df in diA)
                     {
                         DeleteDirectory(df.FullName);
@@ -262,7 +239,6 @@ namespace Bomber_wpf
                             df.Delete();
                         }
                     }
-                    di.Delete();
                 }
             }
             catch (Exception e)
@@ -366,5 +342,9 @@ namespace Bomber_wpf
                 }
             }
         }
+
+
+       
+
     }
 }

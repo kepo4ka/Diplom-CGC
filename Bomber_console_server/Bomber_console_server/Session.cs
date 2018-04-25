@@ -186,7 +186,7 @@ namespace Bomber_console_server
             {
                 try
                 {        
-                    if (usersInfo[i].client==null)
+                    if (usersInfo[i].client==null || usersInfo[i].player.Health<1)
                     {
                         usersInfo[i].player.ACTION = PlayerAction.Wait;
                         continue;
@@ -268,7 +268,7 @@ namespace Bomber_console_server
             {
                 try
                 {   
-                    if (usersInfo[i].client == null)
+                    if (usersInfo[i].client == null || usersInfo[i].player.Health<1)
                     {
                         continue;
                     }       
