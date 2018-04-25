@@ -15,7 +15,7 @@ namespace Bomber_wpf
         public int globalTimeLimit;
         public Compiler compiler;
         public TcpClient client;
-
+        
 
         public UserInfo(Player pl, TcpClient cl, Compiler cmp)
         {

@@ -65,11 +65,6 @@ namespace Bomber_wpf
            
 
             user_directory_name = "User_" + i;
-
-         
-           
-            
-            
         }    
 
 
