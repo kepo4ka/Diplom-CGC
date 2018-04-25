@@ -15,6 +15,7 @@ namespace Bomber_wpf
     {
         public string[] paths;
         public string[] labels;
+        int[,] gbpseudo = null;
 
 
         public StartPage()
@@ -28,9 +29,9 @@ namespace Bomber_wpf
             labels[3] = path4_lab.Text;
             for (int i = 1; i < paths.Length; i++)
             {
-                paths [i]= "";
+                paths[i] = "";
             }
-            
+
 
         }
 
@@ -41,7 +42,7 @@ namespace Bomber_wpf
         }
 
 
-     
+
         /// <summary>
         /// Запустить форму симуляции
         /// </summary>
@@ -50,19 +51,19 @@ namespace Bomber_wpf
             byte havePlayers = 0;
             for (int i = 0; i < paths.Length; i++)
             {
-                if (paths[i]!= null)
+                if (paths[i] != null)
                 {
-                    havePlayers++;                    
+                    havePlayers++;
                 }
             }
 
             //Если хотя бы два игрока (пользователь или бот)
-            if (havePlayers>1)
+            if (havePlayers > 1)
             {
-                Form1 realGameForm = new Form1(this);
+                Form1 realGameForm = new Form1(this, gbpseudo);
                 this.Hide();
                 realGameForm.Show();
-            }          
+            }
         }
 
 
@@ -75,12 +76,20 @@ namespace Bomber_wpf
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                List<GameBoard> gbstates = GetGameBoardStatesFromFile(ofd.FileName);
-               
+                List<GameBoard> gbstates;
+                try
+                {
+                    gbstates = GetGameBoardStatesFromFile(ofd.FileName);
+                }
+                catch (Exception er)
+                {
+                    MessageBox.Show("Не удалось загрузить Визуализацию: " + er.Message);
+                    return;
+                }
                 Form1 saveGameForm = new Form1(this, gbstates);
-
                 this.Hide();
                 saveGameForm.Show();
+
             }
         }
 
@@ -94,11 +103,11 @@ namespace Bomber_wpf
         {
             string[] splitedFile = psource.Split('.');
             string[] splitPath = psource.Split('\\');
-            string fileExtension = splitedFile[splitedFile.Length-1];
+            string fileExtension = splitedFile[splitedFile.Length - 1];
             string filePath = splitPath[splitPath.Length - 1];
 
             List<GameBoard> gameBoardStates = new List<GameBoard>();
-          //  MessageBox.Show("psource " + psource);
+            //  MessageBox.Show("psource " + psource);
 
             switch (fileExtension)
             {
@@ -124,9 +133,48 @@ namespace Bomber_wpf
                     gameBoardStates = GetGameBoardStatesFromFile(jsonPath);
                     break;
             }
-            
+
             return gameBoardStates;
         }
+
+
+        private int[,] GetGameboardFromFile(string psource)
+        {
+            string[] splitedFile = psource.Split('.');
+            string[] splitPath = psource.Split('\\');
+            string fileExtension = splitedFile[splitedFile.Length - 1];
+            string filePath = splitPath[splitPath.Length - 1];
+
+            int[,] gameboardpseudo = new int[15, 15];
+            //  MessageBox.Show("psource " + psource);
+
+            using (StreamReader sr = new StreamReader(psource))
+            {
+                for (int i = 0; i < gameboardpseudo.GetLength(0); i++)
+                {
+                    string line = sr.ReadLine();
+                    string[] linesplit = line.Split();
+
+                    if (linesplit.Length != gameboardpseudo.GetLength(1))
+                    {
+                        throw new Exception();
+                    }
+
+                    for (int j = 0; j < linesplit.Length; j++)
+                    {
+                        if (!int.TryParse(linesplit[i], out gameboardpseudo[i, j]))
+                        {
+                            throw new Exception();
+                        }
+                    }
+                }
+                return gameboardpseudo;
+            }          
+        }
+
+
+
+
 
         /// <summary>
         /// Загрузка файла исходного кода стратегии
@@ -161,11 +209,11 @@ namespace Bomber_wpf
             labels[2] = path3_lab.Text;
             labels[3] = path4_lab.Text;
 
-            if (check.Checked == false && labels[i]=="")
+            if (check.Checked == false && labels[i] == "")
             {
                 paths[i] = null;
             }
-            else if (check.Checked == false && labels[i]!="")
+            else if (check.Checked == false && labels[i] != "")
             {
                 paths[i] = labels[i];
             }
@@ -175,7 +223,7 @@ namespace Bomber_wpf
             }
 
             btn.Enabled = !btn.Enabled;
-            label.Enabled = !label.Enabled;       
+            label.Enabled = !label.Enabled;
         }
 
 
@@ -188,7 +236,7 @@ namespace Bomber_wpf
 
         private void path2_btn_Click(object sender, EventArgs e)
         {
-           path2_lab.Text = AddBotsFiles(1);
+            path2_lab.Text = AddBotsFiles(1);
             ToolTip t = new ToolTip();
             t.SetToolTip(path2_lab, path2_lab.Text);
         }
@@ -209,7 +257,7 @@ namespace Bomber_wpf
 
         private void checkBot1_CheckedChanged(object sender, EventArgs e)
         {
-            ChangeBotUser(0, path1_btn, path1_lab, checkBot1);            
+            ChangeBotUser(0, path1_btn, path1_lab, checkBot1);
         }
 
         private void checkBot2_CheckedChanged(object sender, EventArgs e)
@@ -225,6 +273,30 @@ namespace Bomber_wpf
         private void checkBot4_CheckedChanged(object sender, EventArgs e)
         {
             ChangeBotUser(3, path4_btn, path4_lab, checkBot4);
+        }
+
+
+
+        private void load_custom_map_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Txt file | *.txt";
+            ofd.InitialDirectory = Directory.GetCurrentDirectory();
+            int[,] tempgbpseudo;
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    tempgbpseudo = GetGameboardFromFile(ofd.FileName);
+                }
+                catch (Exception er)
+                {
+                    MessageBox.Show("Ошибка при работе с загружаемой схемой поля: " + er.Message);
+                    return;
+                }
+                gbpseudo = tempgbpseudo;               
+            }
         }
     }
 }
