@@ -162,10 +162,12 @@ namespace Bomber_wpf
 
                     for (int j = 0; j < linesplit.Length; j++)
                     {
-                        if (!int.TryParse(linesplit[i], out gameboardpseudo[i, j]))
+                        int t = 0;
+                        if (!int.TryParse(linesplit[j], out t))
                         {
                             throw new Exception();
                         }
+                        gameboardpseudo[i, j] = t;
                     }
                 }
                 return gameboardpseudo;

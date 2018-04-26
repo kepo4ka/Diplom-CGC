@@ -28,6 +28,7 @@ namespace Bomber_wpf
         Pen p;
         SolidBrush sb;
         GameBoard gb;
+        GameBoard tempGB;
         int GameTimer;
         int TimeLimit = Config.one_tick_client_wait_time;
         int globalTimeLimit = Config.all_game_client_max_wait_timeout;
@@ -51,10 +52,12 @@ namespace Bomber_wpf
 
         public string gameboardjson;
         List<int> Prioritets = new List<int>();
-       
+
         List<Cell> DestroyedCells;
         List<Player> DestroyedPlayers;
         int[,] gbpseudo = new int[15, 15];
+        List<Player> pseudoplayers;
+
 
 
         Random rn = new Random();
@@ -100,6 +103,7 @@ namespace Bomber_wpf
 
         void CheckUserCodeSourcesPath()
         {
+            int k =0;
             for (int i = 0; i < startPage.paths.Length; i++)
             {
                 switch (startPage.paths[i])
@@ -107,21 +111,22 @@ namespace Bomber_wpf
                     case null:
                         continue;
                     case "":
-                        gb.Players.Add(InitPlayersInfo(false, i));
+                        gb.Players.Add(CreatePlayer(false, k));
+                        k++;
                         break;
                     default:
                         Compiler cmp = CompileAndStartUserFiles(startPage.paths[i], i);
-                        User tuser = (User)InitPlayersInfo(true, i);
                         if (cmp == null)
                         {
                             continue;
                         }
 
+                        User tuser = (User)CreatePlayer(true, k);    
                         usersInfo.Add(new UserInfo(tuser, null, cmp));
-                     
 
                         gb.Players.Add(tuser);
-                        break;                       
+                        k++;
+                        break;
                 }
                 Prioritets.Add(rn.Next(0, 100));
             }
@@ -132,7 +137,7 @@ namespace Bomber_wpf
         /// Создание игрока на основе данных из формы
         /// </summary>
         /// <param name="i"></param>
-        Player InitPlayersInfo(bool k, int i)
+        Player CreatePlayer(bool k, int i)
         {
             string[] ppaths = startPage.paths;
             Player pplayer;
@@ -150,31 +155,36 @@ namespace Bomber_wpf
 
             pplayer.ID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * rn.NextDouble() + "JOPA" + pplayer.Name);
             pplayer.Points = 0;
-            //    pplayer.Health = Config.player_health;
-            pplayer.Health = 1;
+
+         //   pplayer.Health = 5;
             pplayer.BangRadius = Config.bang_start_radius;
             pplayer.BombsCount = Config.player_bombs_count_start;
 
-            switch (i)
-            {
-                case 0:
-                    pplayer.X = 0;
-                    pplayer.Y = 0;
-                    break;
-                case 1:
-                    //  pplayer.X = gb.W - 1;
-                    pplayer.X = 1;
-                    pplayer.Y = 0;
-                    break;
-                case 2:
-                    pplayer.X = 0;
-                    pplayer.Y = gb.H - 1;
-                    break;
-                case 3:
-                    pplayer.X = gb.W - 1;
-                    pplayer.Y = gb.H - 1;
-                    break;
-            }
+            //switch (i)
+            //{
+            //    case 0:
+            //        pplayer.X = 0;
+            //        pplayer.Y = 0;
+            //        break;
+            //    case 1:
+            //        //  pplayer.X = gb.W - 1;
+            //        pplayer.X = 1;
+            //        pplayer.Y = 0;
+            //        break;
+            //    case 2:
+            //        pplayer.X = 0;
+            //        pplayer.Y = gb.H - 1;
+            //        break;
+            //    case 3:
+            //        pplayer.X = gb.W - 1;
+            //        pplayer.Y = gb.H - 1;
+            //        break;
+            //}
+
+            pplayer.X = pseudoplayers[0].X;
+            pplayer.Y = pseudoplayers[0].Y;
+            pseudoplayers.RemoveAt(0);
+
             return pplayer;
         }
 
@@ -260,19 +270,36 @@ namespace Bomber_wpf
             isGameOver = false;
 
             GameTimer = Config.gameTicksMax;
+            pseudoplayers = new List<Player>();
+
+
             if (gbpseudo == null)
             {
                 gb = new GameBoard();
             }
             else
             {
-                gb = new GameBoard(gbpseudo);
+                gb = new GameBoard(gbpseudo);     
+                for (int i = 0; i < gb.Players.Count; i++)
+                {
+                    Player tplayer = new Player();
+                    tplayer.X = gb.Players[i].X;
+                    tplayer.Y = gb.Players[i].Y;
+                    pseudoplayers.Add(tplayer);
+                }
+
+                gb.Players.Clear();
             }
+            SetPseudoPlayers();
+
+
+
+            formLog(gb.Bonuses.Count + "");
 
 
             Prioritets = new List<int>();
             // gameID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
-         
+
             DestroyedPlayers = new List<Player>();
             DestroyedCells = new List<Cell>();
 
@@ -293,43 +320,41 @@ namespace Bomber_wpf
 
         }
 
+
+        /// <summary>
+        /// Отправить сообщение по tcp
+        /// </summary>
+        /// <param name="stream">Сетевой Поток</param>
+        /// <param name="message">Сообщение</param>
         static void SendMessage(NetworkStream stream, string message)
         {
             byte[] data = Encoding.Unicode.GetBytes(message);
             stream.Write(data, 0, data.Length);
         }
 
-
+        /// <summary>
+        /// Получить сообщение по tcp
+        /// </summary>
+        /// <param name="stream">Сетевой поток</param>
+        /// <returns>Полученное сообщение</returns>
         static string ReceiveMessage(NetworkStream stream)
         {
-
             string message = "";
-            try
+
+            byte[] data = new byte[256]; // буфер для получаемых данных
+            StringBuilder builder = new StringBuilder();
+
+            int bytes = 0;
+            do
             {
-                byte[] data = new byte[256]; // буфер для получаемых данных
-                StringBuilder builder = new StringBuilder();
-                int bytes = 0;
-                do
-                {
-                    bytes = stream.Read(data, 0, data.Length);
-                    builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
-                }
-                while (stream.DataAvailable);
-
-                message = builder.ToString();
-
+                bytes = stream.Read(data, 0, data.Length);
+                builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
             }
-            catch
-            {
-                Console.WriteLine("Подключение прервано!"); //соединение было прервано
-                Console.ReadKey();
-            }
+            while (stream.DataAvailable);
 
+            message = builder.ToString();
             return message;
         }
-
-
-
 
 
         /// <summary>
@@ -337,8 +362,6 @@ namespace Bomber_wpf
         /// </summary>
         public void CommunicateWithClients()
         {
-            gameboardjson = JsonConvert.SerializeObject(gb);
-
             for (int i = 0; i < usersInfo.Count; i++)
             {
                 try
@@ -386,31 +409,6 @@ namespace Bomber_wpf
         }
 
 
-        /// <summary>
-        /// Получить информацию об Игроках (класс Player) от Клиентов
-        /// </summary>
-        public void RecieveUserInfo()
-        {
-            for (int i = 0; i < usersInfo.Count; i++)
-            {
-                try
-                {
-                    if (usersInfo[i].client == null || usersInfo[i].player.Health < 1)
-                    {
-                        usersInfo[i].player.ACTION = PlayerAction.Wait;
-                        continue;
-                    }
-                    NetworkStream strm = usersInfo[i].client.GetStream();
-                    string message = Helper.readStream(strm);
-                    usersInfo[i].player.ACTION = Helper.DecryptAction(message);
-                }
-                catch (Exception er)
-                {
-                    Helper.LOG(Compiler.LogPath, $"ERROR: {er.Message} - {usersInfo[i].player.Name}");
-                    usersInfo[i].player.ACTION = PlayerAction.Wait;
-                }
-            }
-        }
 
 
 
@@ -578,6 +576,8 @@ namespace Bomber_wpf
             LavasProccess();
 
             DestroyedObjectProccess();
+
+            ChangePrioritet();
         }
 
         /// <summary>
@@ -585,8 +585,6 @@ namespace Bomber_wpf
         /// </summary>
         public void DestroyedObjectProccess()
         {
-
-
             for (int i = 0; i < DestroyedPlayers.Count; i++)
             {
                 PlayerDeath(DestroyedPlayers[i]);
@@ -600,32 +598,34 @@ namespace Bomber_wpf
             DestroyedCells.Clear();
         }
 
+        /// <summary>
+        /// Обработка передаваемой и сохраняемой информации об игре в текущий Тик
+        /// </summary>
+        public void GameboardInfoProccess()
+        {
+            tempGB = null;
+            tempGB = (GameBoard)gb.Clone();
+            SetXYInfo();
+            gameBoardStates.Add(tempGB);
+            gameboardjson = JsonConvert.SerializeObject(tempGB);
+        }
+
 
         /// <summary>
         /// Следующий ход игры
         /// </summary>
         public void NextTick()
         {
+            CheckGameOver();
+
             if (isGameOver == false)
             {
-                CheckGameOver();
-
-
                 GameProccess();
                 DrawAll();
-
-                SetXYInfo();
-                gameBoardStates.Add((GameBoard)gb.Clone());
-
+                GameboardInfoProccess();
                 CommunicateWithClients();
-                // RecieveUserInfo();
 
                 UpdateListView();
-
-                //  Helper.writeStream(usersInfo[0].client.GetStream(), "server");
-                //log_box.Text+= Helper.readStream(usersInfo[0].client.GetStream()) + Environment.NewLine;
-
-
             }
         }
 
@@ -635,6 +635,76 @@ namespace Bomber_wpf
 
         }
 
+        /// <summary>
+        /// Изменить приоритет ходов игроков
+        /// </summary>
+        public void ChangePrioritet()
+        {
+            int last = Prioritets[Prioritets.Count - 1];
+
+            for (int i = Prioritets.Count - 1; i > 0; i--)
+            {
+                Prioritets[i] = Prioritets[i - 1];
+            }
+            Prioritets[0] = last;
+        }
+
+
+
+        public void SetPseudoPlayers()
+        {       
+            int[] tx = new int[]
+             {
+               0, 14, 0, 14
+             };
+            int[] ty = new int[]
+            {
+              0, 0, 14, 14
+            };
+
+
+            if (pseudoplayers.Count == 0)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    Player tplayer = new Player();
+                    tplayer.X = tx[i];
+                    tplayer.Y = ty[i];
+
+                    pseudoplayers.Add(tplayer);
+                }
+            }
+            else
+            {
+                while (pseudoplayers.Count < 4)
+                {
+                    Player tplayer = new Player();
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        bool inarray = false;
+                        for (int j = 0; j < pseudoplayers.Count; j++)
+                        {
+                            if (pseudoplayers[j].X == tx[i] && pseudoplayers[j].Y == ty[i])
+                            {
+                                inarray = true;
+                                break;
+                            }
+                        }
+                        if (!inarray)
+                        {
+                            tplayer.X = tx[i];
+                            tplayer.Y = ty[i];
+                            pseudoplayers.Add(tplayer);
+                            break;
+                        }
+                    }
+
+
+                }
+
+            }
+        }
 
 
         /// <summary>
@@ -642,17 +712,17 @@ namespace Bomber_wpf
         /// </summary>
         public void SetXYInfo()
         {
-            for (int i = 0; i < gb.XYinfo.GetLength(0); i++)
+            for (int i = 0; i < tempGB.XYinfo.GetLength(0); i++)
             {
-                for (int j = 0; j < gb.XYinfo.GetLength(1); j++)
+                for (int j = 0; j < tempGB.XYinfo.GetLength(1); j++)
                 {
-                    var tXYInfo = gb.XYinfo[i, j];
+                    var tXYInfo = tempGB.XYinfo[i, j];
 
-                    for (int ii = 0; ii < gb.Players.Count; ii++)
+                    for (int ii = 0; ii < tempGB.Players.Count; ii++)
                     {
-                        if (gb.Players[ii].X == i && gb.Players[ii].Y == j)
+                        if (tempGB.Players[ii].X == i && tempGB.Players[ii].Y == j)
                         {
-                            tXYInfo.Player = gb.Players[ii];
+                            tXYInfo.Player = tempGB.Players[ii];
                             break;
                         }
                     }
@@ -660,34 +730,34 @@ namespace Bomber_wpf
 
                     int tmaxLiveTime = 0;
 
-                    for (int ii = 0; ii < gb.Lavas.Count; ii++)
+                    for (int ii = 0; ii < tempGB.Lavas.Count; ii++)
                     {
-                        if (gb.Lavas[ii].X == i && gb.Lavas[ii].Y == j)
+                        if (tempGB.Lavas[ii].X == i && tempGB.Lavas[ii].Y == j)
                         {
                             if (gb.Lavas[ii].LiveTime >= tmaxLiveTime)
                             {
-                                tmaxLiveTime = gb.Lavas[ii].LiveTime;
+                                tmaxLiveTime = tempGB.Lavas[ii].LiveTime;
 
-                                tXYInfo.Lava = gb.Lavas[ii];
+                                tXYInfo.Lava = tempGB.Lavas[ii];
                             }
                         }
                     }
 
 
-                    for (int ii = 0; ii < gb.Bonuses.Count; ii++)
+                    for (int ii = 0; ii < tempGB.Bonuses.Count; ii++)
                     {
-                        if (gb.Bonuses[ii].X == i && gb.Bonuses[ii].Y == j && gb.Bonuses[ii].Visible)
+                        if (tempGB.Bonuses[ii].X == i && tempGB.Bonuses[ii].Y == j)
                         {
-                            tXYInfo.Bonus = gb.Bonuses[ii];
+                            tXYInfo.Bonus = tempGB.Bonuses[ii];
                             break;
                         }
                     }
 
-                    for (int ii = 0; ii < gb.Bombs.Count; ii++)
+                    for (int ii = 0; ii < tempGB.Bombs.Count; ii++)
                     {
-                        if (gb.Bombs[ii].X == i && gb.Bombs[ii].Y == j)
+                        if (gb.Bombs[ii].X == i && tempGB.Bombs[ii].Y == j)
                         {
-                            tXYInfo.Bomb = gb.Bombs[ii];
+                            tXYInfo.Bomb = tempGB.Bombs[ii];
                             break;
                         }
                     }
@@ -702,9 +772,16 @@ namespace Bomber_wpf
         {
             isGameOver = true;
 
-            for (int i = 0; i < winners.Count; i++)
+            if (winners.Count == 1)
             {
-                winners[i].Points += Config.player_win_points;
+                winners[0].Points += Config.player_win_points;
+            }
+            else
+            {
+                for (int i = 0; i < winners.Count; i++)
+                {
+                    winners[i].Points += Config.player_survive_points;
+                }
             }
 
             gameBoardStates.Add(gb);
@@ -723,8 +800,10 @@ namespace Bomber_wpf
                 gameBoardStates.Clear();
 
                 Disconnect();
-                server.Stop();
-
+                if (server != null)
+                {
+                    server.Stop();
+                }
                 Compiler.EndProccess();
 
                 for (int i = 0; i < usersInfo.Count; i++)
@@ -1071,7 +1150,7 @@ namespace Bomber_wpf
                     else
                     {
                         tvitya.BombsCount++;
-                    }                  
+                    }
 
                     //    gb.Bonuses.Remove(tempbonus[i, j]);
                     tempbonus[i, j] = null;
@@ -1344,9 +1423,9 @@ namespace Bomber_wpf
             //{
             //    PlayerAddPointsKill(plava);
             //}
-            pplayer.Health = 0;
+            pplayer.Health--;
 
-            if (pplayer is User)
+            if (pplayer is User && pplayer.Health < 1)
             {
                 PlayerDisconnect(pplayer);
             }
@@ -1367,6 +1446,8 @@ namespace Bomber_wpf
                     tempclient.Close();
                     tempclient = null;
                 }
+                usersInfo.Find(c => c.player == pplayer).client = null;
+
             }
             catch (Exception e)
             {
@@ -1418,14 +1499,14 @@ namespace Bomber_wpf
             }
         }
 
-       
 
 
 
 
-            /// <summary>
-            /// Обработка состояния лавы
-            /// </summary>
+
+        /// <summary>
+        /// Обработка состояния лавы
+        /// </summary>
         public void LavasProccess()
         {
             for (int k = 0; k < gb.Lavas.Count; k++)
@@ -1459,11 +1540,11 @@ namespace Bomber_wpf
             {
                 // gb.Cells[plava.X, plava.Y].Type = CellType.Free;
                 DestroyedCells.Add(gb.Cells[plava.X, plava.Y]);
-               // gb.Players.Find(c => c.ID == plava.PlayerID).Points += Config.player_cell_destroy_points;
+                // gb.Players.Find(c => c.ID == plava.PlayerID).Points += Config.player_cell_destroy_points;
 
                 for (int i = 0; i < gb.Players.Count; i++)
                 {
-                    if (gb.Players[i].ID==plava.PlayerID)
+                    if (gb.Players[i].ID == plava.PlayerID)
                     {
                         gb.Players[i].Points += Config.player_cell_destroy_points;
                     }
@@ -1762,10 +1843,10 @@ namespace Bomber_wpf
             game_timer.Interval = game_timer.Interval / 2;
             slow_btn.Enabled = true;
 
-            if (game_timer.Interval < 50)
+            if (game_timer.Interval < 110)
             {
                 fast_btn.Enabled = false;
-                game_timer.Interval = 50;
+                game_timer.Interval = 110;
             }
             else
             {
@@ -1802,5 +1883,12 @@ namespace Bomber_wpf
         {
             log_box.Clear();
         }
+
+
+        public void formLog(string message)
+        {
+            log_box.AppendText(message + "\n");
+        }
+
     }
 }

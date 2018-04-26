@@ -63,7 +63,19 @@ namespace ClassLibrary_CGC
             W = size;
             H = size;
 
-            Cells = new Cell[size, size];          
+            Cells = new Cell[size, size];
+            Bonuses = new List<Bonus>();
+            Bombs = new List<Bomb>();
+            Lavas = new List<Lava>();
+            Players = new List<Player>();
+
+            for (int i = 0; i < XYinfo.GetLength(0); i++)
+            {
+                for (int j = 0; j < XYinfo.GetLength(1); j++)
+                {
+                    XYinfo[i, j] = new XYInfo();
+                }
+            }
 
             for (int i = 0; i < Cells.GetLength(0); i++)
             {
@@ -80,10 +92,10 @@ namespace ClassLibrary_CGC
 
             for (int i = 0; i < pole.GetLength(0); i++)
             {
-                for (int j = pole.GetLength(1); j>=0; j--)
+                for (int j= 0; j< pole.GetLength(1); j++)
                 {
 
-                    switch (pole[i,j])
+                    switch (pole[j,i])
                     {
                         case 0:
                             break;
@@ -98,8 +110,7 @@ namespace ClassLibrary_CGC
 
                         case 3:
                             Cells[i, j].Type = CellType.Destructible;
-                            Bonus bonus = new Bonus();
-                            bonus.Visible = false;
+                            Bonus bonus = new Bonus();                           
                             bonus.X = i;
                             bonus.Y = j;
                             bonus.Type = BonusType.Ammunition;
@@ -120,7 +131,22 @@ namespace ClassLibrary_CGC
                             player.X = i;
                             player.Y = j;
                             Players.Add(player);
-                            break;   
+                            break;
+                        case 6:
+                            Bonus ttbonus = new Bonus();
+                           ttbonus.Type = BonusType.Ammunition;
+                            ttbonus.X = i;
+                            ttbonus.Y = j;
+                            ttbonus.Visible = true;
+                            Bonuses.Add(ttbonus);
+                            break;
+                        case 7:
+                            Bonus tttbonus = new Bonus();
+                            tttbonus.Type = BonusType.Radius;
+                            tttbonus.X = i;
+                            tttbonus.Y = j;
+                            Bonuses.Add(tttbonus);
+                            break;
                     }
                 }
             }
@@ -370,17 +396,7 @@ namespace ClassLibrary_CGC
         {
             get
             {
-                List<Bonus> visible_bombs = new List<Bonus>();
-
-                for (int k = 0; k < bonuses.Count; k++)
-                {
-                    if (bonuses[k].Visible == true)
-                    {
-                        visible_bombs.Add(bonuses[k]);
-                    }
-                }
-                return visible_bombs;
-
+                return bonuses;
                 // return bonuses;
             }
             set
@@ -447,11 +463,7 @@ namespace ClassLibrary_CGC
                 {
                     continue;
                 }
-                Bonus nbonus = new Bonus();
-                
-                nbonus.Visible = Bonuses[i].Visible;
-                nbonus.Type = Bonuses[i].Type;
-               
+                Bonus nbonus = new Bonus(Bonuses[i]);  
                 nGameBoard.Bonuses.Add(nbonus);
             }
 
@@ -508,6 +520,14 @@ namespace ClassLibrary_CGC
         public Bonus ()
         {
             visible = false;            
+        }
+
+        public Bonus(Bonus pbonus)
+        {
+            this.Visible = pbonus.visible;
+            X = pbonus.X;
+            Y = pbonus.Y;
+            Type = pbonus.Type;
         }
 
         /// <summary>
