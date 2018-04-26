@@ -142,6 +142,7 @@ namespace User_client
                 try
                 {
                     myUser.ACTION = myUser.Play(gameBoard);
+                    Thread.Sleep(50);
                 }
                 catch (Exception e)
                 {

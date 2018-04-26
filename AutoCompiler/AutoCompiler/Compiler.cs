@@ -9,8 +9,8 @@ namespace AutoCompiler
 {
     public class Compiler
     {
-        static string main_Path = Directory.GetCurrentDirectory();
-        static string assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
+        static string main_Path;
+        static string assets_Path;
         static string CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
         public static string HostUserPath;      
 
@@ -21,10 +21,10 @@ namespace AutoCompiler
         public string userClass_Default_sourceName = "user.cs";
         public static string userClientexe_Name = "Program.exe";
 
-        string userClass_dllName;
-        string ClassLibrary_CGC;
-        string newtonjson;      
-        string userClient_sourceName;
+        string userClass_dllName = "User_class.dll";
+        string ClassLibrary_CGC = "ClassLibrary_CGC.dll";
+        string newtonjson = "Newtonsoft.Json.dll";
+        string userClient_sourceName = "Program.cs";
         string output;
         string errorput;
         public string containerName;
@@ -44,13 +44,18 @@ namespace AutoCompiler
             userClient_Path = main_Path + "\\compiler";
 
             userClass_sourceName = Helper.SpliteEndPath(_userClass_sourceName) + ".cs";
-            userClass_dllName = "User_class.dll";           
 
-            userClient_sourceName = "Program.cs";
-          //  userClientexe_Name = "Program.exe";
+            DirectoryInfo main_di = new DirectoryInfo(Directory.GetCurrentDirectory());
+            main_Path = main_di.FullName;
 
-            ClassLibrary_CGC = "ClassLibrary_CGC.dll";
-            newtonjson = "Newtonsoft.Json.dll";
+            if (main_di.Name == "Debug" || main_di.Name == "Release")
+            {
+                assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
+            }
+            else
+            {
+                assets_Path = Path.GetFullPath(main_Path + "\\assets");
+            }
         }
 
 

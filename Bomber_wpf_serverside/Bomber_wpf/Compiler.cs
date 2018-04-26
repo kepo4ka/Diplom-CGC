@@ -48,7 +48,7 @@ namespace Bomber_wpf
             DirectoryInfo main_di = new DirectoryInfo(Directory.GetCurrentDirectory());
             main_Path = main_di.FullName;
 
-            if (main_di.Name == "Debug")
+            if (main_di.Name == "Debug" || main_di.Name == "Release")
             {
                 assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
             }

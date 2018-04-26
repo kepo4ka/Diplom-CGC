@@ -58,7 +58,11 @@ namespace AutoCompiler
             return nfileName;
         }
 
-
+        /// <summary>
+        /// Получить полный путь до папки, в которой находится файл
+        /// </summary>
+        /// <param name="filePath">Файл</param>
+        /// <returns>Папка</returns>
         public static string GetFileDirectory(string filePath)
         {
             string[] temp = filePath.Split('\\');
@@ -67,29 +71,6 @@ namespace AutoCompiler
             return directory;
         }
 
-
-
-        /// <summary>
-        /// Cчитать строку из сетевого потока
-        /// </summary>
-        /// <returns></returns>
-        public static string readStream(NetworkStream strm)
-        {
-            Byte[] serverData = new Byte[16];
-            int bytes = strm.Read(serverData, 0, serverData.Length);
-            string serverMessage = Encoding.Unicode.GetString(serverData, 0, bytes);
-            return serverMessage;
-        }
-
-        /// <summary>
-        /// Отправить строку в сетевой поток
-        /// </summary>
-        /// <param name="message">Отправляемая строка</param>
-        public static void writeStream(NetworkStream strm, string message)
-        {
-            Byte[] data = Encoding.Unicode.GetBytes(message);
-            strm.Write(data, 0, data.Length);
-        }
 
 
         /// <summary>
@@ -181,12 +162,7 @@ namespace AutoCompiler
                     foreach (FileInfo f in fi)
                     {
                         f.Delete();
-                    }
-
-                    foreach (FileInfo tfile in di.GetFiles())
-                    {
-                        tfile.Delete();
-                    }
+                    }                  
 
                     foreach (DirectoryInfo df in diA)
                     {
@@ -196,64 +172,14 @@ namespace AutoCompiler
                             df.Delete();
                         }
                     }
+                    di.Delete();
                 }
             }
             catch (Exception e)
             {
                 Helper.LOG("errors.txt", "DeleteDirectory ERROR: " + e.Message);
             }
-        }       
-
-
-        /// <summary>
-        /// Создать, либо пересоздать пустую папку
-        /// </summary>
-        /// <param name="ppath"></param>
-        public static void CreateEmptyDirectory(string ppath)
-        {
-            DeleteDirectory(ppath);
-            Directory.CreateDirectory(ppath);
-        }
-
-        public static void Compress(string sourceFile, string compressedFile)
-        {
-            // поток для чтения исходного файла
-            using (FileStream sourceStream = new FileStream(sourceFile, FileMode.OpenOrCreate))
-            {
-                // поток для записи сжатого файла
-                using (FileStream targetStream = File.Create(compressedFile))
-                {
-                    // поток архивации
-                    using (GZipStream compressionStream = new GZipStream(targetStream, CompressionMode.Compress))
-                    {
-                        sourceStream.CopyTo(compressionStream); // копируем байты из одного потока в другой
-                        Console.WriteLine("Сжатие файла {0} завершено. Исходный размер: {1}  сжатый размер: {2}.",
-                            sourceFile, sourceStream.Length.ToString(), targetStream.Length.ToString());
-                    }
-                }
-            }
-        }
-
-
-        public static void Decompress(string compressedFile, string targetFile)
-        {
-            // поток для чтения из сжатого файла
-            using (FileStream sourceStream = new FileStream(compressedFile, FileMode.OpenOrCreate))
-            {
-                // поток для записи восстановленного файла
-                using (FileStream targetStream = File.Create(targetFile))
-                {
-                    // поток разархивации
-                    using (GZipStream decompressionStream = new GZipStream(sourceStream, CompressionMode.Decompress))
-                    {
-                        decompressionStream.CopyTo(targetStream);
-                        Console.WriteLine("Восстановлен файл: {0}", targetFile);
-                    }
-                }
-            }
-        }
-
-
+        } 
         public static void FileMove(string from, string to)
         {           
                 File.Move(from, to); 
