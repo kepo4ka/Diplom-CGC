@@ -16,64 +16,73 @@ namespace User_client
 {
     class Program
     {
-        static string serverIp = "10.0.2.2";     
+        static string serverIp = "10.0.2.2";
         static int serverPort;
         static TcpClient server;
-        static StreamWriter sw;
-        static NetworkStream strm;
+      
+        static NetworkStream stream;
         static bool connected;
         static object obj = new object();
 
         static User myUser;
-        static GameBoard gameBoard;           
+        static GameBoard gameBoard;
         static int TimeLimit = 1000;
         static long sleeptime;
         static bool sended;
 
         static string logpath = "/cgc/log.txt";
-        static string gameboardjsonpath = "/cgc/gameboard.json";
-        static string userjsonpath = "/cgc/user.json";
+        //static string gameboardjsonpath = "/cgc/gameboard.json";
+        //static string userjsonpath = "/cgc/user.json";
 
 
         static void Main(string[] args)
-        {			
+        {
             try
             {
-				 sw = new StreamWriter(logpath, true);
-                sw.AutoFlush = true;				
-				
                 if (!int.TryParse(args[0], out serverPort))
                 {
                     throw new Exception("Command parametrs (args) ERROR");
-                }               
+                }
 
-                Connect();               
-                Log("started: " + serverIp + ":" + serverPort);
-                CommunicateWithServer();
+                Connect();
+
+                if (server.Connected)
+                {
+                    Log("start");
+                    CommunicateWithServer();
+                }
             }
             catch (Exception e)
             {
-                server.Close();
-                Log(e.Message);                            
-                sw.Close();
+                if (server != null)
+                {
+                    server.Close();
+                }
+                Log(e.Message);
+
                 Environment.Exit(0);
             }
+            //Console.ReadKey();
         }
-		
 
-        static void Log(string message)
+        public static void Log(string message)
         {
-            string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
-            time = "[" + time + "] ";
-            sw.WriteLine(time + ": " + message);          
+            using (StreamWriter sw = new StreamWriter("/cgc/log.txt", true))
+            {
+                string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
+                time = "[" + time + "] ";
+                sw.WriteLine(time + ": " + message);
+                Console.WriteLine(time + ": " + message);
+            }
         }
+
 
 
         /// <summary>
         /// Подключиться к серверу
-       /// </summary>
+        /// </summary>
         static void Connect()
-        { 
+        {
             try
             {
                 server = new TcpClient(serverIp, serverPort);
@@ -91,152 +100,161 @@ namespace User_client
         /// Общение с сервером
         /// </summary>
         static void CommunicateWithServer()
-        {           
+        {
             while (connected)
             {
                 try
                 {
-                    GetInfo();
+                    stream = server.GetStream();
+                    string gamestring = "";
+                    string gamestrLength = ReceiveMessage();
 
-                    sended = false;
-                    Thread thr = CreateMyThread();
-                    thr.Start();
-                    int waittime = 0;
-
-                    while (waittime < TimeLimit)
+                    while (gamestring.Length < int.Parse(gamestrLength))
                     {
-                        waittime += 1;
-                        Thread.Sleep(1);
-
-                        if (thr.ThreadState == System.Threading.ThreadState.Stopped)
-                        {
-                            SentInfo(sleeptime);
-                            Log("Timeout " + sleeptime);
-                            break;                      
-                        }                      
+                        gamestring += ReceiveMessage();
+                        Log("recieved gamestring: " + gamestring.Length);
                     }
 
-                    if (thr.ThreadState == System.Threading.ThreadState.Running)
-                    {
-                        SentInfo(TimeLimit);
-                        Log("Timeout " + TimeLimit);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log("ERROR: " + e.GetType() + " : " + e.Message);
-                    connected = false;      
-                    throw new Exception("exit");                   
-                }
-            }
-        }
+                    SendMessage("p");
+                    Log("send p");
+                    string userstr = ReceiveMessage();
+                   Log("recieved userstr: " + userstr.Length);
 
+                    gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
+                    myUser = JsonConvert.DeserializeObject<User>(userstr);
 
+                    SendMessage(myUser.Name);
+                    Log("send name : " + myUser.Name);
+                   string temp = ReceiveMessage();
+                    Log("recieve temp: " + temp);
 
-        static Thread CreateMyThread()
-        {
-            Thread thr = new Thread(() =>
-            {
-                Stopwatch a = new Stopwatch();
-                a.Start();
-                try
-                {
                     myUser.ACTION = myUser.Play(gameBoard);
-                    Thread.Sleep(50);
+
+                    SendMessage((int)myUser.ACTION + "");
+                    Log("send action: " + (int)myUser.ACTION + "");
                 }
                 catch (Exception e)
                 {
-                   Log("user_error: " + e.Message);
-                }       
-                a.Stop();
-
-                sleeptime = a.ElapsedMilliseconds;                 
-            });
-            return thr;
+                    Log("ERROR: " + e.Message + " " + e.StackTrace);
+                    connected = false;
+                    if (server != null)
+                        server.Close();
+                    //  Console.ReadKey();
+                    Environment.Exit(0);
+                }
+            }
         }
 
-        
-        /// <summary>
-        /// Получить данные от сервера
-        /// </summary>
-        static void GetInfo()
+
+
+        static void SendMessage(string message)
         {
-            strm = server.GetStream();           
-            string message = readStream();           
-
-            if (message !="s")
-            {              
-                throw new Exception("Потеря связи с сервером");
-            }
-           
-            try
-            {
-                using (StreamReader sr = new StreamReader(gameboardjsonpath))
-                {
-                    string gameboardjson = sr.ReadToEnd();
-                    gameBoard = JsonConvert.DeserializeObject<GameBoard>(gameboardjson);                  
-                }
-
-                using (StreamReader sr = new StreamReader(userjsonpath))
-                {
-                    string userjson = sr.ReadToEnd();
-                    myUser = JsonConvert.DeserializeObject<User>(userjson);                    
-                }
-            }
-            catch (Exception e)
-            {
-                Log(e.Message);
-            }
-        }  
+            byte[] data = Encoding.Unicode.GetBytes(message);
+            stream.Write(data, 0, data.Length);
+        }
 
 
-        static string ActionToString()
+        static string ReceiveMessage()
         {
-            string actionString = "";
-            int actionInt = (int)myUser.ACTION;
-            actionString += actionInt;
-            return actionString;               
+            string message = "";
+
+            byte[] data = new byte[256]; // буфер для получаемых данных
+            StringBuilder builder = new StringBuilder();
+            int bytes = 0;
+            do
+            {
+                bytes = stream.Read(data, 0, data.Length);
+                builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+            }
+            while (stream.DataAvailable);
+            message = builder.ToString();          
+            return message;
         }
 
 
         /// <summary>
         /// Отправить данные на сервер
         /// </summary>
-        static void SentInfo(long limit)
+        static void SentInfo()
         {
-            writeStream(limit + "");
-            if (readStream() == "p")
-            {				
-                writeStream(ActionToString());
-            }
-            else
-            {
-                throw new Exception("Неверное промежуточное значение");
-            }
+            string action = EncryptAction(myUser.ACTION);
+            writeStream(server.GetStream(), action);
+        }
+
+
+
+
+        /// <summary>
+        /// Cчитать строку из сетевого потока
+        /// </summary>
+        /// <returns></returns>
+        public static string readStream(NetworkStream strm)
+        {
+            Byte[] serverData = new Byte[16];
+            int bytes = strm.Read(serverData, 0, serverData.Length);
+            string serverMessage = Encoding.ASCII.GetString(serverData, 0, bytes);
+            return serverMessage;
         }
 
         /// <summary>
         /// Cчитать строку из сетевого потока
         /// </summary>
         /// <returns></returns>
-        static string readStream()
+        public static string readStream(NetworkStream strm, int bytesLength)
         {
-            string serverMessage = "";
-            Byte[] serverData = new Byte[16];         
+            Byte[] serverData = new Byte[bytesLength];
             int bytes = strm.Read(serverData, 0, serverData.Length);
-            serverMessage = Encoding.Unicode.GetString(serverData, 0, bytes);  
+            string serverMessage = Encoding.ASCII.GetString(serverData, 0, bytes);
             return serverMessage;
         }
-
 
         /// <summary>
         /// Отправить строку в сетевой поток
         /// </summary>
-        /// <param name = "message" > Отправляемая строка</param>
-        static void writeStream(string message)
+        /// <param name="message">Отправляемая строка</param>
+        public static void writeStream(NetworkStream strm, string message)
         {
             Byte[] data = Encoding.Unicode.GetBytes(message);
+
             strm.Write(data, 0, data.Length);
+        }
+
+        /// <summary>
+        /// Отправить строку в сетевой поток
+        /// </summary>
+        /// <param name="message">Отправляемая строка</param>
+        public static void writeStream(NetworkStream strm, Byte[] data)
+        {
+            strm.Write(data, 0, data.Length);
+        }
+
+
+
+        /// <summary>
+        /// Распознать Команду из строки
+        /// </summary>
+        /// <param name="message">Данная строка</param>
+        /// <param name="usersInfo">Список, в элемент которого необходимо передать команду</param>
+        /// <param name="i">Индекс элемента в Списке, который получает команду</param>
+        public static PlayerAction DecryptAction(string message)
+        {
+            PlayerAction pa = new PlayerAction();
+            int actionInt = int.Parse(message);
+            pa = (PlayerAction)actionInt;
+            return pa;
+        }
+
+        /// <summary>
+        /// Распознать Команду из строки
+        /// </summary>
+        /// <param name="message">Данная строка</param>
+        /// <param name="usersInfo">Список, в элемент которого необходимо передать команду</param>
+        /// <param name="i">Индекс элемента в Списке, который получает команду</param>
+        public static string EncryptAction(PlayerAction action)
+        {
+            int actionInt = (int)action;
+            string actionString = actionInt.ToString();
+            return actionString;
         }
     }
 }

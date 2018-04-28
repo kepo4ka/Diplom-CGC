@@ -166,12 +166,15 @@ namespace Bomber_wpf
             procStartInfo.RedirectStandardOutput = true;
             procStartInfo.RedirectStandardError = true;
             procStartInfo.UseShellExecute = false;
+            // Получение текста в виде кодировки 866 win
+            procStartInfo.StandardOutputEncoding = Encoding.GetEncoding(866);
+            procStartInfo.StandardErrorEncoding = Encoding.GetEncoding(866);
             // не создавать окно CMD
-            procStartInfo.CreateNoWindow = true;
+            procStartInfo.CreateNoWindow = false;
 
             Process proc = new Process();
-            // Получение текста в виде кодировки 866 win
-          //  procStartInfo.StandardOutputEncoding = Encoding.GetEncoding();
+          
+
             //запуск CMD
             proc.StartInfo = procStartInfo;
             proc.Start();
@@ -207,7 +210,7 @@ namespace Bomber_wpf
            
             procStartInfo.UseShellExecute = false;
             // не создавать окно CMD
-            procStartInfo.CreateNoWindow = true;
+            procStartInfo.CreateNoWindow = false;
 
             Process proc = new Process();
             // Получение текста в виде кодировки 866 win

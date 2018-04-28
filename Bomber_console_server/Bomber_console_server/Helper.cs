@@ -112,27 +112,6 @@ namespace Bomber_console_server
         }
 
 
-        /// <summary>
-        /// Cчитать строку из сетевого потока
-        /// </summary>
-        /// <returns></returns>
-        public static string readStream(NetworkStream strm)
-        {
-            Byte[] serverData = new Byte[16];
-            int bytes = strm.Read(serverData, 0, serverData.Length);
-            string serverMessage = Encoding.Unicode.GetString(serverData, 0, bytes);
-            return serverMessage;
-        }
-
-        /// <summary>
-        /// Отправить строку в сетевой поток
-        /// </summary>
-        /// <param name="message">Отправляемая строка</param>
-        public static void writeStream(NetworkStream strm, string message)
-        {
-            Byte[] data = Encoding.Unicode.GetBytes(message);
-            strm.Write(data, 0, data.Length);
-        }
 
 
         /// <summary>
@@ -226,11 +205,6 @@ namespace Bomber_console_server
                         f.Delete();
                     }
 
-                    foreach (FileInfo tfile in di.GetFiles())
-                    {
-                        tfile.Delete();
-                    }
-
                     foreach (DirectoryInfo df in diA)
                     {
                         DeleteDirectory(df.FullName);
@@ -239,6 +213,7 @@ namespace Bomber_console_server
                             df.Delete();
                         }
                     }
+                    di.Delete();
                 }
             }
             catch (Exception e)
@@ -258,53 +233,7 @@ namespace Bomber_console_server
             Directory.CreateDirectory(ppath);
         }
 
-        /// <summary>
-        /// Записать строку в файл
-        /// </summary>
-        /// <param name="data">Строка</param>
-        /// <param name="path">Полный путь до файла, включая имя файла и расширение</param>
-        /// <param name="k">Если true, то данные добавляются в конец файла, не перезаписывая файл</param>
-        public static void WriteDataJson(string data, string path, bool k)
-        {
-            if (data != null)
-            {
-                using (StreamWriter sw = new StreamWriter(path, k))
-                {
-                    sw.AutoFlush = true;
-                    sw.WriteLine(data);
-                }
-            }
-        }
-
-      
-        /// <summary>
-        /// Считать данные из файла
-        /// </summary>
-        /// <param name="path">Полный путь до файла, включая имя файла и расширение</param>
-        /// <returns>Полученные данные</returns>
-        public static string[] ReadFile(string path)
-        {
-            string[] data = new string[3];
-
-            if (!File.Exists(path))
-            {
-                return null;
-            }
-
-            using (StreamReader sr = new StreamReader(path))
-            {
-                for (int i = 0; i < data.Length; i++)
-                {
-                    data[i] = sr.ReadLine();
-                    if (String.IsNullOrWhiteSpace(data[i]))
-                    {
-                        return null;
-                    }
-                }
-            }              
-            return data;
-        }
-
+     
 
         public static void Compress(string sourceFile, string compressedFile)
         {

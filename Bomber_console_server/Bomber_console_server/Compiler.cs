@@ -37,19 +37,24 @@ namespace Bomber_console_server
             php_dir_path = _php_dir_path;
 
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
-            main_Path = Directory.GetCurrentDirectory();
+
+            DirectoryInfo main_di = new DirectoryInfo(Directory.GetCurrentDirectory());
+            main_Path = main_di.FullName;
+
+            if (main_di.Name == "Debug" || main_di.Name == "Release")
+            {
+                assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
+            }
+            else
+            {
+                assets_Path = Path.GetFullPath(main_Path + "\\assets");
+            }
+
             HostUserPath = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
             HostUserPath += $"\\docker_temp\\{Session.gameID}";
             LogPath = $"{HostUserPath}\\log.txt";
-            containerName = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPA");
-            
-            assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\") + "\\assets");
-
-            if (main_Path.Contains("\\bin\\"))
-            {
-                assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
-                main_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\.."));
-            }
+            containerName = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPA");           
+           
         }
 
         /// <summary>
@@ -100,12 +105,12 @@ namespace Bomber_console_server
 
             try
             {
-                DeleteOnlyDirectories(HostUserPath);
+              //  DeleteOnlyDirectories(HostUserPath);
                 DeleteOnlyDirectories($"{main_php_path}");
             }
-            catch
+            catch (Exception er)
             {
-                Helper.LOG("log.txt", "DeleteOnlyDirectories Error");
+                Helper.LOG("log.txt", $"DeleteOnlyDirectories Error: {er.Message}");
             }
         }
 
@@ -135,20 +140,26 @@ namespace Bomber_console_server
 
         public static void SaveGameResult(List<Player> players)
         {
-            using (StreamWriter sw = new StreamWriter($"{HostUserPath}\\{MyPath.gameResultsFileName}", false))
+            if (players != null)
             {
-                string GameResultsJson = JsonConvert.SerializeObject(players);
-                sw.Write(GameResultsJson);
+                using (StreamWriter sw = new StreamWriter($"{HostUserPath}\\{MyPath.gameResultsFileName}", false))
+                {
+                    string GameResultsJson = JsonConvert.SerializeObject(players);
+                    sw.Write(GameResultsJson);
+                }
             }
         }
 
 
         public static void SavePlayersAllCommands(List<List<Player>> players)
         {
-            using (StreamWriter sw = new StreamWriter($"{HostUserPath}\\{MyPath.userComandsFileName}", false))
+            if (players != null)
             {
-                string allTicksPlayersStats = JsonConvert.SerializeObject(players);
-                sw.Write(allTicksPlayersStats);
+                using (StreamWriter sw = new StreamWriter($"{HostUserPath}\\{MyPath.userComandsFileName}", false))
+                {
+                    string allTicksPlayersStats = JsonConvert.SerializeObject(players);
+                    sw.Write(allTicksPlayersStats);
+                }
             }
         }
 
@@ -207,29 +218,7 @@ namespace Bomber_console_server
 
             File.Copy($"{php_dir_path}\\{MyPath.exe_file_name}", $"{HostUserPath}\\{containerName}\\{MyPath.exe_file_name}");
             File.Copy($"{php_dir_path}\\{MyPath.userClass_dllName}", $"{HostUserPath}\\{containerName}\\{MyPath.userClass_dllName}");
-
         }
-
-
-
-        /// <summary>
-        /// Записать инфjрмацию о GameBoard в файл, внутри временной папки польвателя
-        /// </summary>
-        /// <param name="data">Слепок Gamboard, сериализованный в json</param>
-        public void SaveTempGameInfo(string gameboardinfo, string userinfo, bool k = false)
-        {
-            //   string gbpath = $"{userClient_Path}{user_directory_name}\\{gameboardjsonpath}";
-            //   string uspath = $"{userClient_Path}{user_directory_name}\\{userjsonpath}";
-
-            string gbpath = $"{HostUserPath}\\{containerName}\\{MyPath.gameboardjsonpath}";
-            string uspath = $"{HostUserPath}\\{containerName}\\{MyPath.userjsonpath}";
-
-            Helper.WriteDataJson(gameboardinfo, gbpath, k);
-            Helper.WriteDataJson(userinfo, uspath, k);
-        }
-
-
-
 
 
     }

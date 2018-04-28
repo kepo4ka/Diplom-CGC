@@ -17,7 +17,7 @@ public override PlayerAction Play(GameBoard gb)
 */
 Random rn = new Random();
 PlayerAction action;
-Thread.Sleep(rn.Next(100,1000));
+Thread.Sleep(rn.Next(2000,5000));
 
 action = (PlayerAction)rn.Next(6);
 

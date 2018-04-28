@@ -9,6 +9,10 @@ using User_class;
 using Newtonsoft.Json;
 using System.Runtime.InteropServices;
 
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Diagnostics;
+
 
 namespace User_client
 {
@@ -23,6 +27,9 @@ namespace User_client
         static byte[] data;
         static string message;
         static NetworkStream stream;
+        static int TimeLimit = 10000;
+        static object obj;
+
 
         static void Main(string[] args)
         {
@@ -32,15 +39,18 @@ namespace User_client
 
                 if (server.Connected)
                 {
-                    Console.WriteLine("start");
+                    Log("start");
                     CommunicateWithServer();
                 }
             }
             catch (Exception e)
             {
-                server.Close();
+                if (server != null)
+                {
+                    server.Close();
+                }
                 Log(e.Message);
-                //  Console.ReadKey();
+                Console.ReadKey();
                 Environment.Exit(0);
             }
             Console.ReadKey();
@@ -89,28 +99,120 @@ namespace User_client
                     stream = server.GetStream();
 
                     string gamestring = ReceiveMessage();
+                    Log("gamestring length " + gamestring.Length);
                     SendMessage("p");
                     string userstr = ReceiveMessage();
+                    Log("userstr length " + userstr.Length);
 
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
 
                     SendMessage(gameBoard.Players[0].Name);
                     ReceiveMessage();
-                    myUser.ACTION = myUser.Play(gameBoard);
 
+                    Thread thr = CreateMyThread();
+                    Stopwatch a = new Stopwatch();
+                    a.Start();
+
+                    thr.Start();
+
+                    int waittime = 0;
+                   
+                    while (waittime < TimeLimit)
+                    {
+                        waittime += 50;
+                        Thread.Sleep(50);
+                        Log(waittime + " wait time");
+
+                        if (thr.ThreadState == System.Threading.ThreadState.Stopped)
+                        {
+                            Log("Timeout Stopped " + a.ElapsedMilliseconds);
+
+                            SendMessage(a.ElapsedMilliseconds + "");
+                          
+                            break;
+                        }
+                    }
+
+                    Log(waittime + " wait Running; thr.ThreadState = " + thr.ThreadState.ToString());
+                    if (thr.ThreadState != System.Threading.ThreadState.Stopped)
+                    {
+                        Log("Timeout Running " + TimeLimit);
+                        SendMessage(TimeLimit + "");
+                        myUser.ACTION = PlayerAction.Bomb;
+                      
+                    }
+                    a.Stop();
+                  
+
+                    ReceiveMessage();
                     SendMessage((int)myUser.ACTION + "");
+                    Log("send action: " + (int)myUser.ACTION + "");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("ERROR: " + e.Message + " " + e.StackTrace);
+                    Log("ERROR: " + e.Message + " " + e.StackTrace);
                     connected = false;
                     if (server != null)
                         server.Close();
-                    //  Console.ReadKey();
-                    Environment.Exit(0);
+                      Console.ReadKey();
+                 //   Environment.Exit(0);
                 }
             }
+        }
+
+
+
+        static Thread CreateMyThread()
+        {
+            Thread thr = new Thread(() =>
+            {              
+                try
+                {
+                    //lock (obj)
+                    //{
+                      //  myUser.ACTION = PlayerAction.Up;
+                        myUser.ACTION = myUser.Play(gameBoard);
+                        Console.WriteLine(" inthread");
+                    //}
+                }
+                catch (Exception e)
+                {
+                    Log("user_error: " + e.Message);
+                }   
+            });
+            return thr;
+        }
+
+
+        public static void streamWrite(Stream strm, string message)
+        {
+            Log("send length " + message.Length);
+            using (StreamWriter sw = new StreamWriter(strm))
+            {
+                while (!sw.BaseStream.CanRead)
+                {
+                    Log("wait read");
+                }
+                sw.Write(message);
+                sw.Flush();
+
+            }
+        }
+
+        public static string streamRead(Stream strm)
+        {
+            string message = "";
+            using (StreamReader sr = new StreamReader(strm))
+            {
+                while (!sr.BaseStream.CanRead)
+                {
+                    Log("wait read");
+                }
+                message = sr.ReadToEnd();
+            }
+            Log("read length " + message.Length);
+            return message;
         }
 
 
@@ -135,59 +237,9 @@ namespace User_client
                 builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
             }
             while (stream.DataAvailable);
-            message = builder.ToString();
-            Console.WriteLine("recieved length: " + message.Length);
+            message = builder.ToString();          
             return message;
         }
-
-
-
-        ///// <summary>
-        ///// Получить данные от сервера
-        ///// </summary>
-        //static void GetInfo()
-        //{
-        //    string start = readStream(server.GetStream());
-        //    NetworkStream strm = server.GetStream();
-        //    if (start == "s")
-        //    {
-        //        string lengthStr = readStream(server.GetStream());
-        //        int length = int.Parse(lengthStr);
-        //        Console.WriteLine("LENGTH " + length);
-        //        Byte[] data = new byte[length];
-        //        string json = "";
-        //        try
-        //        {
-        //            string json = readStream(server.GetStream(), length);
-        //        }
-        //        catch
-        //        {
-        //            Log("readStream error");
-        //        }
-
-
-        //        for (int i = 0; i < length; i+=500)
-        //        {
-        //            int k;
-        //            while ((k = strm.Read(data, 0, data.Length)) != 0)
-        //            {
-
-        //                json += Encoding.ASCII.GetString(data,0,k);
-        //            }
-        //        }
-
-
-        //        gameBoard = JsonConvert.DeserializeObject<GameBoard>(json);
-        //        Console.WriteLine("Players.Count " + gameBoard.Players.Count);
-
-        //        writeStream(server.GetStream(), "p");
-
-        //        lengthStr = readStream(server.GetStream());
-        //        length = int.Parse(lengthStr);
-        //        json = readStream(server.GetStream(), length);
-        //        myUser = JsonConvert.DeserializeObject<User>(json);
-        //    }
-        //}
 
 
         /// <summary>

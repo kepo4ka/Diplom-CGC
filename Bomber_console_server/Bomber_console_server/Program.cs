@@ -58,7 +58,7 @@ namespace Bomber_console_server
                                 tempUser.user_exe_phppath = $"{MyPath.binDir}\\{waitGames[i].id}\\{tempUser.id}";
                             }
                             Session session = new Session(waitGames[i]);
-                            session.InitGame();
+                           
 
                             mysql.SetSandboxGameCompiledStatus(waitGames[i].id, OpenGameResultFile(waitGames[i].id));
                             Helper.LOG("log.txt", $"Игровая сессия № {waitGames[i].id} успешно завершена!");
@@ -90,30 +90,6 @@ namespace Bomber_console_server
             }
             return json;
         }
-
-
-
-
-        static string[] GetUserSourcePathsFromFile()
-        {
-            string[] usersPath = new string[4];
-            //using (StreamReader sr = new StreamReader("users_source.txt"))
-            //{
-            //    for (int i = 0; i < usersPath.Length; i++)
-            //    {
-            //        usersPath[i] = sr.ReadLine();
-            //    }
-            //}
-
-            int i = 0;
-            DirectoryInfo di = new DirectoryInfo(Path.GetFullPath($"{Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..")}\\User_sources"));
-            foreach (FileInfo fi in di.GetFiles())
-            {
-                usersPath[i] = fi.FullName;
-                i++;
-            }
-
-            return usersPath;
-        }
+     
     }
 }
