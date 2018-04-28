@@ -25,6 +25,23 @@ namespace Bomber_console_server
         static string php_dir_path;
         static string main_php_path;
 
+        public Compiler()
+        {   
+            CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
+
+            DirectoryInfo main_di = new DirectoryInfo(Directory.GetCurrentDirectory());
+            main_Path = main_di.FullName;
+
+            if (main_di.Name == "Debug" || main_di.Name == "Release")
+            {
+                assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
+            }
+            else
+            {
+                assets_Path = Path.GetFullPath(main_Path + "\\assets");
+            }
+            LogPath = $"{HostUserPath}\\log.txt";
+        }
 
         public Compiler(string _php_dir_path, int i, int sandboxId)
         {
