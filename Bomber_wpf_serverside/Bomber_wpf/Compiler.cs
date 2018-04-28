@@ -14,9 +14,8 @@ namespace Bomber_wpf
         static string assets_Path;
 
 
-
-        public static string LogPath = "log.txt";       
-    
+        public static string LogPath = "log.txt";
+        public static string mapsPath;
 
         string userClass_Path;
        public static string TempGamePath;
@@ -38,6 +37,25 @@ namespace Bomber_wpf
 
         public static List<string> compileDirectories = new List<string>();
 
+        public Compiler()
+        {
+            
+            DirectoryInfo main_di = new DirectoryInfo(Directory.GetCurrentDirectory());
+            main_Path = main_di.FullName;
+
+            if (main_di.Name == "Debug" || main_di.Name == "Release")
+            {
+                assets_Path = Path.GetFullPath(Path.Combine(main_Path, @"..\..\..\..") + "\\assets");
+            }
+            else
+            {
+                assets_Path = main_Path + "\\assets";
+            }
+
+            mapsPath = assets_Path + "\\" + "maps";
+
+            TempGamePath = main_Path + "\\" + "compiler";  
+        }
 
         public Compiler(string _userClass_sourceName, int i)
         {           
@@ -58,9 +76,7 @@ namespace Bomber_wpf
             }
             
             userClass_Path = Helper.SpliteEndPath(_userClass_sourceName,true);
-            TempGamePath = main_Path + "\\" + "compiler";
-            LogPath = $"{TempGamePath}\\log.txt";
-
+            TempGamePath = main_Path + "\\" + "compiler";         
             userClass_sourceName = Helper.SpliteEndPath(_userClass_sourceName) + ".cs";
            
 

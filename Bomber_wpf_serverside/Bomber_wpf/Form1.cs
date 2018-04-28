@@ -66,7 +66,7 @@ namespace Bomber_wpf
         /// Игра в реальном времени
         /// </summary>
         /// <param name="pstartPage"></param>
-        public Form1(StartPage pstartPage, int[,] gbpseudo = null)
+        public Form1(StartPage pstartPage, string mapPath)
         {
             InitializeComponent();
             g = panel1.CreateGraphics();
@@ -78,8 +78,10 @@ namespace Bomber_wpf
             serverStart();
 
             startPage = pstartPage;
+            Compiler cmp = new Compiler();
 
-            InitGame(gbpseudo);
+            InitGame(mapPath);
+
         }
 
         /// <summary>
@@ -268,10 +270,50 @@ namespace Bomber_wpf
         }
 
 
+        public int[,] LoadMap(string mapPath)
+        {
+            int[,] gameboardpseudo = null;
+            try
+            {
+                if (String.IsNullOrWhiteSpace(mapPath))
+                {
+                    throw new Exception("Неверное имя файла");
+                }
+
+                gameboardpseudo = GetGameboardFromFile(mapPath);
+                return gameboardpseudo;
+            }
+            catch (Exception er)
+            {
+                Helper.LOG(Compiler.LogPath, $"Не удалось загрузить Пользовальскую карту: {er.Message}");
+            }
+
+            try
+            {
+                DirectoryInfo di = new DirectoryInfo(Compiler.mapsPath);
+                var files = di.GetFiles("*.txt");
+                if (files.Length < 1)
+                {
+                    throw new Exception($"Не удалось найти ни одной карты в папке {Compiler.mapsPath}");
+                }
+
+                gameboardpseudo = GetGameboardFromFile(files[rn.Next(0, files.Length)].FullName);
+                return gameboardpseudo;
+            }
+            catch (Exception er)
+            {
+                Helper.LOG(Compiler.LogPath, $"Не удалось загрузить карту из стандартных карт: {er.Message}");
+                return null;
+            }
+        }
+
+
+
+
         /// <summary>
         /// Начать сеанс игры
         /// </summary>
-        public void InitGame(int[,] gbpseudo = null)
+        public void InitGame(string mapPath)
         {
             isGameOver = false;
 
@@ -281,9 +323,12 @@ namespace Bomber_wpf
             DestroyedPlayers = new List<Player>();
             DestroyedCells = new List<Cell>();
 
+            gbpseudo = LoadMap(mapPath);
+
             if (gbpseudo == null)
             {
                 gb = new GameBoard();
+                Helper.LOG(Compiler.LogPath, "Игровое поле пришлось сгенерировать, т.к. не получилось его создать другим способом");
             }
             else
             {
@@ -295,18 +340,16 @@ namespace Bomber_wpf
                     tplayer.Y = gb.Players[i].Y;
                     pseudoplayers.Add(tplayer);
                 }
-
                 gb.Players.Clear();
             }
+
             SetPseudoPlayers();
 
-            formLog(gb.Bonuses.Count + "");
             // gameID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
 
             CheckUserCodeSourcesPath();
 
             SetPrioritets();
-            List<int> tt = Prioritets;
 
             gameBoardStates.Add((GameBoard)gb.Clone());
 
@@ -651,7 +694,7 @@ namespace Bomber_wpf
         public void GameProccess()
         {
             GameTimer--;
-          
+
             PlayerProccess();
             PlayerBonusCollision();
             BombsProccess();
@@ -1008,6 +1051,11 @@ namespace Bomber_wpf
                 string allTicksPlayersStats = JsonConvert.SerializeObject(GetPlayersInfoAllTicks());
                 sw.Write(allTicksPlayersStats);
             }
+            Helper.LOG(Compiler.LogPath, "END");
+
+            File.Copy($"{Compiler.LogPath}", $"{gameResultDirectoryName}\\log.txt");
+
+
 
             //}
             //catch (Exception e)
@@ -1082,7 +1130,9 @@ namespace Bomber_wpf
         }
 
 
-
+        /// <summary>
+        /// Игроки выполняют свои действия, если могут
+        /// </summary>
         public void PlayerProccess()
         {
             for (int i = 0; i < Prioritets.Count; i++)
@@ -1094,7 +1144,7 @@ namespace Bomber_wpf
                     tplayer.ACTION = tplayer.Play();
                 }
 
-                PlayerMove(gb.Players[Prioritets[i]]);
+                PlayerMove(tplayer);
             }
         }
 
@@ -1970,5 +2020,48 @@ namespace Bomber_wpf
             log_box.AppendText(message + "\n");
         }
 
+
+        private int[,] GetGameboardFromFile(string psource)
+        {
+            int[,] gameboardpseudo = new int[15, 15];
+            string[] splitedFile = psource.Split('.');
+            string[] splitPath = psource.Split('\\');
+            string fileExtension = splitedFile[splitedFile.Length - 1];
+            string filePath = splitPath[splitPath.Length - 1];
+
+            //  MessageBox.Show("psource " + psource);
+
+            using (StreamReader sr = new StreamReader(psource))
+            {
+                for (int i = 0; i < gameboardpseudo.GetLength(0); i++)
+                {
+                    string line = sr.ReadLine();
+                    string[] linesplit = line.Split();
+
+                    if (linesplit.Length != gameboardpseudo.GetLength(1))
+                    {
+                        throw new Exception("Ошибка при парсинге карты: неверное количество столбцов");
+                    }
+
+                    for (int j = 0; j < linesplit.Length; j++)
+                    {
+                        int t = 0;
+                        if (!int.TryParse(linesplit[j], out t))
+                        {
+                            throw new Exception($"Ошибка при парсинге карты: нечисловое значение [{i},{j}");
+                        }
+                        gameboardpseudo[i, j] = t;
+                    }
+                }
+            }
+
+            gameboardpseudo[0, 0] = gameboardpseudo[0, 0]==5 ? 5 : 0;
+            gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1]==5 ?5: 0;
+            gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] = gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0]==5 ? 5: 0;
+            gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] ==5 ? 5: 0;
+
+            return gameboardpseudo;
+
+        }
     }
 }
