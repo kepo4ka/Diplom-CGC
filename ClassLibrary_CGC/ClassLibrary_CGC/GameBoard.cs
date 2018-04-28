@@ -1009,7 +1009,7 @@ namespace ClassLibrary_CGC
     {
         Player player;
         Bonus bonus;
-        Lava lava;
+       List<Lava> lavas;
         Bomb bomb;
 
         public XYInfo()
@@ -1017,7 +1017,7 @@ namespace ClassLibrary_CGC
             Player = null;
             Bomb = null;
             Bonus = null;
-            Lava = null;
+            lavas = null;
         }
 
         public XYInfo(XYInfo origin)
@@ -1025,7 +1025,7 @@ namespace ClassLibrary_CGC
             Player = origin.Player;
             Bomb = origin.Bomb;
             Bonus = origin.Bonus;
-            Lava = origin.Lava;
+            Lavas = origin.Lavas;
         }
 
         /// <summary>
@@ -1063,17 +1063,17 @@ namespace ClassLibrary_CGC
         }
 
         /// <summary>
-        /// Лава
+        /// Лавы
         /// </summary>
-        public Lava Lava
+        public List<Lava> Lavas
         {
             get
             {
-                return lava;
+                return lavas;
             }
             set
             {
-                lava = value;
+                lavas = value;
             }
         }
 

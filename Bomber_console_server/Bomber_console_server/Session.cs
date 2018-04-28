@@ -303,19 +303,11 @@ namespace Bomber_console_server
                         }
                     }
 
-
-                    int tmaxLiveTime = 0;
-
                     for (int ii = 0; ii < tempGB.Lavas.Count; ii++)
                     {
                         if (tempGB.Lavas[ii].X == i && tempGB.Lavas[ii].Y == j)
                         {
-                            if (gb.Lavas[ii].LiveTime >= tmaxLiveTime)
-                            {
-                                tmaxLiveTime = tempGB.Lavas[ii].LiveTime;
-
-                                tXYInfo.Lava = tempGB.Lavas[ii];
-                            }
+                            tXYInfo.Lavas.Add(tempGB.Lavas[ii]);
                         }
                     }
 
