@@ -16,6 +16,7 @@ namespace Bomber_wpf
         public string[] paths;
         public string[] labels;
         int[,] gbpseudo = null;
+        string UserMapPath = "";
 
 
         public StartPage()
@@ -29,8 +30,10 @@ namespace Bomber_wpf
             labels[3] = path4_lab.Text;
             for (int i = 1; i < paths.Length; i++)
             {
-                paths[i] = "";
+                paths[i] = null;
             }
+
+            //  comboBox1.SelectedIndex = 0;
 
 
         }
@@ -60,7 +63,7 @@ namespace Bomber_wpf
             //Если хотя бы два игрока (пользователь или бот)
             if (havePlayers > 1)
             {
-                Form1 realGameForm = new Form1(this, gbpseudo);
+                Form1 realGameForm = new Form1(this, UserMapPath);
                 this.Hide();
                 realGameForm.Show();
             }
@@ -122,7 +125,6 @@ namespace Bomber_wpf
                     using (StreamReader sr = new StreamReader(psource))
                     {
                         string json = sr.ReadToEnd();
-                        Helper.LOG("C:\\log.txt", json);
                         gameBoardStates = JsonConvert.DeserializeObject<List<GameBoard>>(json);
                     }
                     break;
@@ -135,43 +137,6 @@ namespace Bomber_wpf
             }
 
             return gameBoardStates;
-        }
-
-
-        private int[,] GetGameboardFromFile(string psource)
-        {
-            string[] splitedFile = psource.Split('.');
-            string[] splitPath = psource.Split('\\');
-            string fileExtension = splitedFile[splitedFile.Length - 1];
-            string filePath = splitPath[splitPath.Length - 1];
-
-            int[,] gameboardpseudo = new int[15, 15];
-            //  MessageBox.Show("psource " + psource);
-
-            using (StreamReader sr = new StreamReader(psource))
-            {
-                for (int i = 0; i < gameboardpseudo.GetLength(0); i++)
-                {
-                    string line = sr.ReadLine();
-                    string[] linesplit = line.Split();
-
-                    if (linesplit.Length != gameboardpseudo.GetLength(1))
-                    {
-                        throw new Exception();
-                    }
-
-                    for (int j = 0; j < linesplit.Length; j++)
-                    {
-                        int t = 0;
-                        if (!int.TryParse(linesplit[j], out t))
-                        {
-                            throw new Exception();
-                        }
-                        gameboardpseudo[i, j] = t;
-                    }
-                }
-                return gameboardpseudo;
-            }          
         }
 
 
@@ -192,6 +157,7 @@ namespace Bomber_wpf
             if (ofd.ShowDialog() == DialogResult.OK)
             {
                 paths[i] = ofd.FileName;
+                labels[i] = ofd.FileName;
                 return ofd.FileName;
             }
             return "";
@@ -257,25 +223,25 @@ namespace Bomber_wpf
             t.SetToolTip(path4_lab, path4_lab.Text);
         }
 
-        private void checkBot1_CheckedChanged(object sender, EventArgs e)
-        {
-            ChangeBotUser(0, path1_btn, path1_lab, checkBot1);
-        }
+        //private void checkBot1_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    ChangeBotUser(0, path1_btn, path1_lab, checkBot1);
+        //}
 
-        private void checkBot2_CheckedChanged(object sender, EventArgs e)
-        {
-            ChangeBotUser(1, path2_btn, path2_lab, checkBot2);
-        }
+        //private void checkBot2_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    ChangeBotUser(1, path2_btn, path2_lab, checkBot2);
+        //}
 
-        private void checkBot3_CheckedChanged(object sender, EventArgs e)
-        {
-            ChangeBotUser(2, path3_btn, path3_lab, checkBot3);
-        }
+        //private void checkBot3_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    ChangeBotUser(2, path3_btn, path3_lab, checkBot3);
+        //}
 
-        private void checkBot4_CheckedChanged(object sender, EventArgs e)
-        {
-            ChangeBotUser(3, path4_btn, path4_lab, checkBot4);
-        }
+        //private void checkBot4_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    ChangeBotUser(3, path4_btn, path4_lab, checkBot4);
+        //}
 
 
 
@@ -284,22 +250,54 @@ namespace Bomber_wpf
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Txt file | *.txt";
             ofd.InitialDirectory = Directory.GetCurrentDirectory();
-            int[,] tempgbpseudo;
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                try
-                {
-                    tempgbpseudo = GetGameboardFromFile(ofd.FileName);
-                }
-                catch (Exception er)
-                {
-                    MessageBox.Show("Ошибка при работе с загружаемой схемой поля: " + er.Message);
-                    return;
-                }
-                gbpseudo = tempgbpseudo;               
+                UserMapPath = ofd.FileName;
             }
         }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+
+        private void ComboboxChange(ComboBox combo, Button btn, Label label, int i)
+        {
+            btn.Enabled = false;
+            label.Enabled = false;
+
+            switch (combo.SelectedIndex)
+            {
+                case 0:
+                    paths[i] = null;
+                    break;
+
+                case 1:
+                    paths[i] = "wait";
+                    break;
+
+                case 2:
+                    if (labels[i] == "")
+                    {
+                        paths[i] = "needLoad";
+                    }
+                    else
+                    {
+                        paths[i] = labels[i];
+                    }
+
+                    btn.Enabled = true;
+                    label.Enabled = true;
+                    break;
+
+                case 3:
+                    paths[i] = "";
+                    break;
+            }
+        }
+
     }
 }
 
