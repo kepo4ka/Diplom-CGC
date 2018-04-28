@@ -134,7 +134,7 @@ namespace Bomber_wpf
                         k++;
                         break;
                 }
-                Prioritets.Add(rn.Next(0, 100));
+                //   Prioritets.Add(rn.Next(0, 100));
             }
         }
 
@@ -305,6 +305,9 @@ namespace Bomber_wpf
 
             CheckUserCodeSourcesPath();
 
+            SetPrioritets();
+            List<int> tt = Prioritets;
+
             gameBoardStates.Add((GameBoard)gb.Clone());
 
             game_timer.Tick += game_timer_Tick;
@@ -313,6 +316,29 @@ namespace Bomber_wpf
 
             initListView();
 
+        }
+
+        public void SetPrioritets()
+        {
+       
+            while (Prioritets.Count < gb.Players.Count)
+            {
+                int prioritet = rn.Next(0, gb.Players.Count);
+                bool isExist = false;
+                for (int i = 0; i < Prioritets.Count; i++)
+                {
+                    if (Prioritets[i]==prioritet)
+                    {
+                        isExist = true;
+                        break;
+                    }
+                }
+
+                if (isExist ==false)
+                {
+                    Prioritets.Add(prioritet);
+                }
+            }
         }
 
 
@@ -356,7 +382,7 @@ namespace Bomber_wpf
         {
             Helper.LOG(Compiler.LogPath, "send length " + message.Length);
             using (StreamWriter sw = new StreamWriter(strm))
-            {               
+            {
                 sw.Write(message);
                 sw.Flush();
             }
@@ -396,12 +422,12 @@ namespace Bomber_wpf
                     SendMessage(tempUserInfo.client.GetStream(), gameboardjson);
                     ReceiveMessage(strm);
 
-                  
+
                     SendMessage(tempUserInfo.client.GetStream(), userjson);
-                  
+
 
                     string name = ReceiveMessage(strm);
-                    
+
 
                     Stopwatch a = new Stopwatch();
 
@@ -414,11 +440,11 @@ namespace Bomber_wpf
 
                     SendMessage(strm, "p");
 
-                   action = ReceiveMessage(strm);                  
+                    action = ReceiveMessage(strm);
 
-                   
 
-                    
+
+
 
                     tempUserInfo.player.ACTION = Helper.DecryptAction(action);
 
@@ -626,7 +652,8 @@ namespace Bomber_wpf
         {
             GameTimer--;
 
-            PlayerProcess();
+            //    PlayerProcess();
+            PlayerProccessTest();
             PlayerBonusCollision();
             BombsProccess();
             LavasProccess();
@@ -679,7 +706,7 @@ namespace Bomber_wpf
                 GameProccess();
                 DrawAll();
                 GameboardInfoProccess();
-                  CommunicateWithClients();            
+                CommunicateWithClients();
                 UpdateListView();
             }
         }
@@ -1058,6 +1085,21 @@ namespace Bomber_wpf
 
 
 
+        public void PlayerProccessTest()
+        {
+            for (int i = 0; i < Prioritets.Count; i++)
+            {
+                Player tplayer = gb.Players[Prioritets[i]];
+
+                if (tplayer is Bot)
+                {
+                    tplayer.ACTION = tplayer.Play();
+                }     
+
+                PlayerMove(gb.Players[Prioritets[i]]);
+            }
+        }
+
 
         /// <summary>
         /// обработка действий игроков
@@ -1249,6 +1291,22 @@ namespace Bomber_wpf
             return tbonus_mass;
         }
 
+        /// <summary>
+        /// Перевести список в матрицу координат бонусов 
+        /// </summary>
+        /// <param name="pbonuses"></param>
+        /// <returns></returns>
+        public Player[,] ListToMass(List<Player> pplayers)
+        {
+            Player[,] tplayer_mass = new Player[gb.W, gb.H];
+
+            for (int i = 0; i < pplayers.Count; i++)
+            {
+                tplayer_mass[pplayers[i].X, pplayers[i].Y] = pplayers[i];
+            }
+            return tplayer_mass;
+        }
+
 
 
         /// <summary>
@@ -1258,6 +1316,7 @@ namespace Bomber_wpf
         public void PlayerMove(Player pplayer)
         {
             Bomb[,] tbombs_mass = ListToMass(gb.Bombs);
+            Player[,] tplayer_mass = ListToMass(gb.Players);
 
             switch (pplayer.ACTION)
             {
@@ -1272,6 +1331,10 @@ namespace Bomber_wpf
                     }
 
                     if (tbombs_mass[pplayer.X + 1, pplayer.Y] != null)
+                    {
+                        break;
+                    }
+                    if (tplayer_mass[pplayer.X+1, pplayer.Y] != null)
                     {
                         break;
                     }
@@ -1294,7 +1357,10 @@ namespace Bomber_wpf
                     {
                         break;
                     }
-
+                    if (tplayer_mass[pplayer.X - 1, pplayer.Y] != null)
+                    {
+                        break;
+                    }
 
                     pplayer.X--;
                     break;
@@ -1313,7 +1379,10 @@ namespace Bomber_wpf
                     {
                         break;
                     }
-
+                    if (tplayer_mass[pplayer.X, pplayer.Y + 1] != null)
+                    {
+                        break;
+                    }
 
                     pplayer.Y++;
                     break;
@@ -1333,8 +1402,22 @@ namespace Bomber_wpf
                         break;
                     }
 
+                    if (tplayer_mass[pplayer.X, pplayer.Y - 1] != null)
+                    {
+                        break;
+                    }
+
                     pplayer.Y--;
                     break;
+
+                case PlayerAction.Bomb:
+                    if (pplayer.BombsCount > 0)
+                    {
+                        CreateBomb(pplayer);
+                        pplayer.BombsCount--;
+                    }
+                    break;
+
                 case PlayerAction.Wait:
                     break;
             }
