@@ -320,21 +320,21 @@ namespace Bomber_wpf
 
         public void SetPrioritets()
         {
-       
+
             while (Prioritets.Count < gb.Players.Count)
             {
                 int prioritet = rn.Next(0, gb.Players.Count);
                 bool isExist = false;
                 for (int i = 0; i < Prioritets.Count; i++)
                 {
-                    if (Prioritets[i]==prioritet)
+                    if (Prioritets[i] == prioritet)
                     {
                         isExist = true;
                         break;
                     }
                 }
 
-                if (isExist ==false)
+                if (isExist == false)
                 {
                     Prioritets.Add(prioritet);
                 }
@@ -651,15 +651,13 @@ namespace Bomber_wpf
         public void GameProccess()
         {
             GameTimer--;
-
-            //    PlayerProcess();
-            PlayerProccessTest();
+          
+            PlayerProccess();
             PlayerBonusCollision();
             BombsProccess();
             LavasProccess();
 
             DestroyedObjectProccess();
-
             ChangePrioritet();
         }
 
@@ -1085,7 +1083,7 @@ namespace Bomber_wpf
 
 
 
-        public void PlayerProccessTest()
+        public void PlayerProccess()
         {
             for (int i = 0; i < Prioritets.Count; i++)
             {
@@ -1094,127 +1092,127 @@ namespace Bomber_wpf
                 if (tplayer is Bot)
                 {
                     tplayer.ACTION = tplayer.Play();
-                }     
+                }
 
                 PlayerMove(gb.Players[Prioritets[i]]);
             }
         }
 
 
-        /// <summary>
-        /// обработка действий игроков
-        /// </summary>
-        public void PlayerProcess()
-        {
-            List<Player> tempplayers = new List<Player>();
-            for (int i = 0; i < gb.Players.Count; i++)
-            {
-                var tvitya = gb.Players[i];
+        ///// <summary>
+        ///// обработка действий игроков
+        ///// </summary>
+        //public void PlayerProcess()
+        //{
+        //    List<Player> tempplayers = new List<Player>();
+        //    for (int i = 0; i < gb.Players.Count; i++)
+        //    {
+        //        var tvitya = gb.Players[i];
 
-                if (tvitya.Health == 0)
-                {
-                    continue;
-                }
+        //        if (tvitya.Health == 0)
+        //        {
+        //            continue;
+        //        }
 
-                if (tvitya is Bot)
-                {
-                    tvitya.ACTION = tvitya.Play();
-                }
+        //        if (tvitya is Bot)
+        //        {
+        //            tvitya.ACTION = tvitya.Play();
+        //        }
 
-                PlayerFire(tvitya);
+        //        PlayerFire(tvitya);
 
-                Player tempplayer = new Player()
-                {
-                    ACTION = tvitya.ACTION,
-                    X = tvitya.X,
-                    Y = tvitya.Y
-                };
-                PlayerMove(tempplayer);
-                tempplayers.Add(tempplayer);
-            }
+        //        Player tempplayer = new Player()
+        //        {
+        //            ACTION = tvitya.ACTION,
+        //            X = tvitya.X,
+        //            Y = tvitya.Y
+        //        };
+        //        PlayerMove(tempplayer);
+        //        tempplayers.Add(tempplayer);
+        //    }
 
-            //for (int i = 0; i < tempplayers.Count; i++)
-            //{
-            //    var tvitya1 = tempplayers[i];
-            //    for (int j = i + 1; j < tempplayers.Count; j++)
-            //    {
-            //        var tvitya2 = tempplayers[j];
-            //        if (tvitya1.X == tvitya2.X && tvitya1.Y == tvitya2.Y)
-            //        {
-            //            gb.Players[i].ACTION = PlayerAction.Wait;
-            //            gb.Players[j].ACTION = PlayerAction.Wait;
-            //        }
-            //        if (tvitya2.X == gb.Players[i].X && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
-            //        {
-            //            gb.Players[i].ACTION = PlayerAction.Wait;
-            //            gb.Players[j].ACTION = PlayerAction.Wait;
-            //        }
-            //    }
-            //}
+        //    //for (int i = 0; i < tempplayers.Count; i++)
+        //    //{
+        //    //    var tvitya1 = tempplayers[i];
+        //    //    for (int j = i + 1; j < tempplayers.Count; j++)
+        //    //    {
+        //    //        var tvitya2 = tempplayers[j];
+        //    //        if (tvitya1.X == tvitya2.X && tvitya1.Y == tvitya2.Y)
+        //    //        {
+        //    //            gb.Players[i].ACTION = PlayerAction.Wait;
+        //    //            gb.Players[j].ACTION = PlayerAction.Wait;
+        //    //        }
+        //    //        if (tvitya2.X == gb.Players[i].X && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
+        //    //        {
+        //    //            gb.Players[i].ACTION = PlayerAction.Wait;
+        //    //            gb.Players[j].ACTION = PlayerAction.Wait;
+        //    //        }
+        //    //    }
+        //    //}
 
-            //for (int i = 0; i < tempplayers.Count; i++)
-            //{
-            //    var tvitya1 = tempplayers[i];
-            //    for (int j = i + 1; j < tempplayers.Count; j++)
-            //    {
-            //        var tvitya2 = tempplayers[j];
-            //        if (tvitya1.X == tvitya2.X && tvitya1.Y == tvitya2.Y)
-            //        {
-            //            if (usersInfo.Find(c => c.player == tvitya1).prioritet > usersInfo.Find(c => c.player == tvitya2).prioritet)
-            //            {
-            //              //  gb.Players[i].ACTION = PlayerAction.Wait;
-            //                gb.Players[j].ACTION = PlayerAction.Wait;
-            //            }
-            //            else
-            //            {
-            //                gb.Players[i].ACTION = PlayerAction.Wait;
-            //            }
-            //        }
-            //        //if (tvitya2.X == gb.Players[i].X && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
-            //        //{
-            //        //    gb.Players[i].ACTION = PlayerAction.Wait;
-            //        //    gb.Players[j].ACTION = PlayerAction.Wait;
-            //        //}
-            //    }
-            //}
-
-
-            for (int i = 0; i < tempplayers.Count; i++)
-            {
-                var tvitya1 = tempplayers[i];
-                for (int j = i + 1; j < tempplayers.Count; j++)
-                {
-                    var tvitya2 = tempplayers[j];
-                    if (tvitya1.X == tvitya2.X && tvitya1.Y == tvitya2.Y)
-                    {
-                        if (Prioritets[i] > Prioritets[j])
-                        {
-                            // gb.Players[i].ACTION = PlayerAction.Wait;
-                            gb.Players[j].ACTION = PlayerAction.Wait;
-                        }
-                        else
-                        {
-                            gb.Players[i].ACTION = PlayerAction.Wait;
-                        }
-                    }
-                    //if (tvitya2.X == gb.Players[i].X && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
-                    //{                       
-                    //    gb.Players[i].ACTION = PlayerAction.Wait;
-                    //    gb.Players[j].ACTION = PlayerAction.Wait;
-                    //}
-                }
-            }
+        //    //for (int i = 0; i < tempplayers.Count; i++)
+        //    //{
+        //    //    var tvitya1 = tempplayers[i];
+        //    //    for (int j = i + 1; j < tempplayers.Count; j++)
+        //    //    {
+        //    //        var tvitya2 = tempplayers[j];
+        //    //        if (tvitya1.X == tvitya2.X && tvitya1.Y == tvitya2.Y)
+        //    //        {
+        //    //            if (usersInfo.Find(c => c.player == tvitya1).prioritet > usersInfo.Find(c => c.player == tvitya2).prioritet)
+        //    //            {
+        //    //              //  gb.Players[i].ACTION = PlayerAction.Wait;
+        //    //                gb.Players[j].ACTION = PlayerAction.Wait;
+        //    //            }
+        //    //            else
+        //    //            {
+        //    //                gb.Players[i].ACTION = PlayerAction.Wait;
+        //    //            }
+        //    //        }
+        //    //        //if (tvitya2.X == gb.Players[i].X && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
+        //    //        //{
+        //    //        //    gb.Players[i].ACTION = PlayerAction.Wait;
+        //    //        //    gb.Players[j].ACTION = PlayerAction.Wait;
+        //    //        //}
+        //    //    }
+        //    //}
 
 
+        //    for (int i = 0; i < tempplayers.Count; i++)
+        //    {
+        //        var tvitya1 = tempplayers[i];
+        //        for (int j = i + 1; j < tempplayers.Count; j++)
+        //        {
+        //            var tvitya2 = tempplayers[j];
+        //            if (tvitya1.X == tvitya2.X && tvitya1.Y == tvitya2.Y)
+        //            {
+        //                if (Prioritets[i] > Prioritets[j])
+        //                {
+        //                    // gb.Players[i].ACTION = PlayerAction.Wait;
+        //                    gb.Players[j].ACTION = PlayerAction.Wait;
+        //                }
+        //                else
+        //                {
+        //                    gb.Players[i].ACTION = PlayerAction.Wait;
+        //                }
+        //            }
+        //            if (tvitya2.X == gb.Players[i].X && tvitya2.Y == gb.Players[i].Y && tvitya1.X == gb.Players[i].X && tvitya1.Y == gb.Players[i].Y)
+        //            {
+        //                gb.Players[i].ACTION = PlayerAction.Wait;
+        //                gb.Players[j].ACTION = PlayerAction.Wait;
+        //            }
+        //        }
+        //    }
 
-            for (int i = 0; i < gb.Players.Count; i++)
-            {
-                if (gb.Players[i].Health > 0)
-                {
-                    PlayerMove(gb.Players[i]);
-                }
-            }
-        }
+
+
+        //    for (int i = 0; i < gb.Players.Count; i++)
+        //    {
+        //        if (gb.Players[i].Health > 0)
+        //        {
+        //            PlayerMove(gb.Players[i]);
+        //        }
+        //    }
+        //}
 
 
         /// <summary>
@@ -1317,47 +1315,38 @@ namespace Bomber_wpf
         {
             Bomb[,] tbombs_mass = ListToMass(gb.Bombs);
             Player[,] tplayer_mass = ListToMass(gb.Players);
+            int tx = 0;
+            int ty = 0;
 
             switch (pplayer.ACTION)
             {
                 case PlayerAction.Right:
-                    if (pplayer.X + 1 > gb.W - 1)
-                    {
-                        break;
-                    }
-                    if (gb.Cells[pplayer.X + 1, pplayer.Y].Type == CellType.Destructible || gb.Cells[pplayer.X + 1, pplayer.Y].Type == CellType.Indestructible)
+                    tx = pplayer.X + 1;
+                    ty = pplayer.Y;
+
+                    if (tx > gb.W - 1 || gb.Cells[tx, ty].Type != CellType.Free)
                     {
                         break;
                     }
 
-                    if (tbombs_mass[pplayer.X + 1, pplayer.Y] != null)
+                    if (tbombs_mass[tx, ty] != null || tplayer_mass[tx, ty] != null)
                     {
                         break;
                     }
-                    if (tplayer_mass[pplayer.X+1, pplayer.Y] != null)
-                    {
-                        break;
-                    }
-
 
                     pplayer.X++;
                     break;
 
                 case PlayerAction.Left:
-                    if (pplayer.X - 1 < 0)
-                    {
-                        break;
-                    }
-                    if (gb.Cells[pplayer.X - 1, pplayer.Y].Type == CellType.Destructible || gb.Cells[pplayer.X - 1, pplayer.Y].Type == CellType.Indestructible)
+                    tx = pplayer.X - 1;
+                    ty = pplayer.Y;
+
+                    if (tx < 0 || gb.Cells[tx, ty].Type != CellType.Free)
                     {
                         break;
                     }
 
-                    if (tbombs_mass[pplayer.X - 1, pplayer.Y] != null)
-                    {
-                        break;
-                    }
-                    if (tplayer_mass[pplayer.X - 1, pplayer.Y] != null)
+                    if (tbombs_mass[tx, ty] != null || tplayer_mass[tx, ty] != null)
                     {
                         break;
                     }
@@ -1366,20 +1355,15 @@ namespace Bomber_wpf
                     break;
 
                 case PlayerAction.Down:
-                    if (pplayer.Y + 1 > gb.H - 1)
-                    {
-                        break;
-                    }
-                    if (gb.Cells[pplayer.X, pplayer.Y + 1].Type == CellType.Destructible || gb.Cells[pplayer.X, pplayer.Y + 1].Type == CellType.Indestructible)
+                    tx = pplayer.X;
+                    ty = pplayer.Y + 1;
+
+                    if (ty + 1 > gb.H - 1 || gb.Cells[tx, ty].Type != CellType.Free)
                     {
                         break;
                     }
 
-                    if (tbombs_mass[pplayer.X, pplayer.Y + 1] != null)
-                    {
-                        break;
-                    }
-                    if (tplayer_mass[pplayer.X, pplayer.Y + 1] != null)
+                    if (tbombs_mass[tx, ty] != null || tplayer_mass[tx, ty] != null)
                     {
                         break;
                     }
@@ -1388,21 +1372,15 @@ namespace Bomber_wpf
                     break;
 
                 case PlayerAction.Up:
-                    if (pplayer.Y - 1 < 0)
-                    {
-                        break;
-                    }
-                    if (gb.Cells[pplayer.X, pplayer.Y - 1].Type == CellType.Destructible || gb.Cells[pplayer.X, pplayer.Y - 1].Type == CellType.Indestructible)
+                    tx = pplayer.X;
+                    ty = pplayer.Y - 1;
+
+                    if (pplayer.Y - 1 < 0 || gb.Cells[tx, ty].Type != CellType.Free)
                     {
                         break;
                     }
 
-                    if (tbombs_mass[pplayer.X, pplayer.Y - 1] != null)
-                    {
-                        break;
-                    }
-
-                    if (tplayer_mass[pplayer.X, pplayer.Y - 1] != null)
+                    if (tbombs_mass[tx, ty] != null || tplayer_mass[tx, ty] != null)
                     {
                         break;
                     }
