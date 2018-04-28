@@ -24,18 +24,20 @@ namespace Bomber_wpf
             InitializeComponent();
             paths = new string[4];
             labels = new string[4];
-            labels[0] = path1_lab.Text;
-            labels[1] = path2_lab.Text;
-            labels[2] = path3_lab.Text;
-            labels[3] = path4_lab.Text;
+            labels[0] = null;
+            labels[1] = null;
+            labels[2] = null;
+            labels[3] = null;
+
             for (int i = 1; i < paths.Length; i++)
             {
-                paths[i] = null;
+                paths[i] = "";
             }
 
-            //  comboBox1.SelectedIndex = 0;
-
-
+            comboBox1.SelectedIndex = 3;
+            comboBox2.SelectedIndex = 3;
+            comboBox3.SelectedIndex = 3;
+            comboBox4.SelectedIndex = 3;
         }
 
 
@@ -54,9 +56,21 @@ namespace Bomber_wpf
             byte havePlayers = 0;
             for (int i = 0; i < paths.Length; i++)
             {
-                if (paths[i] != null)
+                switch (paths[i])
                 {
-                    havePlayers++;
+                    case null:
+                        break;
+                    case "":
+                        havePlayers++;
+                        break;
+
+                    case "needLoad":
+                        MessageBox.Show("Не выбран файл стратегии для Игрока " + (i+1));
+                        return;
+
+                    default:
+                        havePlayers++;
+                        break;
                 }
             }
 
@@ -66,6 +80,10 @@ namespace Bomber_wpf
                 Form1 realGameForm = new Form1(this, UserMapPath);
                 this.Hide();
                 realGameForm.Show();
+            }
+            else
+            {
+                MessageBox.Show("Необходимо добавить не менее двух игроков");
             }
         }
 
@@ -160,39 +178,44 @@ namespace Bomber_wpf
                 labels[i] = ofd.FileName;
                 return ofd.FileName;
             }
+            else
+            {
+                paths[i] = "needLoad";
+                labels[i] = null;
+            }
             return "";
         }
 
 
-        /// <summary>
-        /// Заменить тип игрока 
-        /// </summary>
-        /// <param name="i"></param>
-        /// <param name="btn"></param>
-        /// <param name="label"></param>
-        private void ChangeBotUser(int i, Button btn, Label label, CheckBox check)
-        {
-            labels[0] = path1_lab.Text;
-            labels[1] = path2_lab.Text;
-            labels[2] = path3_lab.Text;
-            labels[3] = path4_lab.Text;
+        ///// <summary>
+        ///// Заменить тип игрока 
+        ///// </summary>
+        ///// <param name="i"></param>
+        ///// <param name="btn"></param>
+        ///// <param name="label"></param>
+        //private void ChangeBotUser(int i, Button btn, Label label, CheckBox check)
+        //{
+        //    labels[0] = path1_lab.Text;
+        //    labels[1] = path2_lab.Text;
+        //    labels[2] = path3_lab.Text;
+        //    labels[3] = path4_lab.Text;
 
-            if (check.Checked == false && labels[i] == "")
-            {
-                paths[i] = null;
-            }
-            else if (check.Checked == false && labels[i] != "")
-            {
-                paths[i] = labels[i];
-            }
-            else
-            {
-                paths[i] = "";
-            }
+        //    if (check.Checked == false && labels[i] == "")
+        //    {
+        //        paths[i] = null;
+        //    }
+        //    else if (check.Checked == false && labels[i] != "")
+        //    {
+        //        paths[i] = labels[i];
+        //    }
+        //    else
+        //    {
+        //        paths[i] = "";
+        //    }
 
-            btn.Enabled = !btn.Enabled;
-            label.Enabled = !label.Enabled;
-        }
+        //    btn.Enabled = !btn.Enabled;
+        //    label.Enabled = !label.Enabled;
+        //}
 
 
         private void path1_btn_Click(object sender, EventArgs e)
@@ -257,14 +280,23 @@ namespace Bomber_wpf
             }
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
 
+        public void CheckComboBoxes()
+        {
+            if (comboBox1.SelectedIndex ==0 && comboBox2.SelectedIndex ==0 && comboBox3.SelectedIndex ==0 && comboBox4.SelectedIndex ==0)
+            {
+                realGameButton.Enabled = false;
+                return;
+            }
+
+            realGameButton.Enabled = true;  
         }
 
 
         private void ComboboxChange(ComboBox combo, Button btn, Label label, int i)
         {
+            CheckComboBoxes();
+
             btn.Enabled = false;
             label.Enabled = false;
 
@@ -279,7 +311,7 @@ namespace Bomber_wpf
                     break;
 
                 case 2:
-                    if (labels[i] == "")
+                    if (labels[i] == null)
                     {
                         paths[i] = "needLoad";
                     }
@@ -298,6 +330,26 @@ namespace Bomber_wpf
             }
         }
 
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboboxChange(comboBox1, path1_btn, path1_lab, 0);
+        }
+
+        private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboboxChange(comboBox2, path2_btn, path2_lab, 1);
+        }
+
+        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboboxChange(comboBox3, path3_btn, path3_lab, 2);
+        }
+
+        private void comboBox4_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ComboboxChange(comboBox4, path4_btn, path4_lab, 3);
+        }
     }
 }
 

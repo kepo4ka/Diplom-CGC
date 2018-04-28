@@ -3,15 +3,11 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Text;
 using System.IO;
+using System.Diagnostics;
 
 using ClassLibrary_CGC;
 using User_class;
 using Newtonsoft.Json;
-using System.Runtime.InteropServices;
-
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Diagnostics;
 
 
 namespace User_client
@@ -24,11 +20,7 @@ namespace User_client
         static User myUser;
         static GameBoard gameBoard;
         static bool connected;
-        static byte[] data;
-        static string message;
         static NetworkStream stream;
-        static int TimeLimit = 10000;
-        static object obj;
 
 
         static void Main(string[] args)
@@ -39,7 +31,7 @@ namespace User_client
 
                 if (server.Connected)
                 {
-                    Log("start");
+                    Log("Connected to Server");
                     CommunicateWithServer();
                 }
             }
@@ -50,23 +42,52 @@ namespace User_client
                     server.Close();
                 }
                 Log(e.Message);
-            //    Console.ReadKey();
-                Environment.Exit(0);
+
+                //  Environment.Exit(0);
             }
             Console.ReadKey();
         }
 
-        public static void Log(string message)
+        /// <summary>
+        /// ФУНКЦИЯ, КОТОРАЯ ИСПОЛЬЗУЕТСЯ ДЛЯ ОТЛАДКИ
+        /// </summary>
+        public static void DEBUGMYCODE()
         {
-            using (StreamWriter sw = new StreamWriter("log.txt", true))
-            {
-                string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
-                time = "[" + time + "] ";
-                sw.WriteLine(time + ": " + message);
-                Console.WriteLine(time + ": " + message);
-            }
+            myUser.ACTION = myUser.Play(gameBoard);
         }
 
+
+
+        /// <summary>
+        /// Записать сообщение в Лог
+        /// </summary>
+        /// <param name="message">Сообщение</param>
+        public static void Log(string message)
+        {
+            if (myUser == null)
+            {
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(myUser.Name))
+            {
+                return;
+            }
+
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\compiler\\" +  myUser.Name + "\\log.txt", true))
+                {
+                    string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
+                    time = "[" + time + "] ";
+                    sw.WriteLine(time + ": " + message);
+                    Console.WriteLine(time + ": " + message);
+                }
+            }
+            catch (Exception er)
+            {
+                Console.WriteLine(er.Message);
+            }
+        }
 
 
         /// <summary>
@@ -97,57 +118,32 @@ namespace User_client
                 try
                 {
                     stream = server.GetStream();
+                    int length = int.Parse(ReceiveMessage());
 
-                    string gamestring = ReceiveMessage();
-                    Log("gamestring length " + gamestring.Length);
+                    SendMessage("p");
+
+                    string gamestring = "";
+
+                    while (gamestring.Length < length)
+                    {
+                        gamestring += ReceiveMessage();
+                        Log("gameboardjson length - " + gamestring.Length);
+                    }
+
+                    Log("RECIEVE: gameboardjson length - " + gamestring.Length);
+
                     SendMessage("p");
                     string userstr = ReceiveMessage();
-                    Log("userstr length " + userstr.Length);
+                    Log("RECIEVE: userstr length - " + userstr.Length);
 
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
 
-                    SendMessage(gameBoard.Players[0].Name);
-                    ReceiveMessage();
+                    DEBUGMYCODE();
 
-                    Thread thr = CreateMyThread();
-                    Stopwatch a = new Stopwatch();
-                    a.Start();
-
-                    thr.Start();
-
-                    int waittime = 0;
-                   
-                    while (waittime < TimeLimit)
-                    {
-                        waittime += 50;
-                        Thread.Sleep(50);
-                        Log(waittime + " wait time");
-
-                        if (thr.ThreadState == System.Threading.ThreadState.Stopped)
-                        {
-                            Log("Timeout Stopped " + a.ElapsedMilliseconds);
-
-                            SendMessage(a.ElapsedMilliseconds + "");
-                          
-                            break;
-                        }
-                    }
-
-                    Log(waittime + " wait Running; thr.ThreadState = " + thr.ThreadState.ToString());
-                    if (thr.ThreadState != System.Threading.ThreadState.Stopped)
-                    {
-                        Log("Timeout Running " + TimeLimit);
-                        SendMessage(TimeLimit + "");
-                        myUser.ACTION = PlayerAction.Bomb;
-                      
-                    }
-                    a.Stop();
-                  
-
-                    ReceiveMessage();
                     SendMessage((int)myUser.ACTION + "");
-                    Log("send action: " + (int)myUser.ACTION + "");
+
+                    Log("My ACTION: " + myUser.ACTION);
                 }
                 catch (Exception e)
                 {
@@ -155,80 +151,34 @@ namespace User_client
                     connected = false;
                     if (server != null)
                         server.Close();
-                   //   Console.ReadKey();
-                    Environment.Exit(0);
+                    Console.ReadKey();
+                    //  Environment.Exit(0);
                 }
             }
         }
 
 
 
-        static Thread CreateMyThread()
-        {
-            Thread thr = new Thread(() =>
-            {              
-                try
-                {
-                    //lock (obj)
-                    //{
-                      //  myUser.ACTION = PlayerAction.Up;
-                        myUser.ACTION = myUser.Play(gameBoard);
-                        Console.WriteLine(" inthread");
-                    //}
-                }
-                catch (Exception e)
-                {
-                    Log("user_error: " + e.Message);
-                }   
-            });
-            return thr;
-        }
 
-
-        public static void streamWrite(Stream strm, string message)
-        {
-            Log("send length " + message.Length);
-            using (StreamWriter sw = new StreamWriter(strm))
-            {
-                while (!sw.BaseStream.CanRead)
-                {
-                    Log("wait read");
-                }
-                sw.Write(message);
-                sw.Flush();
-
-            }
-        }
-
-        public static string streamRead(Stream strm)
-        {
-            string message = "";
-            using (StreamReader sr = new StreamReader(strm))
-            {
-                while (!sr.BaseStream.CanRead)
-                {
-                    Log("wait read");
-                }
-                message = sr.ReadToEnd();
-            }
-            Log("read length " + message.Length);
-            return message;
-        }
-
-
-
+        /// <summary>
+        /// Отправить сообщение
+        /// </summary>
+        /// <param name="message">Отправляемое сообщение</param>
         static void SendMessage(string message)
         {
             byte[] data = Encoding.Unicode.GetBytes(message);
             stream.Write(data, 0, data.Length);
         }
 
-
+        /// <summary>
+        /// Получить сообщение
+        /// </summary>
+        /// <returns>Полученное сообщение</returns>
         static string ReceiveMessage()
         {
             string message = "";
 
-            byte[] data = new byte[256]; // буфер для получаемых данных
+            byte[] data = new byte[256];
             StringBuilder builder = new StringBuilder();
             int bytes = 0;
             do
@@ -237,75 +187,16 @@ namespace User_client
                 builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
             }
             while (stream.DataAvailable);
-            message = builder.ToString();          
+            message = builder.ToString();
             return message;
         }
 
 
         /// <summary>
-        /// Отправить данные на сервер
+        /// Из числа в Команду
         /// </summary>
-        static void SentInfo()
-        {
-            string action = EncryptAction(myUser.ACTION);
-            writeStream(server.GetStream(), action);
-        }
-
-
-
-
-        /// <summary>
-        /// Cчитать строку из сетевого потока
-        /// </summary>
-        /// <returns></returns>
-        public static string readStream(NetworkStream strm)
-        {
-            Byte[] serverData = new Byte[16];
-            int bytes = strm.Read(serverData, 0, serverData.Length);
-            string serverMessage = Encoding.ASCII.GetString(serverData, 0, bytes);
-            return serverMessage;
-        }
-
-        /// <summary>
-        /// Cчитать строку из сетевого потока
-        /// </summary>
-        /// <returns></returns>
-        public static string readStream(NetworkStream strm, int bytesLength)
-        {
-            Byte[] serverData = new Byte[bytesLength];
-            int bytes = strm.Read(serverData, 0, serverData.Length);
-            string serverMessage = Encoding.ASCII.GetString(serverData, 0, bytes);
-            return serverMessage;
-        }
-
-        /// <summary>
-        /// Отправить строку в сетевой поток
-        /// </summary>
-        /// <param name="message">Отправляемая строка</param>
-        public static void writeStream(NetworkStream strm, string message)
-        {
-            Byte[] data = Encoding.Unicode.GetBytes(message);
-
-            strm.Write(data, 0, data.Length);
-        }
-
-        /// <summary>
-        /// Отправить строку в сетевой поток
-        /// </summary>
-        /// <param name="message">Отправляемая строка</param>
-        public static void writeStream(NetworkStream strm, Byte[] data)
-        {
-            strm.Write(data, 0, data.Length);
-        }
-
-
-
-        /// <summary>
-        /// Распознать Команду из строки
-        /// </summary>
-        /// <param name="message">Данная строка</param>
-        /// <param name="usersInfo">Список, в элемент которого необходимо передать команду</param>
-        /// <param name="i">Индекс элемента в Списке, который получает команду</param>
+        /// <param name="message">Строка</param>
+        /// <returns>Команда</returns>
         public static PlayerAction DecryptAction(string message)
         {
             PlayerAction pa = new PlayerAction();
@@ -315,11 +206,10 @@ namespace User_client
         }
 
         /// <summary>
-        /// Распознать Команду из строки
+        /// Из Команды в Число
         /// </summary>
-        /// <param name="message">Данная строка</param>
-        /// <param name="usersInfo">Список, в элемент которого необходимо передать команду</param>
-        /// <param name="i">Индекс элемента в Списке, который получает команду</param>
+        /// <param name="action">Команда</param>
+        /// <returns>Число</returns>
         public static string EncryptAction(PlayerAction action)
         {
             int actionInt = (int)action;

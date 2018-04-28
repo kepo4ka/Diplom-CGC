@@ -34,7 +34,7 @@ namespace Bomber_wpf
 
         Color[] player_colors = new Color[4]
         {
-            Color.PaleVioletRed, Color.Green, Color.DodgerBlue, Color.Aqua
+            Color.PaleVioletRed, Color.Green, Color.DodgerBlue, Color.DimGray
         };
 
 
@@ -104,19 +104,29 @@ namespace Bomber_wpf
 
         void CheckUserCodeSourcesPath()
         {
-            int k = 0;
+            int k = 1;
             for (int i = 0; i < startPage.paths.Length; i++)
             {
                 switch (startPage.paths[i])
                 {
                     case null:
                         continue;
+
                     case "":
                         gb.Players.Add(CreatePlayer(false, k));
-                        k++;
                         break;
+
+                    case "wait":
+                        MessageBox.Show("Ждём клиента #" + (i + 1));
+                        TcpClient ttcp = server.AcceptTcpClient();
+
+                        User ttuser = (User)CreatePlayer(true, k);
+                        usersInfo.Add(new UserInfo(ttuser, ttcp, null));
+                        gb.Players.Add(ttuser);
+                        break;
+
                     default:
-                        Compiler cmp = CompileAndStartUserFiles(startPage.paths[i], i);
+                        Compiler cmp = CompileAndStartUserFiles(startPage.paths[i], k);
                         if (cmp == null)
                         {
                             continue;
@@ -127,15 +137,12 @@ namespace Bomber_wpf
                         {
                             continue;
                         }
-
-
                         User tuser = (User)CreatePlayer(true, k);
                         usersInfo.Add(new UserInfo(tuser, tcp, cmp));
-
                         gb.Players.Add(tuser);
-                        k++;
                         break;
                 }
+                k++;
                 //   Prioritets.Add(rn.Next(0, 100));
             }
         }
@@ -153,18 +160,19 @@ namespace Bomber_wpf
             if (!k)
             {
                 pplayer = new Bot();
-                pplayer.Name = "Bot_" + (i + 1);
+                pplayer.Name = "Bot_" + i;
             }
             else
             {
                 pplayer = new User();
-                pplayer.Name = "User_" + (i + 1);
+                pplayer.Name = "User_" + i;
             }
 
-            pplayer.ID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * rn.NextDouble() + "JOPA" + pplayer.Name);
-            pplayer.Points = 0;
+            //  pplayer.ID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * rn.NextDouble() + "JOPA" + pplayer.Name);
+            pplayer.ID = i.ToString();
 
-            //   pplayer.Health = 5;
+
+            pplayer.Health = 50;
             pplayer.BangRadius = Config.bang_start_radius;
             pplayer.BombsCount = Config.player_bombs_count_start;
 
@@ -206,7 +214,6 @@ namespace Bomber_wpf
             gb = savedGameBoardStates[0];
 
             initListView();
-
             game_timer.Tick += visualizing_game_Tick;
             game_timer.Interval = 1000;
             game_timer.Start();
@@ -226,10 +233,8 @@ namespace Bomber_wpf
         {
             gb = savedGameBoardStates[GameTimer];
             GameTimer++;
-            DrawAll();
-
             CheckVisualizingGameOver();
-
+            DrawAll();
             UpdateListView();
         }
 
@@ -238,7 +243,7 @@ namespace Bomber_wpf
         /// </summary>
         public void CheckVisualizingGameOver()
         {
-            if (GameTimer >= savedGameBoardStates.Count)
+            if (GameTimer >= savedGameBoardStates.Count - 1)
             {
                 VisualizingGameOver();
             }
@@ -251,6 +256,8 @@ namespace Bomber_wpf
         public void VisualizingGameOver()
         {
             game_timer.Stop();
+            game_timer.Tick -= visualizing_game_Tick;
+
             var result = DialogResult.No;
             string message = "Воспроизведение завершено!\n Начать заново?";
             result = MessageBox.Show(message, "GAME OVER",
@@ -264,7 +271,7 @@ namespace Bomber_wpf
             else
             {
                 this.Hide();
-                game_timer.Stop();
+
                 startPage.Show();
             }
         }
@@ -354,7 +361,7 @@ namespace Bomber_wpf
             gameBoardStates.Add((GameBoard)gb.Clone());
 
             game_timer.Tick += game_timer_Tick;
-            game_timer.Interval = 800;
+            game_timer.Interval = 400;
             game_timer.Start();
 
             initListView();
@@ -461,56 +468,22 @@ namespace Bomber_wpf
                     UserInfo tempUserInfo = usersInfo[i];
                     NetworkStream strm = tempUserInfo.client.GetStream();
                     string userjson = JsonConvert.SerializeObject(tempUserInfo.player);
-
-                    SendMessage(tempUserInfo.client.GetStream(), gameboardjson);
+                    SendMessage(tempUserInfo.client.GetStream(), gameboardjson.Length + "");
                     ReceiveMessage(strm);
-
-
+                    SendMessage(tempUserInfo.client.GetStream(), gameboardjson);
+                    Helper.LOG(Compiler.LogPath, $"SEND: gameboardjson length - {gameboardjson.Length}");
+                    ReceiveMessage(strm);
                     SendMessage(tempUserInfo.client.GetStream(), userjson);
+                    Helper.LOG(Compiler.LogPath, $"SEND: userjson length - {userjson.Length}");
 
-
-                    string name = ReceiveMessage(strm);
-
-
-                    Stopwatch a = new Stopwatch();
-
-                    a.Start();
-                    SendMessage(strm, "p");
-                    string action = "";
-
-                    string sleeptime = ReceiveMessage(strm);
-                    formLog(sleeptime + " ms - " + name);
-
-                    SendMessage(strm, "p");
-
-                    action = ReceiveMessage(strm);
-
-
-
-
-
+                    string action = ReceiveMessage(strm);
                     tempUserInfo.player.ACTION = Helper.DecryptAction(action);
-
-                    //Helper.LOG(Compiler.LogPath, "gamebouard length " + gameboardjson.Length);
-                    //streamWrite(strm, gameboardjson);
-
-                    //Helper.LOG(Compiler.LogPath, "userjson length " + userjson.Length);
-
-                    //streamWrite(strm, userjson);
-
-
-                    //string action = streamRead(strm);
-
-
-                    //tempUserInfo.player.ACTION = Helper.DecryptAction(action);
-
-
-
+                    Helper.LOG(Compiler.LogPath, $"{tempUserInfo.player.Name} = {tempUserInfo.player.ACTION}");
 
                 }
                 catch (Exception er)
                 {
-                    Helper.LOG(Compiler.LogPath, "CommunicateWithClients ERROR: " + er.Message);
+                    Helper.LOG(Compiler.LogPath, "CommunicateWithClients ERROR: " + er.Message + " " + er.GetType());
                     PlayerDisconnect(usersInfo[i].player);
                 }
             }
@@ -518,7 +491,9 @@ namespace Bomber_wpf
 
 
 
-
+        /// <summary>
+        /// Запустить сервер
+        /// </summary>
         public void serverStart()
         {
             try
@@ -729,8 +704,10 @@ namespace Bomber_wpf
         {
             tempGB = null;
             tempGB = (GameBoard)gb.Clone();
+            GameBoard tempGBmin = (GameBoard)gb.Clone();
+            tempGBmin.XYinfo = null;
+            gameBoardStates.Add(tempGBmin);
             SetXYInfo();
-            gameBoardStates.Add(tempGB);
             gameboardjson = JsonConvert.SerializeObject(tempGB);
         }
 
@@ -851,20 +828,15 @@ namespace Bomber_wpf
                     }
 
 
-                    int tmaxLiveTime = 0;
 
                     for (int ii = 0; ii < tempGB.Lavas.Count; ii++)
                     {
                         if (tempGB.Lavas[ii].X == i && tempGB.Lavas[ii].Y == j)
                         {
-                            if (gb.Lavas[ii].LiveTime >= tmaxLiveTime)
-                            {
-                                tmaxLiveTime = tempGB.Lavas[ii].LiveTime;
-
-                                tXYInfo.Lava = tempGB.Lavas[ii];
-                            }
+                            tXYInfo.Lavas.Add(tempGB.Lavas[ii]);
                         }
                     }
+
 
 
                     for (int ii = 0; ii < tempGB.Bonuses.Count; ii++)
@@ -908,7 +880,11 @@ namespace Bomber_wpf
             }
 
             gameBoardStates.Add(gb);
+
             SaveGameInfo();
+
+
+
             StopClearTempFiles();
 
             EndGameMessage(winners);
@@ -1014,54 +990,54 @@ namespace Bomber_wpf
         /// </summary>
         public void SaveGameInfo()
         {
-            //try
-            //{
-            string gameResultDirectoryName = Directory.GetCurrentDirectory() + "\\" + GetInfoAboutThisGame() + "\\";
-
-            Helper.DeleteDirectory(gameResultDirectoryName);
-            Directory.CreateDirectory(gameResultDirectoryName);
-
-
-            string gameStaterVisualizerFileName = "Visualizer.dat";
-            string gameStaterVisualizerJSONFileName = "Visualizer.json";
-            string userComandsFileName = "UserCommands.json";
-
-            string gameResultsFileName = "gameResults.json";
-
-            BinaryFormatter form = new BinaryFormatter();
-            using (FileStream fs = new FileStream($"{gameResultDirectoryName}\\{gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
+            try
             {
-                form.Serialize(fs, gameBoardStates);
-            }
+                string gameResultDirectoryName = Directory.GetCurrentDirectory() + "\\" + GetInfoAboutThisGame() + "\\";
 
-            using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{gameStaterVisualizerJSONFileName}", false))
+                Helper.DeleteDirectory(gameResultDirectoryName);
+                Directory.CreateDirectory(gameResultDirectoryName);
+
+
+                string gameStaterVisualizerFileName = "Visualizer.dat";
+                string gameStaterVisualizerJSONFileName = "Visualizer.json";
+                string userComandsFileName = "UserCommands.json";
+
+                string gameResultsFileName = "gameResults.json";
+
+                BinaryFormatter form = new BinaryFormatter();
+                using (FileStream fs = new FileStream($"{gameResultDirectoryName}\\{gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
+                {
+                    form.Serialize(fs, gameBoardStates);
+                }
+
+                using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{gameStaterVisualizerJSONFileName}", false))
+                {
+                    sw.AutoFlush = true;
+                    string visualizer = JsonConvert.SerializeObject(gameBoardStates);
+                    Helper.LOG(Compiler.LogPath, visualizer.Length + "");
+                    sw.Write(visualizer);
+                }
+
+                using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{gameResultsFileName}", false))
+                {
+                    sw.AutoFlush = true;
+                    string GameResultsJson = JsonConvert.SerializeObject(GetPlayerResult());
+                    sw.Write(GameResultsJson);
+                }
+
+                using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{userComandsFileName}", false))
+                {
+                    sw.AutoFlush = true;
+                    string allTicksPlayersStats = JsonConvert.SerializeObject(GetPlayersInfoAllTicks());
+                    sw.Write(allTicksPlayersStats);
+                }
+
+                File.Copy($"{Compiler.LogPath}", $"{gameResultDirectoryName}\\log.txt");
+            }
+            catch (Exception er)
             {
-                string visualizer = JsonConvert.SerializeObject(gameBoardStates);
-                sw.Write(visualizer);
+                Helper.LOG(Compiler.LogPath, $"Ошибка при сохранении информации об игре в файл: {er.Message}");
             }
-
-            using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{gameResultsFileName}", false))
-            {
-                string GameResultsJson = JsonConvert.SerializeObject(GetPlayerResult());
-                sw.Write(GameResultsJson);
-            }
-
-            using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{userComandsFileName}", false))
-            {
-                string allTicksPlayersStats = JsonConvert.SerializeObject(GetPlayersInfoAllTicks());
-                sw.Write(allTicksPlayersStats);
-            }
-            Helper.LOG(Compiler.LogPath, "END");
-
-            File.Copy($"{Compiler.LogPath}", $"{gameResultDirectoryName}\\log.txt");
-
-
-
-            //}
-            //catch (Exception e)
-            //{
-            //    MessageBox.Show("Ошибка при сохранении информации об игре в файл: " + e.Message);
-            //}
         }
 
 
@@ -1142,6 +1118,7 @@ namespace Bomber_wpf
                 if (tplayer is Bot)
                 {
                     tplayer.ACTION = tplayer.Play();
+                    tplayer.ACTION = PlayerAction.Down;
                 }
 
                 PlayerMove(tplayer);
@@ -1972,11 +1949,15 @@ namespace Bomber_wpf
         {
             game_timer.Interval = game_timer.Interval / 2;
             slow_btn.Enabled = true;
-
-            if (game_timer.Interval < 110)
+            int minLimit = 100;
+            if (usersInfo.Count == 0)
+            {
+                minLimit = 20;
+            }
+            if (game_timer.Interval < minLimit)
             {
                 fast_btn.Enabled = false;
-                game_timer.Interval = 110;
+                game_timer.Interval = minLimit;
             }
             else
             {
@@ -2055,10 +2036,10 @@ namespace Bomber_wpf
                 }
             }
 
-            gameboardpseudo[0, 0] = gameboardpseudo[0, 0]==5 ? 5 : 0;
-            gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1]==5 ?5: 0;
-            gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] = gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0]==5 ? 5: 0;
-            gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] ==5 ? 5: 0;
+            gameboardpseudo[0, 0] = gameboardpseudo[0, 0] == 5 ? 5 : 0;
+            gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
+            gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] = gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] == 5 ? 5 : 0;
+            gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
 
             return gameboardpseudo;
 

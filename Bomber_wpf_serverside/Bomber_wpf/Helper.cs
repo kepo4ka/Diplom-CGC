@@ -143,11 +143,18 @@ namespace Bomber_wpf
         /// <param name="message"></param>
         public static void LOG(string filename, string message)
         {
-            using (StreamWriter sw = new StreamWriter(filename, true))
+            try
             {
-                string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
-                time = "[" + time + "] ";
-                sw.WriteLine($"{time}: {message} \n");
+                using (StreamWriter sw = new StreamWriter(filename, true))
+                {
+                    string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
+                    time = "[" + time + "] ";
+                    sw.WriteLine($"{time}: {message} \n");
+                }
+            }
+            catch (Exception IO)
+            {
+                return;
             }
         }
 
