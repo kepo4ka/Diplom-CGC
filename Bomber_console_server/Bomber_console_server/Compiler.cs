@@ -17,6 +17,7 @@ namespace Bomber_console_server
         static string assets_Path;
         public static string HostUserPath;
         public static string LogPath;
+        public static string mapsPath;
 
         string output;
         string errorput;
@@ -40,7 +41,9 @@ namespace Bomber_console_server
             {
                 assets_Path = Path.GetFullPath(main_Path + "\\assets");
             }
-            LogPath = $"{HostUserPath}\\log.txt";
+
+            mapsPath = assets_Path + "\\" + "maps";
+            LogPath = $"{HostUserPath}\\log.txt";           
         }
 
         public Compiler(string _php_dir_path, int i, int sandboxId)
@@ -66,6 +69,7 @@ namespace Bomber_console_server
             {
                 assets_Path = Path.GetFullPath(main_Path + "\\assets");
             }
+            mapsPath = assets_Path + "\\" + "maps";
 
             HostUserPath = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
             HostUserPath += $"\\docker_temp\\{Session.gameID}";
@@ -104,7 +108,7 @@ namespace Bomber_console_server
             foreach (DirectoryInfo df in diA)
             {
                 Helper.DeleteDirectory(df.FullName);
-                df.Delete();
+              //  df.Delete();
             }
         }
 

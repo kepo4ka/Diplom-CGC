@@ -33,6 +33,7 @@ namespace Bomber_console_server
         List<GameBoard> savedGameBoardStates;
         string[] php_compiled_path;
         static int phpgameID;
+        string MapPath;
 
         public static string gameID;
         public string gameboardjson;
@@ -50,6 +51,8 @@ namespace Bomber_console_server
 
         public Session(SandboxGame _sandboxgame)
         {
+            Compiler cmp = new Compiler();
+
             sandboxgame = _sandboxgame;
 
             globalTimeLimit = 120000;
@@ -61,9 +64,7 @@ namespace Bomber_console_server
             savedGameBoardStates = new List<GameBoard>();
 
             // gameID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
-            gameID = "JOPAJOPA";
-
-
+            gameID = "JOPAJOPA";          
 
             isGameOver = false;
 
@@ -73,9 +74,77 @@ namespace Bomber_console_server
             InitGame();
         }
 
-        /// <summary>
-        /// Начать сеанс игры
-        /// </summary>
+        private int[,] GetGameboardFromFile(string psource)
+        {
+            int[,] gameboardpseudo = new int[15, 15];
+            string[] splitedFile = psource.Split('.');
+            string[] splitPath = psource.Split('\\');
+            string fileExtension = splitedFile[splitedFile.Length - 1];
+            string filePath = splitPath[splitPath.Length - 1];
+
+            //  MessageBox.Show("psource " + psource);
+
+            using (StreamReader sr = new StreamReader(psource))
+            {
+                for (int i = 0; i < gameboardpseudo.GetLength(0); i++)
+                {
+                    string line = sr.ReadLine();
+                    string[] linesplit = line.Split();
+
+                    if (linesplit.Length != gameboardpseudo.GetLength(1))
+                    {
+                        throw new Exception("Ошибка при парсинге карты: неверное количество столбцов");
+                    }
+
+                    for (int j = 0; j < linesplit.Length; j++)
+                    {
+                        int t = 0;
+                        if (!int.TryParse(linesplit[j], out t))
+                        {
+                            throw new Exception($"Ошибка при парсинге карты: нечисловое значение [{i},{j}");
+                        }
+                        gameboardpseudo[i, j] = t;
+                    }
+                }
+            }
+
+            gameboardpseudo[0, 0] = gameboardpseudo[0, 0] == 5 ? 5 : 0;
+            gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
+            gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] = gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] == 5 ? 5 : 0;
+            gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
+
+            return gameboardpseudo;
+
+        }
+
+
+        public int[,] LoadMap()
+        {
+            int[,] gameboardpseudo = null;
+                       
+            try
+            {
+                DirectoryInfo di = new DirectoryInfo(Compiler.mapsPath);
+                var files = di.GetFiles("*.txt");
+                if (files.Length < 1)
+                {
+                    throw new Exception($"Не удалось найти ни одной карты в папке {Compiler.mapsPath}");
+                }
+                MapPath = files[rn.Next(0, files.Length)].FullName;
+
+                gameboardpseudo = GetGameboardFromFile(MapPath);
+                return gameboardpseudo;
+            }
+            catch (Exception er)
+            {
+                Helper.LOG(Compiler.LogPath, $"Не удалось загрузить карту из стандартных карт: {er.Message}");
+                return null;
+            }
+        }
+
+
+
+
         public void InitGame()
         {
             isGameOver = false;
@@ -85,6 +154,8 @@ namespace Bomber_console_server
             Prioritets = new List<int>();
             DestroyedPlayers = new List<Player>();
             DestroyedCells = new List<Cell>();
+
+            gbpseudo = LoadMap();
 
             if (gbpseudo == null)
             {
@@ -121,6 +192,7 @@ namespace Bomber_console_server
             }
         }
 
+
         void InitUsers()
         {
             try
@@ -138,12 +210,10 @@ namespace Bomber_console_server
                         continue;
                     }
 
-                    User player = InitPlayersInfo(sandboxgame.usergroup.users[i]);
+                    User player = CreatePlayer(sandboxgame.usergroup.users[i]);
 
                     usersInfo.Add(new UserInfo(player, tcp, cmp));
                     gb.Players.Add(player);
-
-                    Prioritets.Add(rn.Next(0, 100));
                 }
             }
             catch (Exception er)
@@ -156,10 +226,10 @@ namespace Bomber_console_server
 
 
         /// <summary>
-        /// Создание игрока на основе данных из формы
+        /// Создание игрока на основе данных из модели
         /// </summary>
         /// <param name="i"></param>
-        User InitPlayersInfo(dbUser user)
+        User CreatePlayer(dbUser user)
         {
             User pplayer = new User();
 
@@ -168,34 +238,13 @@ namespace Bomber_console_server
 
             pplayer.Points = 0;
             //    pplayer.Health = Config.player_health;
-            pplayer.Health = 1;
+            pplayer.Health = 100;
             pplayer.BangRadius = Config.bang_start_radius;
             pplayer.BombsCount = Config.player_bombs_count_start;
-
-            // switch (i)
-            //{
-            //    case 0:
-            //        pplayer.X = 0;
-            //        pplayer.Y = 0;
-            //        break;
-            //    case 1:
-            //        pplayer.X = gb.W - 1;
-            //        pplayer.Y = 0;
-            //        break;
-            //    case 2:
-            //        pplayer.X = 0;
-            //        pplayer.Y = gb.H - 1;
-            //        break;
-            //    case 3:
-            //        pplayer.X = gb.W - 1;
-            //        pplayer.Y = gb.H - 1;
-            //        break;
-            //}
 
             pplayer.X = pseudoplayers[0].X;
             pplayer.Y = pseudoplayers[0].Y;
             pseudoplayers.RemoveAt(0);
-
 
             return pplayer;
         }
@@ -217,9 +266,7 @@ namespace Bomber_console_server
             }
         }
 
-        /// <summary>
-        /// Следующий ход игры
-        /// </summary>
+
         public void NextTick()
         {
             CheckGameOver();
@@ -606,7 +653,7 @@ namespace Bomber_console_server
                         tvitya.BombsCount++;
                     }
 
-                    //    gb.Bonuses.Remove(tempbonus[i, j]);
+                    gb.Bonuses.Remove(tempbonus[i, j]);
                     tempbonus[i, j] = null;
                 }
             }
@@ -1050,9 +1097,9 @@ namespace Bomber_console_server
             //{
             //    PlayerAddPointsKill(plava);
             //}
-            pplayer.Health = 0;
+            pplayer.Health--;
 
-            if (pplayer is User)
+            if (pplayer is User && pplayer.Health < 1)
             {
                 PlayerDisconnect(pplayer);
             }
@@ -1076,7 +1123,7 @@ namespace Bomber_console_server
                 }
                 catch (Exception er)
                 {
-                    throw new Exception($"Disconnect ERROR ({usersInfo[i].player.Name})");
+                    throw new Exception($"{usersInfo[i].player.Name} Disconnect ERROR: {er.Message}");
 
                 }
             }
@@ -1091,47 +1138,23 @@ namespace Bomber_console_server
         /// <param name="pclient"></param>
         public void PlayerDisconnect(Player pplayer)
         {
-            TcpClient tempclient;
             try
             {
-                tempclient = usersInfo.Find(c => c.player == pplayer).client;
-                tempclient.Close();
+                TcpClient tempclient = usersInfo.Find(c => c.player == pplayer).client;
+                if (tempclient != null)
+                {
+                    tempclient.Close();
+                    tempclient = null;
+                }
+                usersInfo.Find(c => c.player == pplayer).client = null;
+
             }
             catch (Exception e)
             {
                 Helper.LOG(Compiler.LogPath, "Ошибка в функции PlayerDisconnect: " + e.Message);
             }
-            tempclient = null;
-            usersInfo.Find(c => c.player == pplayer).client = null;
         }
 
-
-
-        /// <summary>
-        /// Получить информацию о текущей игры для последующего создания сохранений и т.п.
-        /// </summary>
-        /// <returns></returns>
-        public string GetInfoAboutThisGame()
-        {
-            DateTime time = DateTime.Now;
-            string time_str = time.ToString("dd-MM-yyyy H-mm-ss");
-
-            string gameStatesFileName = "Game - (";
-            if (gameBoardStates[0].Players.Count > 1)
-            {
-                for (int i = 0; i < gameBoardStates[0].Players.Count - 1; i++)
-                {
-                    var tplayer = gameBoardStates[0].Players[i];
-                    gameStatesFileName += tplayer.Name + " vs ";
-                }
-            }
-            gameStatesFileName += gameBoardStates[0].Players[gameBoardStates[0].Players.Count - 1].Name + ")";
-
-
-            gameStatesFileName += " " + time_str;
-
-            return gameStatesFileName;
-        }
 
         /// <summary>
         /// Попытаться скомпилировать и запустить стратегию пользователя
@@ -1208,7 +1231,6 @@ namespace Bomber_console_server
                         }
                     }
 
-
                 }
 
             }
@@ -1223,6 +1245,22 @@ namespace Bomber_console_server
         {
             tempGB = null;
             tempGB = (GameBoard)gb.Clone();
+
+            for (int i = 0; i < tempGB.Cells.GetLength(0); i++)
+            {
+                for (int j = 0; j < tempGB.Cells.GetLength(1); j++)
+                {
+                    if (tempGB.Cells[i,j].Type != CellType.Free)
+                    {
+
+                    }
+                    else
+                    {
+
+                    }
+                }
+            }
+
             SetXYInfo();
             gameBoardStates.Add(tempGB);
             gameboardjson = JsonConvert.SerializeObject(tempGB);
@@ -1337,6 +1375,7 @@ namespace Bomber_console_server
             }
             Prioritets[0] = last;
         }
+
 
 
         public void SetPrioritets()
