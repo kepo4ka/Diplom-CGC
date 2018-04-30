@@ -129,6 +129,26 @@ namespace AutoCompiler
         }
 
 
+        public bool UpdateUnselectAnotherSources(int user_id)
+        {
+            string sql = $"UPDATE sources SET used=0 WHERE user_id=@user_id";
+
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = myConnection;
+            cmd.CommandText = sql;
+
+            cmd.Parameters.AddWithValue("@user_id", SqlDbType.Int).Value = user_id;
+
+            int affected_rows = cmd.ExecuteNonQuery();
+            if (affected_rows == 1)
+            {
+                return true;
+            }
+            return false;
+        }
+
+
+
         public bool SetErrorStatus(int id, string error)
         {           
             string sql = $"UPDATE sources SET error='{error}', status='error' WHERE id=@id";

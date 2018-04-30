@@ -57,6 +57,7 @@ namespace AutoCompiler
                             CompileProccess(fullpath);
 
                             Helper.LOG($"Compile Success: user_id - {user_id}, source_id - {source_id}");
+                            mysql.UpdateUnselectAnotherSources(user_id);
                             mysql.SetCompiledStatus(source_id);
                         }
                         catch (Exception er)

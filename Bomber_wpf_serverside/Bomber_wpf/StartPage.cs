@@ -148,7 +148,7 @@ namespace Bomber_wpf
                     break;
 
                 case "gz":
-                    string jsonPath = psource.Replace(".gz", ".dat");
+                    string jsonPath = psource.Replace(".gz", ".json");
                     Helper.Decompress(psource, jsonPath);
                     gameBoardStates = GetGameBoardStatesFromFile(jsonPath);
                     break;

@@ -55,25 +55,27 @@
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.players_listView);
-            this.groupBox1.Location = new System.Drawing.Point(456, 12);
+            this.groupBox1.Location = new System.Drawing.Point(456, 0);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(564, 393);
+            this.groupBox1.Size = new System.Drawing.Size(564, 394);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Игроки";
             // 
             // players_listView
             // 
+            this.players_listView.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
+            this.players_listView.ForeColor = System.Drawing.SystemColors.Info;
             this.players_listView.GridLines = true;
             this.players_listView.Location = new System.Drawing.Point(6, 19);
             this.players_listView.Name = "players_listView";
-            this.players_listView.Size = new System.Drawing.Size(552, 368);
+            this.players_listView.Size = new System.Drawing.Size(552, 369);
             this.players_listView.TabIndex = 0;
             this.players_listView.UseCompatibleStateImageBehavior = false;
             // 
             // fast_btn
             // 
-            this.fast_btn.Location = new System.Drawing.Point(851, 411);
+            this.fast_btn.Location = new System.Drawing.Point(851, 400);
             this.fast_btn.Name = "fast_btn";
             this.fast_btn.Size = new System.Drawing.Size(169, 39);
             this.fast_btn.TabIndex = 3;
@@ -83,7 +85,7 @@
             // 
             // control_btn
             // 
-            this.control_btn.Location = new System.Drawing.Point(631, 411);
+            this.control_btn.Location = new System.Drawing.Point(631, 400);
             this.control_btn.Name = "control_btn";
             this.control_btn.Size = new System.Drawing.Size(214, 39);
             this.control_btn.TabIndex = 4;
@@ -93,7 +95,7 @@
             // 
             // slow_btn
             // 
-            this.slow_btn.Location = new System.Drawing.Point(456, 411);
+            this.slow_btn.Location = new System.Drawing.Point(456, 400);
             this.slow_btn.Name = "slow_btn";
             this.slow_btn.Size = new System.Drawing.Size(169, 39);
             this.slow_btn.TabIndex = 5;
@@ -116,13 +118,14 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1032, 641);
+            this.ClientSize = new System.Drawing.Size(1032, 450);
             this.Controls.Add(this.log_box);
             this.Controls.Add(this.slow_btn);
             this.Controls.Add(this.control_btn);
             this.Controls.Add(this.fast_btn);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.panel1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "Form1";
             this.Text = "Bomberman Game";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);

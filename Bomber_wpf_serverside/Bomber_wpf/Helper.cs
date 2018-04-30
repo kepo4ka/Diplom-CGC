@@ -376,5 +376,33 @@ namespace Bomber_wpf
                 }
             }
         }
+
+
+        public static string ActionToSymbol(PlayerAction pa)
+        {
+            string symbol = "";
+            switch (pa)
+            {
+                case PlayerAction.Wait:
+                    symbol = "W";
+                    break;
+                case PlayerAction.Bomb:
+                    symbol = "B";
+                    break;
+                case PlayerAction.Left:
+                    symbol = "L";
+                    break;
+                case PlayerAction.Up:
+                    symbol = "U";
+                    break;
+                case PlayerAction.Right:
+                    symbol = "R";
+                    break;
+                case PlayerAction.Down:
+                    symbol = "D";
+                    break;
+            }
+            return symbol;
+        }
     }
 }

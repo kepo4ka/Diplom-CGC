@@ -49,8 +49,8 @@
             this.path1_lab = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.path1_btn = new System.Windows.Forms.Button();
-            this.load_custom_map = new System.Windows.Forms.Button();
             this.realGameButton = new System.Windows.Forms.Button();
+            this.load_custom_map = new System.Windows.Forms.Button();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -71,7 +71,7 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.groupBox2.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.groupBox2.Controls.Add(this.savedGameButton);
             this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupBox2.Location = new System.Drawing.Point(12, 319);
@@ -101,11 +101,13 @@
             // 
             // groupBox6
             // 
-            this.groupBox6.BackColor = System.Drawing.Color.DimGray;
+            this.groupBox6.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.groupBox6.Controls.Add(this.comboBox4);
             this.groupBox6.Controls.Add(this.label2);
             this.groupBox6.Controls.Add(this.path4_btn);
             this.groupBox6.Controls.Add(this.path4_lab);
+            this.groupBox6.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
+            this.groupBox6.ForeColor = System.Drawing.Color.DimGray;
             this.groupBox6.Location = new System.Drawing.Point(250, 171);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Size = new System.Drawing.Size(230, 87);
@@ -115,6 +117,7 @@
             // 
             // comboBox4
             // 
+            this.comboBox4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.comboBox4.FormattingEnabled = true;
             this.comboBox4.Items.AddRange(new object[] {
             "Не использовать этого игрока",
@@ -132,12 +135,14 @@
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(6, 74);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(0, 13);
+            this.label2.Size = new System.Drawing.Size(0, 17);
             this.label2.TabIndex = 4;
             // 
             // path4_btn
             // 
             this.path4_btn.Enabled = false;
+            this.path4_btn.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.path4_btn.ForeColor = System.Drawing.SystemColors.ControlText;
             this.path4_btn.Location = new System.Drawing.Point(6, 45);
             this.path4_btn.Name = "path4_btn";
             this.path4_btn.Size = new System.Drawing.Size(218, 24);
@@ -151,16 +156,18 @@
             this.path4_lab.AutoSize = true;
             this.path4_lab.Location = new System.Drawing.Point(6, 72);
             this.path4_lab.Name = "path4_lab";
-            this.path4_lab.Size = new System.Drawing.Size(0, 13);
+            this.path4_lab.Size = new System.Drawing.Size(0, 17);
             this.path4_lab.TabIndex = 8;
             // 
             // groupBox5
             // 
-            this.groupBox5.BackColor = System.Drawing.Color.DodgerBlue;
+            this.groupBox5.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.groupBox5.Controls.Add(this.comboBox3);
             this.groupBox5.Controls.Add(this.label1);
             this.groupBox5.Controls.Add(this.path3_btn);
             this.groupBox5.Controls.Add(this.path3_lab);
+            this.groupBox5.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
+            this.groupBox5.ForeColor = System.Drawing.Color.DodgerBlue;
             this.groupBox5.Location = new System.Drawing.Point(10, 171);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(230, 87);
@@ -170,6 +177,7 @@
             // 
             // comboBox3
             // 
+            this.comboBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.comboBox3.FormattingEnabled = true;
             this.comboBox3.Items.AddRange(new object[] {
             "Не использовать этого игрока",
@@ -187,12 +195,14 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(6, 74);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(0, 13);
+            this.label1.Size = new System.Drawing.Size(0, 17);
             this.label1.TabIndex = 4;
             // 
             // path3_btn
             // 
             this.path3_btn.Enabled = false;
+            this.path3_btn.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.path3_btn.ForeColor = System.Drawing.SystemColors.ControlText;
             this.path3_btn.Location = new System.Drawing.Point(6, 45);
             this.path3_btn.Name = "path3_btn";
             this.path3_btn.Size = new System.Drawing.Size(218, 24);
@@ -206,15 +216,17 @@
             this.path3_lab.AutoSize = true;
             this.path3_lab.Location = new System.Drawing.Point(7, 72);
             this.path3_lab.Name = "path3_lab";
-            this.path3_lab.Size = new System.Drawing.Size(0, 13);
+            this.path3_lab.Size = new System.Drawing.Size(0, 17);
             this.path3_lab.TabIndex = 6;
             // 
             // groupBox4
             // 
-            this.groupBox4.BackColor = System.Drawing.Color.Green;
+            this.groupBox4.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.groupBox4.Controls.Add(this.path2_btn);
             this.groupBox4.Controls.Add(this.comboBox2);
             this.groupBox4.Controls.Add(this.path2_lab);
+            this.groupBox4.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
+            this.groupBox4.ForeColor = System.Drawing.Color.LimeGreen;
             this.groupBox4.Location = new System.Drawing.Point(250, 78);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(230, 87);
@@ -225,6 +237,8 @@
             // path2_btn
             // 
             this.path2_btn.Enabled = false;
+            this.path2_btn.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.path2_btn.ForeColor = System.Drawing.SystemColors.ControlText;
             this.path2_btn.Location = new System.Drawing.Point(6, 47);
             this.path2_btn.Name = "path2_btn";
             this.path2_btn.Size = new System.Drawing.Size(218, 24);
@@ -234,6 +248,7 @@
             // 
             // comboBox2
             // 
+            this.comboBox2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.comboBox2.FormattingEnabled = true;
             this.comboBox2.Items.AddRange(new object[] {
             "Не использовать этого игрока",
@@ -251,15 +266,17 @@
             this.path2_lab.AutoSize = true;
             this.path2_lab.Location = new System.Drawing.Point(6, 74);
             this.path2_lab.Name = "path2_lab";
-            this.path2_lab.Size = new System.Drawing.Size(0, 13);
+            this.path2_lab.Size = new System.Drawing.Size(0, 17);
             this.path2_lab.TabIndex = 4;
             // 
             // groupBox3
             // 
-            this.groupBox3.BackColor = System.Drawing.Color.PaleVioletRed;
+            this.groupBox3.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.groupBox3.Controls.Add(this.path1_lab);
             this.groupBox3.Controls.Add(this.comboBox1);
             this.groupBox3.Controls.Add(this.path1_btn);
+            this.groupBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
+            this.groupBox3.ForeColor = System.Drawing.Color.Crimson;
             this.groupBox3.Location = new System.Drawing.Point(10, 78);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(230, 87);
@@ -272,12 +289,14 @@
             this.path1_lab.AutoSize = true;
             this.path1_lab.Location = new System.Drawing.Point(7, 72);
             this.path1_lab.Name = "path1_lab";
-            this.path1_lab.Size = new System.Drawing.Size(0, 13);
+            this.path1_lab.Size = new System.Drawing.Size(0, 17);
             this.path1_lab.TabIndex = 3;
             this.path1_lab.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // comboBox1
             // 
+            this.comboBox1.BackColor = System.Drawing.SystemColors.Window;
+            this.comboBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Items.AddRange(new object[] {
             "Не использовать этого игрока",
@@ -292,23 +311,15 @@
             // 
             // path1_btn
             // 
+            this.path1_btn.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.path1_btn.ForeColor = System.Drawing.SystemColors.ControlText;
             this.path1_btn.Location = new System.Drawing.Point(6, 45);
             this.path1_btn.Name = "path1_btn";
             this.path1_btn.Size = new System.Drawing.Size(218, 26);
             this.path1_btn.TabIndex = 1;
             this.path1_btn.Text = "Выбрать файл";
-            this.path1_btn.UseVisualStyleBackColor = true;
+            this.path1_btn.UseVisualStyleBackColor = false;
             this.path1_btn.Click += new System.EventHandler(this.path1_btn_Click);
-            // 
-            // load_custom_map
-            // 
-            this.load_custom_map.Location = new System.Drawing.Point(171, 264);
-            this.load_custom_map.Name = "load_custom_map";
-            this.load_custom_map.Size = new System.Drawing.Size(149, 31);
-            this.load_custom_map.TabIndex = 0;
-            this.load_custom_map.Text = "Загрузить Свою карту";
-            this.load_custom_map.UseVisualStyleBackColor = true;
-            this.load_custom_map.Click += new System.EventHandler(this.load_custom_map_Click);
             // 
             // realGameButton
             // 
@@ -320,6 +331,16 @@
             this.realGameButton.UseVisualStyleBackColor = true;
             this.realGameButton.Click += new System.EventHandler(this.realGameButton_Click);
             // 
+            // load_custom_map
+            // 
+            this.load_custom_map.Location = new System.Drawing.Point(171, 264);
+            this.load_custom_map.Name = "load_custom_map";
+            this.load_custom_map.Size = new System.Drawing.Size(149, 31);
+            this.load_custom_map.TabIndex = 0;
+            this.load_custom_map.Text = "Загрузить Свою карту";
+            this.load_custom_map.UseVisualStyleBackColor = true;
+            this.load_custom_map.Click += new System.EventHandler(this.load_custom_map_Click);
+            // 
             // StartPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -327,6 +348,7 @@
             this.ClientSize = new System.Drawing.Size(513, 394);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox2);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "StartPage";
             this.Text = "Bomberman Menu";
             this.groupBox2.ResumeLayout(false);

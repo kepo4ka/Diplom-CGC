@@ -126,9 +126,36 @@
   <ItemGroup>
     <Content Include="Properties\ClassLibrary_CGC.dll" />
     <Content Include="Properties\User_class.dll" />
+    <None Include="Resources\lava.png" />
+    <None Include="Resources\indescrible.png" />
+    <None Include="Resources\describle.png" />
+    <None Include="Resources\radius.png" />
+    <None Include="Resources\ammo.png" />
+    <None Include="Resources\bombmiddle.png" />
+    <None Include="Resources\bombmini.png" />
+    <None Include="Resources\bomb.png" />
+    <None Include="Resources\default.png" />
+    <None Include="Resources\wait4.png" />
+    <None Include="Resources\wait3.png" />
+    <None Include="Resources\wait2.png" />
+    <None Include="Resources\wait1.png" />
+    <None Include="Resources\up4.png" />
+    <None Include="Resources\up3.png" />
+    <None Include="Resources\up2.png" />
+    <None Include="Resources\up1.png" />
+    <None Include="Resources\right4.png" />
+    <None Include="Resources\right3.png" />
+    <None Include="Resources\right2.png" />
+    <None Include="Resources\right1.png" />
+    <None Include="Resources\left4.png" />
+    <None Include="Resources\left3.png" />
+    <None Include="Resources\left2.png" />
+    <None Include="Resources\left1.png" />
+    <None Include="Resources\down4.png" />
+    <None Include="Resources\down3.png" />
+    <None Include="Resources\down2.png" />
+    <None Include="Resources\down1.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

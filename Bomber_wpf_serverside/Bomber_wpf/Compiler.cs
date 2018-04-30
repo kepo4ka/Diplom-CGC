@@ -11,7 +11,7 @@ namespace Bomber_wpf
     {
       public static  string main_Path;
         static string CscEXE_Path = CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
-        static string assets_Path;
+        public static string assets_Path;
 
 
         public static string LogPath = "log.txt";
@@ -78,7 +78,7 @@ namespace Bomber_wpf
             userClass_Path = Helper.SpliteEndPath(_userClass_sourceName,true);
             TempGamePath = main_Path + "\\" + "compiler";         
             userClass_sourceName = Helper.SpliteEndPath(_userClass_sourceName) + ".cs";
-           
+            mapsPath = assets_Path + "\\" + "maps";
 
             user_directory_name = "User_" + i;
         }    

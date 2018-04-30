@@ -31,10 +31,20 @@ namespace Bomber_wpf
         int GameTimer;
         int TimeLimit = Config.one_tick_client_wait_time;
         int globalTimeLimit = Config.all_game_client_max_wait_timeout;
+        string MapPath;
+
+        string gameStaterVisualizerFileName = "Visualizer.dat";
+        string gameStaterVisualizerJSONFileName = "Visualizer.json";
+
+        string UserCommands = "UserCommands.json";
+        string UserCommandsUnity = "UserCommandsUnity.txt";
+
+        string gameResultsFileName = "gameResults.json";
+
 
         Color[] player_colors = new Color[4]
         {
-            Color.PaleVioletRed, Color.Green, Color.DodgerBlue, Color.DimGray
+            Color.Crimson, Color.LimeGreen, Color.DodgerBlue, Color.DimGray
         };
 
 
@@ -78,9 +88,10 @@ namespace Bomber_wpf
             serverStart();
 
             startPage = pstartPage;
+            MapPath = mapPath;
             Compiler cmp = new Compiler();
 
-            InitGame(mapPath);
+            InitGame();
 
         }
 
@@ -91,6 +102,7 @@ namespace Bomber_wpf
         /// <param name="pgameBoardStatates"></param>
         public Form1(StartPage pstartPage, List<GameBoard> pgameBoardStatates)
         {
+            Compiler cmp = new Compiler();
             InitializeComponent();
             g = panel1.CreateGraphics();
             p = new Pen(Color.Black);
@@ -172,7 +184,7 @@ namespace Bomber_wpf
             pplayer.ID = i.ToString();
 
 
-            pplayer.Health = 50;
+            pplayer.Health = 10;
             pplayer.BangRadius = Config.bang_start_radius;
             pplayer.BombsCount = Config.player_bombs_count_start;
 
@@ -277,17 +289,17 @@ namespace Bomber_wpf
         }
 
 
-        public int[,] LoadMap(string mapPath)
+        public int[,] LoadMap()
         {
             int[,] gameboardpseudo = null;
             try
             {
-                if (String.IsNullOrWhiteSpace(mapPath))
+                if (String.IsNullOrWhiteSpace(MapPath))
                 {
                     throw new Exception("Неверное имя файла");
                 }
 
-                gameboardpseudo = GetGameboardFromFile(mapPath);
+                gameboardpseudo = GetGameboardFromFile(MapPath);
                 return gameboardpseudo;
             }
             catch (Exception er)
@@ -303,8 +315,10 @@ namespace Bomber_wpf
                 {
                     throw new Exception($"Не удалось найти ни одной карты в папке {Compiler.mapsPath}");
                 }
+                MapPath = files[rn.Next(0, files.Length)].FullName;
 
-                gameboardpseudo = GetGameboardFromFile(files[rn.Next(0, files.Length)].FullName);
+
+                gameboardpseudo = GetGameboardFromFile(MapPath);
                 return gameboardpseudo;
             }
             catch (Exception er)
@@ -320,7 +334,7 @@ namespace Bomber_wpf
         /// <summary>
         /// Начать сеанс игры
         /// </summary>
-        public void InitGame(string mapPath)
+        public void InitGame()
         {
             isGameOver = false;
 
@@ -330,7 +344,7 @@ namespace Bomber_wpf
             DestroyedPlayers = new List<Player>();
             DestroyedCells = new List<Cell>();
 
-            gbpseudo = LoadMap(mapPath);
+            gbpseudo = LoadMap();
 
             if (gbpseudo == null)
             {
@@ -592,9 +606,9 @@ namespace Bomber_wpf
             this.Text = "Тик - " + GameTimer;
             DrawCells();
             DrawLavas();
-            DrawBonuses();
-            DrawPlayers();
+            DrawBonuses();         
             DrawBombs();
+            DrawPlayers();
             DrawGrid();
         }
 
@@ -611,16 +625,13 @@ namespace Bomber_wpf
                 {
                     continue;
                 }
-                Color tcolor;
+                byte type = 1;
+
                 if (tbonus.Type == BonusType.Ammunition)
                 {
-                    tcolor = Config.bonus_big;
+                    type = 2;
                 }
-                else
-                {
-                    tcolor = Config.bonus_fast;
-                }
-                PaintEllipse(tbonus.X, tbonus.Y, tcolor);
+                PaintEllipse(tbonus.X, tbonus.Y, type);
             }
         }
 
@@ -634,7 +645,7 @@ namespace Bomber_wpf
                 var tplayer = gb.Players[i];
                 if (tplayer.Health > 0)
                 {
-                    PaintPlayer(tplayer.X, tplayer.Y, player_colors[i]);
+                    PaintPlayer(tplayer.X, tplayer.Y, gb.Players[i].ACTION, i);
                 }
             }
         }
@@ -659,7 +670,7 @@ namespace Bomber_wpf
             for (int k = 0; k < gb.Lavas.Count; k++)
             {
                 var tlava = gb.Lavas[k];
-                PaintRect(tlava.X, tlava.Y, Config.lava_color);
+                PaintRect(tlava.X, tlava.Y, 3);
             }
         }
 
@@ -721,6 +732,7 @@ namespace Bomber_wpf
 
             if (isGameOver == false)
             {
+               
                 GameProccess();
                 DrawAll();
                 GameboardInfoProccess();
@@ -998,11 +1010,7 @@ namespace Bomber_wpf
                 Directory.CreateDirectory(gameResultDirectoryName);
 
 
-                string gameStaterVisualizerFileName = "Visualizer.dat";
-                string gameStaterVisualizerJSONFileName = "Visualizer.json";
-                string userComandsFileName = "UserCommands.json";
 
-                string gameResultsFileName = "gameResults.json";
 
                 BinaryFormatter form = new BinaryFormatter();
                 using (FileStream fs = new FileStream($"{gameResultDirectoryName}\\{gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
@@ -1025,14 +1033,57 @@ namespace Bomber_wpf
                     sw.Write(GameResultsJson);
                 }
 
-                using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{userComandsFileName}", false))
+                using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{UserCommands}", false))
                 {
                     sw.AutoFlush = true;
                     string allTicksPlayersStats = JsonConvert.SerializeObject(GetPlayersInfoAllTicks());
                     sw.Write(allTicksPlayersStats);
                 }
-
                 File.Copy($"{Compiler.LogPath}", $"{gameResultDirectoryName}\\log.txt");
+
+
+                if (String.IsNullOrWhiteSpace(MapPath))
+                {
+                    return;
+                }
+
+                using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{UserCommandsUnity}", false))
+                {
+                    sw.AutoFlush = true;
+                                        
+                    sw.WriteLine(gameBoardStates.Count);
+
+                    string players = "";
+                    string prioritets = "";
+                    for (int i = 0; i < gb.Players.Count; i++)
+                    {
+                        prioritets += Prioritets[i] + " ";
+                        players += gb.Players[i].Name + " ";
+                    }
+                    sw.WriteLine(players);
+                    sw.WriteLine(prioritets);
+
+
+                    sw.WriteLine(Helper.SpliteEndPath(MapPath));
+
+
+                    for (int i = 0; i < gameBoardStates.Count; i++)
+                    {
+                        GameBoard tempgb = gameBoardStates[i];
+                        string actions = "";
+
+                        for (int j = 0; j < tempgb.Players.Count; j++)
+                        {
+                            actions += Helper.ActionToSymbol(tempgb.Players[j].ACTION) + " ";
+                        }
+                        sw.WriteLine(actions);
+                    }
+
+                }
+
+
+
+
             }
             catch (Exception er)
             {
@@ -1040,7 +1091,7 @@ namespace Bomber_wpf
             }
         }
 
-
+      
 
 
         /// <summary>
@@ -1118,7 +1169,7 @@ namespace Bomber_wpf
                 if (tplayer is Bot)
                 {
                     tplayer.ACTION = tplayer.Play();
-                    tplayer.ACTION = PlayerAction.Down;
+                 //   tplayer.ACTION = PlayerAction.Down;
                 }
 
                 PlayerMove(tplayer);
@@ -1274,7 +1325,7 @@ namespace Bomber_wpf
                         tvitya.BombsCount++;
                     }
 
-                    //    gb.Bonuses.Remove(tempbonus[i, j]);
+                    gb.Bonuses.Remove(tempbonus[i, j]);
                     tempbonus[i, j] = null;
                 }
             }
@@ -1698,13 +1749,14 @@ namespace Bomber_wpf
                 {
                     var tcell = gb.Cells[i, j];
 
+                    
                     if (tcell.Type == CellType.Destructible)
                     {
-                        PaintRect(tcell.X, tcell.Y, Config.cell_destructible_color);
+                        PaintRect(tcell.X, tcell.Y, 1);
                     }
                     else if (tcell.Type == CellType.Indestructible)
                     {
-                        PaintRect(tcell.X, tcell.Y, Config.cell_indestructible_color);
+                        PaintRect(tcell.X, tcell.Y, 2);
                     }
                 }
             }
@@ -1800,8 +1852,11 @@ namespace Bomber_wpf
         /// <param name="cl"></param>
         public void PaintBomb(int x, int y, Color cl)
         {
-            sb = new SolidBrush(cl);
-            g.FillEllipse(new SolidBrush(cl), x * cw + cw / 4, y * cw + cw / 4, cw - cw / 2, cw - cw / 2);
+            Bitmap bombmodel = new Bitmap(Properties.Resources.bombmiddle);
+            g.DrawImage(bombmodel, x * cw, y * cw);
+
+         //   sb = new SolidBrush(cl);
+         //   g.FillEllipse(new SolidBrush(cl), x * cw + cw / 4, y * cw + cw / 4, cw - cw / 2, cw - cw / 2);
         }
 
         /// <summary>
@@ -1810,10 +1865,20 @@ namespace Bomber_wpf
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="cl"></param>
-        public void PaintEllipse(int x, int y, Color cl)
+        public void PaintEllipse(int x, int y, byte i)
         {
-            sb = new SolidBrush(cl);
-            g.FillEllipse(new SolidBrush(cl), x * cw, y * cw, cw, cw);
+            Bitmap bonusmodel;
+            if (i==1)
+            {
+                bonusmodel = new Bitmap(Properties.Resources.ammo);
+            }
+            else
+            {
+                bonusmodel = new Bitmap(Properties.Resources.radius);
+            }
+            g.DrawImage(bonusmodel, x * cw, y * cw);
+            //sb = new SolidBrush(cl);
+          //  g.FillEllipse(new SolidBrush(cl), x * cw, y * cw, cw, cw);
         }
 
 
@@ -1823,14 +1888,117 @@ namespace Bomber_wpf
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="cl"></param>
-        public void PaintPlayer(int x, int y, Color cl)
+        public void PaintPlayer(int x, int y, PlayerAction pa, int i)
         {
-            sb = new SolidBrush(cl);
+
+            Bitmap playermodel = SelectDrawPlayerModel(pa, i);
+            g.DrawImage(playermodel, x * cw, y * cw);
+
+            // sb = new SolidBrush(cl);
             float zoomed = Convert.ToSingle(0.7);
-            g.FillEllipse(new SolidBrush(Color.Black), x * cw, y * cw, cw, cw);
-
-            g.FillEllipse(new SolidBrush(cl), x * cw + cw / 10, y * cw + cw / 10, cw - cw / 5, cw - cw / 5);
+         //   g.FillEllipse(new SolidBrush(Color.Black), x * cw, y * cw, cw, cw);   
+          
+          //  g.FillEllipse(new SolidBrush(cl), x * cw + cw / 10, y * cw + cw / 10, cw - cw / 5, cw - cw / 5);
         }
+
+
+        public Bitmap SelectDrawPlayerModel(PlayerAction pa, int i)
+        {
+            Bitmap playerImage = new Bitmap(Properties.Resources._default);
+            switch (i)
+            {
+                case 0:
+                    switch (pa)
+                    {
+                        case PlayerAction.Bomb:
+                        case PlayerAction.Wait:
+                            playerImage = new Bitmap(Bomber_wpf.Properties.Resources.wait1);
+                            break;
+                        case PlayerAction.Down:
+                            playerImage = new Bitmap(Properties.Resources.down1);
+                            break;
+                        case PlayerAction.Left:
+                            playerImage = new Bitmap(Properties.Resources.left1);
+                            break;
+                        case PlayerAction.Up:
+                            playerImage = new Bitmap(Properties.Resources.up1);
+                            break;
+                        case PlayerAction.Right:
+                            playerImage = new Bitmap(Properties.Resources.right1);
+                            break;
+                    }
+                    break;
+                case 1:
+                    switch (pa)
+                    {
+                        case PlayerAction.Bomb:
+                        case PlayerAction.Wait:
+                            playerImage = new Bitmap(Bomber_wpf.Properties.Resources.wait2);
+                            break;
+                        case PlayerAction.Down:
+                            playerImage = new Bitmap(Properties.Resources.down2);
+                            break;
+                        case PlayerAction.Left:
+                            playerImage = new Bitmap(Properties.Resources.left2);
+                            break;
+                        case PlayerAction.Up:
+                            playerImage = new Bitmap(Properties.Resources.up2);
+                            break;
+                        case PlayerAction.Right:
+                            playerImage = new Bitmap(Properties.Resources.right2);
+                            break;
+                    }
+                    break;
+                case 2:
+                    switch (pa)
+                    {
+                        case PlayerAction.Bomb:
+                        case PlayerAction.Wait:
+                            playerImage = new Bitmap(Bomber_wpf.Properties.Resources.wait3);
+                            break;
+                        case PlayerAction.Down:
+                            playerImage = new Bitmap(Properties.Resources.down3);
+                            break;
+                        case PlayerAction.Left:
+                            playerImage = new Bitmap(Properties.Resources.left3);
+                            break;
+                        case PlayerAction.Up:
+                            playerImage = new Bitmap(Properties.Resources.up3);
+                            break;
+                        case PlayerAction.Right:
+                            playerImage = new Bitmap(Properties.Resources.right3);
+                            break;
+                    }
+                    break;
+
+                case 3:
+                    switch (pa)
+                    {
+                        case PlayerAction.Bomb:
+                        case PlayerAction.Wait:
+                            playerImage = new Bitmap(Bomber_wpf.Properties.Resources.wait4);
+                            break;
+                        case PlayerAction.Down:
+                            playerImage = new Bitmap(Properties.Resources.down4);
+                            break;
+                        case PlayerAction.Left:
+                            playerImage = new Bitmap(Properties.Resources.left4);
+                            break;
+                        case PlayerAction.Up:
+                            playerImage = new Bitmap(Properties.Resources.up4);
+                            break;
+                        case PlayerAction.Right:
+                            playerImage = new Bitmap(Properties.Resources.right4);
+                            break;
+                    }
+                    break;
+                 
+            }
+
+
+            return playerImage;
+        }
+
 
 
         /// <summary>
@@ -1839,11 +2007,28 @@ namespace Bomber_wpf
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="cl"></param>
-        public void PaintRect(int x, int y, Color cl)
+        public void PaintRect(int x, int y, byte type)
         {
-            sb = new SolidBrush(cl);
-            g.DrawRectangle(p, x * cw, y * cw, cw, cw);
-            g.FillRectangle(sb, x * cw, y * cw, cw, cw);
+            Bitmap block = new Bitmap(Properties.Resources.indescrible);
+            switch (type)
+            {
+                case 1:
+                    block = new Bitmap(Properties.Resources.indescrible);
+                    break;
+                case 2:
+                    block = new Bitmap(Properties.Resources.describle);
+                    break;
+                case 3:
+                    block = new Bitmap(Properties.Resources.lava);
+                    break;
+            }
+
+            g.DrawImage(block, x * cw, y * cw);
+
+
+            //sb = new SolidBrush(cl);
+            //g.DrawRectangle(p, x * cw, y * cw, cw, cw);
+            //g.FillRectangle(sb, x * cw, y * cw, cw, cw);
         }
 
 
