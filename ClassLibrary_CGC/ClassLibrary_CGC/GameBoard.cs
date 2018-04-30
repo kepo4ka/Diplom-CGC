@@ -1017,7 +1017,7 @@ namespace ClassLibrary_CGC
             Player = null;
             Bomb = null;
             Bonus = null;
-            lavas = null;
+            lavas = new List<Lava>();
         }
 
         public XYInfo(XYInfo origin)
