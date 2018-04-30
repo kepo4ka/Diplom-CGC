@@ -720,6 +720,8 @@ namespace Bomber_wpf
             gameBoardStates.Add(tempGBmin);
             SetXYInfo();
             gameboardjson = JsonConvert.SerializeObject(tempGB);
+
+            string compress = Helper.CompressString(gameboardjson);  
         }
 
 
