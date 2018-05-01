@@ -680,6 +680,7 @@ namespace Bomber_wpf
         public void GameProccess()
         {
             GameTimer--;
+            gb.tick++;
 
             PlayerProccess();
             PlayerBonusCollision();
@@ -1168,12 +1169,17 @@ namespace Bomber_wpf
             {
                 Player tplayer = gb.Players[Prioritets[i]];
 
+                if (tplayer.Health < 1)
+                {
+                    continue;
+                }
+
                 if (tplayer is Bot)
                 {
                     tplayer.ACTION = tplayer.Play();
                  //   tplayer.ACTION = PlayerAction.Down;
                 }
-
+                
                 PlayerMove(tplayer);
             }
         }
@@ -2218,10 +2224,12 @@ namespace Bomber_wpf
                         {
                             throw new Exception($"Ошибка при парсинге карты: нечисловое значение [{i},{j}");
                         }
-                        gameboardpseudo[i, j] = t;
+                        gameboardpseudo[gameboardpseudo.GetLength(0)-i-1, j] = t;
                     }
                 }
             }
+
+            
 
             gameboardpseudo[0, 0] = gameboardpseudo[0, 0] == 5 ? 5 : 0;
             gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
