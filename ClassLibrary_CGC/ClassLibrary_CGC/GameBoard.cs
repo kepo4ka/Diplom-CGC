@@ -30,6 +30,7 @@ namespace ClassLibrary_CGC
         private List<Bomb> bombs;
         private List<Lava> lavas;
         public XYInfo[,] XYinfo = new XYInfo[15, 15];
+        public int Tick = 0;
 
         Random rn = new Random();
 
