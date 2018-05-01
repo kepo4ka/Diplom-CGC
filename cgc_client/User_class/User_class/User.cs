@@ -9,6 +9,8 @@ namespace User_class
     [Serializable]
     public class User : Player
     {
+        public GameBoard gameboard;
+
         /// <summary>
         /// Задать Команду на следующий Тик
         /// </summary>
@@ -20,12 +22,30 @@ namespace User_class
                 Код пользователя
             */
             Random rn = new Random();
-            PlayerAction action;
+            gameboard = gb;
 
+            PlayerAction action = PlayerAction.Wait;
 
-            action = (PlayerAction)rn.Next(0, 6);
+            if (X<1)
+            {
+                action = PlayerAction.Down;
+            }
+
+            if (gb.XYinfo[X,Y+1].Player != null || gb.Cells[X,Y+1].Type==CellType.Destructible)
+            {
+                action = PlayerAction.Bomb;
+            }
+            if (gb.XYinfo[X,Y+1].Bomb != null || gb.XYinfo[X,Y].Bomb != null)
+            {
+                action = PlayerAction.Up;
+            }
+           
 
             return action;
         }
+
+
+        
+
     }
 }
