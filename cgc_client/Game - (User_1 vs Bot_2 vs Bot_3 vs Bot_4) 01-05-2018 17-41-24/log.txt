@@ -1,0 +1,200 @@
+[01-05-2018 17-35-35] : Не удалось загрузить Пользовальскую карту: Неверное имя файла 
+
+[01-05-2018 17-35-55] : 323486 
+
+[01-05-2018 17-40-58] : Не удалось загрузить Пользовальскую карту: Неверное имя файла 
+
+[01-05-2018 17-41-00] : SEND: gameboardjson length - 18351 
+
+[01-05-2018 17-41-00] : SEND: userjson length - 102 
+
+[01-05-2018 17-41-00] : User_1 = Bomb 
+
+[01-05-2018 17-41-00] : SEND: gameboardjson length - 18462 
+
+[01-05-2018 17-41-00] : SEND: userjson length - 102 
+
+[01-05-2018 17-41-00] : User_1 = Up 
+
+[01-05-2018 17-41-01] : SEND: gameboardjson length - 18462 
+
+[01-05-2018 17-41-01] : SEND: userjson length - 102 
+
+[01-05-2018 17-41-01] : User_1 = Up 
+
+[01-05-2018 17-41-01] : SEND: gameboardjson length - 18518 
+
+[01-05-2018 17-41-01] : SEND: userjson length - 102 
+
+[01-05-2018 17-41-01] : User_1 = Right 
+
+[01-05-2018 17-41-02] : SEND: gameboardjson length - 18776 
+
+[01-05-2018 17-41-02] : SEND: userjson length - 102 
+
+[01-05-2018 17-41-02] : User_1 = Bomb 
+
+[01-05-2018 17-41-02] : SEND: gameboardjson length - 18827 
+
+[01-05-2018 17-41-02] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-02] : User_1 = Bomb 
+
+[01-05-2018 17-41-02] : SEND: gameboardjson length - 18936 
+
+[01-05-2018 17-41-02] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-02] : User_1 = Up 
+
+[01-05-2018 17-41-03] : SEND: gameboardjson length - 18853 
+
+[01-05-2018 17-41-03] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-03] : User_1 = Left 
+
+[01-05-2018 17-41-03] : SEND: gameboardjson length - 18913 
+
+[01-05-2018 17-41-03] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-03] : User_1 = Wait 
+
+[01-05-2018 17-41-04] : SEND: gameboardjson length - 19117 
+
+[01-05-2018 17-41-04] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-04] : User_1 = Bomb 
+
+[01-05-2018 17-41-04] : SEND: gameboardjson length - 19086 
+
+[01-05-2018 17-41-04] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-04] : User_1 = Wait 
+
+[01-05-2018 17-41-04] : SEND: gameboardjson length - 19283 
+
+[01-05-2018 17-41-04] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-04] : User_1 = Bomb 
+
+[01-05-2018 17-41-05] : SEND: gameboardjson length - 19311 
+
+[01-05-2018 17-41-05] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-05] : User_1 = Left 
+
+[01-05-2018 17-41-05] : SEND: gameboardjson length - 19571 
+
+[01-05-2018 17-41-05] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-05] : User_1 = Bomb 
+
+[01-05-2018 17-41-06] : SEND: gameboardjson length - 19703 
+
+[01-05-2018 17-41-06] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-06] : User_1 = Up 
+
+[01-05-2018 17-41-06] : SEND: gameboardjson length - 19715 
+
+[01-05-2018 17-41-06] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-06] : User_1 = Down 
+
+[01-05-2018 17-41-06] : SEND: gameboardjson length - 19901 
+
+[01-05-2018 17-41-06] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-07] : User_1 = Left 
+
+[01-05-2018 17-41-07] : SEND: gameboardjson length - 20084 
+
+[01-05-2018 17-41-07] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-07] : User_1 = Right 
+
+[01-05-2018 17-41-07] : SEND: gameboardjson length - 20172 
+
+[01-05-2018 17-41-07] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-07] : User_1 = Down 
+
+[01-05-2018 17-41-08] : SEND: gameboardjson length - 20113 
+
+[01-05-2018 17-41-08] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-08] : User_1 = Left 
+
+[01-05-2018 17-41-08] : SEND: gameboardjson length - 20113 
+
+[01-05-2018 17-41-08] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-08] : User_1 = Down 
+
+[01-05-2018 17-41-09] : SEND: gameboardjson length - 20228 
+
+[01-05-2018 17-41-09] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-09] : User_1 = Wait 
+
+[01-05-2018 17-41-09] : SEND: gameboardjson length - 20454 
+
+[01-05-2018 17-41-09] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-09] : User_1 = Right 
+
+[01-05-2018 17-41-09] : SEND: gameboardjson length - 20626 
+
+[01-05-2018 17-41-09] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-09] : User_1 = Right 
+
+[01-05-2018 17-41-10] : SEND: gameboardjson length - 20568 
+
+[01-05-2018 17-41-10] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-10] : User_1 = Up 
+
+[01-05-2018 17-41-10] : SEND: gameboardjson length - 20716 
+
+[01-05-2018 17-41-10] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-10] : User_1 = Left 
+
+[01-05-2018 17-41-11] : SEND: gameboardjson length - 20848 
+
+[01-05-2018 17-41-11] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-11] : User_1 = Bomb 
+
+[01-05-2018 17-41-11] : SEND: gameboardjson length - 20828 
+
+[01-05-2018 17-41-11] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-11] : User_1 = Left 
+
+[01-05-2018 17-41-11] : SEND: gameboardjson length - 21141 
+
+[01-05-2018 17-41-11] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-11] : User_1 = Down 
+
+[01-05-2018 17-41-12] : SEND: gameboardjson length - 21356 
+
+[01-05-2018 17-41-12] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-12] : User_1 = Wait 
+
+[01-05-2018 17-41-12] : SEND: gameboardjson length - 21142 
+
+[01-05-2018 17-41-12] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-12] : User_1 = Bomb 
+
+[01-05-2018 17-41-13] : SEND: gameboardjson length - 21446 
+
+[01-05-2018 17-41-13] : SEND: userjson length - 101 
+
+[01-05-2018 17-41-13] : User_1 = Right 
+
+[01-05-2018 17-41-24] : 395566 
+

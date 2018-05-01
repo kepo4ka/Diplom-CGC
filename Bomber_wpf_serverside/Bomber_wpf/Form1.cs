@@ -186,6 +186,7 @@ namespace Bomber_wpf
 
             pplayer.Health = 10;
             pplayer.BangRadius = Config.bang_start_radius;
+            pplayer.BangRadius = 3;
             pplayer.BombsCount = Config.player_bombs_count_start;
 
             //switch (i)
@@ -2224,7 +2225,7 @@ namespace Bomber_wpf
                         {
                             throw new Exception($"Ошибка при парсинге карты: нечисловое значение [{i},{j}");
                         }
-                        gameboardpseudo[gameboardpseudo.GetLength(0)-i-1, j] = t;
+                        gameboardpseudo[i, j] = t;
                     }
                 }
             }
