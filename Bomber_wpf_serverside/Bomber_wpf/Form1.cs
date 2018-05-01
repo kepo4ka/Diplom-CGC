@@ -184,9 +184,9 @@ namespace Bomber_wpf
             pplayer.ID = i.ToString();
 
 
-            pplayer.Health = 10;
+            pplayer.Health = 1;
             pplayer.BangRadius = Config.bang_start_radius;
-            pplayer.BangRadius = 3;
+         //   pplayer.BangRadius = 3;
             pplayer.BombsCount = Config.player_bombs_count_start;
 
             //switch (i)
@@ -2022,10 +2022,10 @@ namespace Bomber_wpf
             switch (type)
             {
                 case 1:
-                    block = new Bitmap(Properties.Resources.indescrible);
+                    block = new Bitmap(Properties.Resources.describle);
                     break;
                 case 2:
-                    block = new Bitmap(Properties.Resources.describle);
+                    block = new Bitmap(Properties.Resources.indescrible);
                     break;
                 case 3:
                     block = new Bitmap(Properties.Resources.lava);
