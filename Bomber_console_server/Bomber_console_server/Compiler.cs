@@ -178,11 +178,25 @@ namespace Bomber_console_server
             {
                 using (StreamWriter sw = new StreamWriter($"{HostUserPath}\\{MyPath.userComandsFileName}", false))
                 {
+                    sw.AutoFlush = true;
                     string allTicksPlayersStats = JsonConvert.SerializeObject(players);
                     sw.Write(allTicksPlayersStats);
                 }
             }
         }
+
+
+        public static void SavePlayersAllCommandsUnity(string commands)
+        {
+            using (StreamWriter sw = new StreamWriter($"{HostUserPath}\\{MyPath.userComandsUnityFileName}", false))
+            {
+                sw.AutoFlush = true;
+                sw.WriteLine(commands);
+            }
+
+        }
+
+        
 
 
         public static void Compress()
@@ -240,7 +254,5 @@ namespace Bomber_console_server
             File.Copy($"{php_dir_path}\\{MyPath.exe_file_name}", $"{HostUserPath}\\{containerName}\\{MyPath.exe_file_name}");
             File.Copy($"{php_dir_path}\\{MyPath.userClass_dllName}", $"{HostUserPath}\\{containerName}\\{MyPath.userClass_dllName}");
         }
-
-
     }
 }

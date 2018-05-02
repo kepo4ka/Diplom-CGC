@@ -152,9 +152,9 @@ namespace ClassLibrary_CGC
             //    }
             //}
 
-            for (int i = 0; i< pole.GetLength(1);i++)
+            for (int i = 14; i>0;i--)
             {
-                for (int j = pole.GetLength(0) - 1; j > 0; j--)
+                for (int j = 14; j>0; j--)
                 {
 
                     switch (pole[j,i])

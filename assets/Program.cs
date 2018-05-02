@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using ClassLibrary_CGC;
-using User_class;
 using System.Threading;
 using System.Text;
-using System.Diagnostics;
 using System.IO;
-using Newtonsoft.Json;
+using System.IO.Compression;
 using System.Diagnostics;
+
+using ClassLibrary_CGC;
+using User_class;
+using Newtonsoft.Json;
+
 
 
 namespace User_client
@@ -65,6 +65,19 @@ namespace User_client
             //Console.ReadKey();
         }
 
+
+        /// <summary>
+        /// ФУНКЦИЯ, КОТОРАЯ ИСПОЛЬЗУЕТСЯ ДЛЯ ОТЛАДКИ
+        /// </summary>
+        public static void DEBUGMYCODE()
+        {
+            myUser.ACTION = myUser.Play(gameBoard);
+        }
+        
+
+
+
+
         public static void Log(string message)
         {
             using (StreamWriter sw = new StreamWriter("/cgc/log.txt", true))
@@ -105,33 +118,41 @@ namespace User_client
             {
                 try
                 {
+                    Log("new");
                     stream = server.GetStream();
-                    string gamestring = "";
-                    string gamestrLength = ReceiveMessage();
+                    int length = int.Parse(ReceiveMessage());
+                    Log("gamestring sended compressed length " + length);
+                    SendMessage("p");
 
-                    while (gamestring.Length < int.Parse(gamestrLength))
+                    string gamestring = "";
+
+                    while (gamestring.Length < length)
                     {
                         gamestring += ReceiveMessage();
-                        Log("recieved gamestring: " + gamestring.Length);
                     }
 
+                    Log("gamestring recieved compressed length " + gamestring.Length);
+
+                    gamestring = DecompressString(gamestring);
+
+                    Log("gamestring recieved decompressed length " + gamestring.Length);
+
+
                     SendMessage("p");
-                    Log("send p");
+
                     string userstr = ReceiveMessage();
-                   Log("recieved userstr: " + userstr.Length);
+
+                    userstr = DecompressString(userstr);
 
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
 
-                    SendMessage(myUser.Name);
-                    Log("send name : " + myUser.Name);
-                   string temp = ReceiveMessage();
-                    Log("recieve temp: " + temp);
 
-                    myUser.ACTION = myUser.Play(gameBoard);
+                    DEBUGMYCODE();
 
                     SendMessage((int)myUser.ACTION + "");
-                    Log("send action: " + (int)myUser.ACTION + "");
+
+                    Log("My ACTION: " + myUser.ACTION);
                 }
                 catch (Exception e)
                 {
@@ -144,7 +165,6 @@ namespace User_client
                 }
             }
         }
-
 
 
         static void SendMessage(string message)
@@ -171,65 +191,6 @@ namespace User_client
             return message;
         }
 
-
-        /// <summary>
-        /// Отправить данные на сервер
-        /// </summary>
-        static void SentInfo()
-        {
-            string action = EncryptAction(myUser.ACTION);
-            writeStream(server.GetStream(), action);
-        }
-
-
-
-
-        /// <summary>
-        /// Cчитать строку из сетевого потока
-        /// </summary>
-        /// <returns></returns>
-        public static string readStream(NetworkStream strm)
-        {
-            Byte[] serverData = new Byte[16];
-            int bytes = strm.Read(serverData, 0, serverData.Length);
-            string serverMessage = Encoding.ASCII.GetString(serverData, 0, bytes);
-            return serverMessage;
-        }
-
-        /// <summary>
-        /// Cчитать строку из сетевого потока
-        /// </summary>
-        /// <returns></returns>
-        public static string readStream(NetworkStream strm, int bytesLength)
-        {
-            Byte[] serverData = new Byte[bytesLength];
-            int bytes = strm.Read(serverData, 0, serverData.Length);
-            string serverMessage = Encoding.ASCII.GetString(serverData, 0, bytes);
-            return serverMessage;
-        }
-
-        /// <summary>
-        /// Отправить строку в сетевой поток
-        /// </summary>
-        /// <param name="message">Отправляемая строка</param>
-        public static void writeStream(NetworkStream strm, string message)
-        {
-            Byte[] data = Encoding.Unicode.GetBytes(message);
-
-            strm.Write(data, 0, data.Length);
-        }
-
-        /// <summary>
-        /// Отправить строку в сетевой поток
-        /// </summary>
-        /// <param name="message">Отправляемая строка</param>
-        public static void writeStream(NetworkStream strm, Byte[] data)
-        {
-            strm.Write(data, 0, data.Length);
-        }
-
-
-
         /// <summary>
         /// Распознать Команду из строки
         /// </summary>
@@ -255,6 +216,57 @@ namespace User_client
             int actionInt = (int)action;
             string actionString = actionInt.ToString();
             return actionString;
+        }
+
+        /// <summary>
+        /// Compresses the string.
+        /// </summary>
+        /// <param name="text">The text.</param>
+        /// <returns></returns>
+        public static string CompressString(string text)
+        {
+            byte[] buffer = Encoding.UTF8.GetBytes(text);
+            var memoryStream = new MemoryStream();
+            using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Compress, true))
+            {
+                gZipStream.Write(buffer, 0, buffer.Length);
+            }
+
+            memoryStream.Position = 0;
+
+            var compressedData = new byte[memoryStream.Length];
+            memoryStream.Read(compressedData, 0, compressedData.Length);
+
+            var gZipBuffer = new byte[compressedData.Length + 4];
+            Buffer.BlockCopy(compressedData, 0, gZipBuffer, 4, compressedData.Length);
+            Buffer.BlockCopy(BitConverter.GetBytes(buffer.Length), 0, gZipBuffer, 0, 4);
+            return Convert.ToBase64String(gZipBuffer);
+        }
+
+
+        /// <summary>
+        /// Decompresses the string.
+        /// </summary>
+        /// <param name="compressedText">The compressed text.</param>
+        /// <returns></returns>
+        public static string DecompressString(string compressedText)
+        {
+            byte[] gZipBuffer = Convert.FromBase64String(compressedText);
+            using (var memoryStream = new MemoryStream())
+            {
+                int dataLength = BitConverter.ToInt32(gZipBuffer, 0);
+                memoryStream.Write(gZipBuffer, 4, gZipBuffer.Length - 4);
+
+                var buffer = new byte[dataLength];
+
+                memoryStream.Position = 0;
+                using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
+                {
+                    gZipStream.Read(buffer, 0, buffer.Length);
+                }
+
+                return Encoding.UTF8.GetString(buffer);
+            }
         }
     }
 }

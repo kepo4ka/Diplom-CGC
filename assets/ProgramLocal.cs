@@ -131,16 +131,16 @@ namespace User_client
                         gamestring += ReceiveMessage();
                     }
 
-                    Log("RECIEVE: gameboardjson length - " + gamestring.Length);
                     gamestring = DecompressString(gamestring);
-                    Log("RECIEVE: gameboardjson decompress length - " + gamestring.Length);
-
+					Thread.Sleep(995);
                     SendMessage("p");
+
                     string userstr = ReceiveMessage();
-                    Log("RECIEVE: userstr length - " + userstr.Length);
+                    userstr = DecompressString(userstr);
 
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
+
 
                     DEBUGMYCODE();
 
@@ -154,8 +154,8 @@ namespace User_client
                     connected = false;
                     if (server != null)
                         server.Close();
-                    Console.ReadKey();
-                    //  Environment.Exit(0);
+                  //  Console.ReadKey();
+                      Environment.Exit(0);
                 }
             }
         }

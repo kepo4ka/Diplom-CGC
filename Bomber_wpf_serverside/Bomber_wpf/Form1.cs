@@ -131,6 +131,7 @@ namespace Bomber_wpf
                     case "wait":
                         MessageBox.Show("Ждём клиента #" + (i + 1));
                         TcpClient ttcp = server.AcceptTcpClient();
+                        ttcp.ReceiveTimeout = 1000;
 
                         User ttuser = (User)CreatePlayer(true, k);
                         usersInfo.Add(new UserInfo(ttuser, ttcp, null));
@@ -145,6 +146,7 @@ namespace Bomber_wpf
                         }
 
                         TcpClient tcp = server.AcceptTcpClient();
+                        tcp.ReceiveTimeout = 1000;
                         if (tcp == null)
                         {
                             continue;
@@ -472,6 +474,9 @@ namespace Bomber_wpf
         /// </summary>
         public void CommunicateWithClients()
         {
+            Helper.LOG(Compiler.LogPath, $"gameboardjson length - {gameboardjson.Length}");
+            gameboardjson = Helper.CompressString(gameboardjson);
+
             for (int i = 0; i < usersInfo.Count; i++)
             {
                 try
@@ -488,9 +493,6 @@ namespace Bomber_wpf
 
                     // Helper.LOG(Compiler.LogPath, $"SEND: gameboardjson length - {gameboardjson.Length}");
 
-                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: gameboardjson length - {gameboardjson.Length}");
-
-                    gameboardjson = Helper.CompressString(gameboardjson);
 
                     Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: gameboardjson compressed length - {gameboardjson.Length}");
 
@@ -511,6 +513,10 @@ namespace Bomber_wpf
                     tempUserInfo.player.ACTION = Helper.DecryptAction(action);
                     Helper.LOG(Compiler.LogPath, $"{tempUserInfo.player.Name} = {tempUserInfo.player.ACTION}");
 
+                }
+                catch (IOException er)
+                {
+                    Helper.LOG(Compiler.LogPath, "CommunicateWithClients IOException: " + er.Message);
                 }
                 catch (Exception er)
                 {
@@ -1070,35 +1076,36 @@ namespace Bomber_wpf
                 using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{UserCommandsUnity}", false))
                 {
                     sw.AutoFlush = true;
-                                        
-                    sw.WriteLine(gameBoardStates.Count);
 
-                    string players = "";
-                    string prioritets = "";
-                    for (int i = 0; i < gb.Players.Count; i++)
-                    {
-                        prioritets += Prioritets[i] + " ";
-                        players += gb.Players[i].Name + " ";
-                    }
-                    sw.WriteLine(players);
-                    sw.WriteLine(prioritets);
+                    sw.WriteLine(GetPlayerCommandsUnity());
+                         
+                    //sw.WriteLine(gameBoardStates.Count);
+
+                    //string players = "";
+                    //string prioritets = "";
+                    //for (int i = 0; i < gb.Players.Count; i++)
+                    //{
+                    //    prioritets += Prioritets[i] + " ";
+                    //    players += gb.Players[i].Name + " ";
+                    //}
+                    //sw.WriteLine(players);
+                    //sw.WriteLine(prioritets);
 
 
-                    sw.WriteLine(Helper.SpliteEndPath(MapPath));
+                    //sw.WriteLine(Helper.SpliteEndPath(MapPath));
 
 
-                    for (int i = 0; i < gameBoardStates.Count; i++)
-                    {
-                        GameBoard tempgb = gameBoardStates[i];
-                        string actions = "";
+                    //for (int i = 0; i < gameBoardStates.Count; i++)
+                    //{
+                    //    GameBoard tempgb = gameBoardStates[i];
+                    //    string actions = "";
 
-                        for (int j = 0; j < tempgb.Players.Count; j++)
-                        {
-                            actions += Helper.ActionToSymbol(tempgb.Players[j].ACTION) + " ";
-                        }
-                        sw.WriteLine(actions);
-                    }
-
+                    //    for (int j = 0; j < tempgb.Players.Count; j++)
+                    //    {
+                    //        actions += Helper.ActionToSymbol(tempgb.Players[j].ACTION) + " ";
+                    //    }
+                    //    sw.WriteLine(actions);
+                    //}
                 }
 
 
@@ -1112,6 +1119,40 @@ namespace Bomber_wpf
         }
 
       
+
+
+        public string GetPlayerCommandsUnity()
+        {
+            string result = "";
+
+            result += gameBoardStates.Count + "\n";
+
+            string players = "";
+            string prioritets = "";
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                prioritets += Prioritets[i] + " ";
+                players += gb.Players[i].Name + " ";
+            }
+            result += players + "\n";
+            result += prioritets + "\n";
+            result += Helper.SpliteEndPath(MapPath) + "\n";
+
+            for (int i = 0; i < gameBoardStates.Count; i++)
+            {
+                GameBoard tempgb = gameBoardStates[i];
+                string actions = "";
+
+                for (int j = 0; j < tempgb.Players.Count; j++)
+                {
+                    actions += Helper.ActionToSymbol(tempgb.Players[j].ACTION) + " ";
+                }
+                result += actions + "\n";
+            }
+
+            return result;
+        }
+
 
 
         /// <summary>

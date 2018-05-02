@@ -127,28 +127,26 @@ namespace User_client
 
                     while (gamestring.Length < length)
                     {
-                        gamestring += ReceiveMessage();
-                      //  Log("gameboardjson length - " + gamestring.Length);
+                        gamestring += ReceiveMessage();                      
                     }
-
-                    Log("RECIEVE: gameboardjson length - " + gamestring.Length);
-                    gamestring = DecompressString(gamestring);
-                    Log("RECIEVE: gameboardjson decompress length - " + gamestring.Length);
+                                     
+                    gamestring = DecompressString(gamestring);                   
 
                     SendMessage("p");
-                    string userstr = ReceiveMessage();
-                    Log("RECIEVE: userstr length - " + userstr.Length);
-                    userstr = DecompressString(userstr);
-                    Log("RECIEVE: userstr length - " + userstr.Length);
+
+                    string userstr = ReceiveMessage();                
+                    userstr = DecompressString(userstr);                   
 
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
 
+
                     DEBUGMYCODE();
+
 
                     SendMessage((int)myUser.ACTION + "");
 
-                    Log("My ACTION: " + myUser.ACTION);
+                   // Log("My ACTION: " + myUser.ACTION);
                 }
                 catch (Exception e)
                 {

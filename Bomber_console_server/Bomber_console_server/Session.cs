@@ -205,6 +205,7 @@ namespace Bomber_console_server
                         continue;
                     }
                     TcpClient tcp = server.AcceptTcpClient();
+                    tcp.ReceiveTimeout = 1000;
                     if (tcp == null)
                     {
                         continue;
@@ -294,7 +295,7 @@ namespace Bomber_console_server
         public void GameProccess()
         {
             GameTimer--;
-            gb.tick++;
+            gb.Tick++;
 
             PlayerProccess();
             PlayerBonusCollision();
@@ -447,8 +448,73 @@ namespace Bomber_console_server
             Compiler.SaveGameResult(GetPlayerResult());
             Compiler.SavePlayersAllCommands(GetPlayersInfoAllTicks());
             Compiler.Compress();
+            Compiler.SavePlayersAllCommandsUnity(GetPlayerCommandsUnity());              
+
+                //sw.WriteLine(gameBoardStates.Count);
+
+                //string players = "";
+                //string prioritets = "";
+                //for (int i = 0; i < gb.Players.Count; i++)
+                //{
+                //    prioritets += Prioritets[i] + " ";
+                //    players += gb.Players[i].Name + " ";
+                //}
+                //sw.WriteLine(players);
+                //sw.WriteLine(prioritets);
+
+
+                //sw.WriteLine(Helper.SpliteEndPath(MapPath));
+
+
+                //for (int i = 0; i < gameBoardStates.Count; i++)
+                //{
+                //    GameBoard tempgb = gameBoardStates[i];
+                //    string actions = "";
+
+                //    for (int j = 0; j < tempgb.Players.Count; j++)
+                //    {
+                //        actions += Helper.ActionToSymbol(tempgb.Players[j].ACTION) + " ";
+                //    }
+                //    sw.WriteLine(actions);
+                //}
+            
+
 
         }
+
+        public string GetPlayerCommandsUnity()
+        {
+            string result = "";
+
+            result += gameBoardStates.Count + "\n";
+
+            string players = "";
+            string prioritets = "";
+            for (int i = 0; i < gb.Players.Count; i++)
+            {
+                prioritets += Prioritets[i] + " ";
+                players += gb.Players[i].Name + " ";
+            }
+            result += players + "\n";
+            result += prioritets + "\n";
+            result += Helper.SpliteEndPath(MapPath) + "\n";
+
+            for (int i = 0; i < gameBoardStates.Count; i++)
+            {
+                GameBoard tempgb = gameBoardStates[i];
+                string actions = "";
+
+                for (int j = 0; j < tempgb.Players.Count; j++)
+                {
+                    actions += Helper.ActionToSymbol(tempgb.Players[j].ACTION) + " ";
+                }
+                result += actions + "\n";
+            }
+
+            return result;
+        }
+
+
 
 
         /// <summary>
@@ -1278,6 +1344,10 @@ namespace Bomber_console_server
         /// </summary>
         public void CommunicateWithClients()
         {
+            Helper.LOG(Compiler.LogPath, $"gameboardjson length - {gameboardjson.Length}");
+            gameboardjson = Helper.CompressString(gameboardjson);
+            Helper.LOG(Compiler.LogPath, $"gameboardjson compressed length - {gameboardjson.Length}");
+
             for (int i = 0; i < usersInfo.Count; i++)
             {
                 try
@@ -1290,21 +1360,27 @@ namespace Bomber_console_server
                     NetworkStream strm = tempUserInfo.client.GetStream();
                     string userjson = JsonConvert.SerializeObject(tempUserInfo.player);
 
-                    SendMessage(strm, gameboardjson.Length + "");
-                    Thread.Sleep(50);
+                    SendMessage(tempUserInfo.client.GetStream(), gameboardjson.Length + "");
+                    ReceiveMessage(strm);
+
                     SendMessage(tempUserInfo.client.GetStream(), gameboardjson);
-                    Thread.Sleep(10);
-                    Console.WriteLine($"send gameboardjson: {gameboardjson.Length}");
-                    string temp = ReceiveMessage(strm);
+                    ReceiveMessage(strm);
+
+                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: userjson length - {userjson.Length}");
+
+                    userjson = Helper.CompressString(userjson);
+                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: userjson compressed length - {userjson.Length}");
+
                     SendMessage(tempUserInfo.client.GetStream(), userjson);
-                    Console.WriteLine($"send userjson: {userjson.Length}");
 
-                    string name = ReceiveMessage(strm);
-                    SendMessage(strm, "p");
                     string action = ReceiveMessage(strm);
-                    Console.WriteLine($"{name} action - {action}");
-
                     tempUserInfo.player.ACTION = Helper.DecryptAction(action);
+                    Helper.LOG(Compiler.LogPath, $"{tempUserInfo.player.Name} = {tempUserInfo.player.ACTION}");
+                }
+                catch (IOException er)
+                {
+                    Helper.LOG(Compiler.LogPath, "CommunicateWithClients IOException: " + er.Message);
+
                 }
                 catch (Exception er)
                 {
@@ -1406,6 +1482,7 @@ namespace Bomber_console_server
                 }
             }
         }
+
 
     }
 }

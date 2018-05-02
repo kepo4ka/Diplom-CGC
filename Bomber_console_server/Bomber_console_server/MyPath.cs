@@ -11,6 +11,7 @@ namespace Bomber_console_server
         public static string gameStaterVisualizerFileName = "Visualizer.dat";
         public static string gameStaterVisualizerJSONFileName = "Visualizer.json";
         public static string userComandsFileName = "UserCommands.json";
+        public static string userComandsUnityFileName = "UserCommandsUnity.txt";
         public static string gameStaterVisualizeFileNamerDATtoGZ = "VisualizerDAT.gz";
         public static string gameStaterVisualizeFileNamerJSONtoGZ = "VisualizerJSON.gz";
         public static string gameResultsFileName = "gameResults.json";
