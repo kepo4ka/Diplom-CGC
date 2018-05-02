@@ -239,7 +239,7 @@ namespace Bomber_console_server
 
             pplayer.Points = 0;
             //    pplayer.Health = Config.player_health;
-            pplayer.Health = 100;
+            pplayer.Health = 1;
             pplayer.BangRadius = Config.bang_start_radius;
             pplayer.BombsCount = Config.player_bombs_count_start;
 
@@ -1380,7 +1380,6 @@ namespace Bomber_console_server
                 catch (IOException er)
                 {
                     Helper.LOG(Compiler.LogPath, "CommunicateWithClients IOException: " + er.Message);
-
                 }
                 catch (Exception er)
                 {
