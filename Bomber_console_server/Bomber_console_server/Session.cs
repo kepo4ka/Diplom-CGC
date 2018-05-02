@@ -294,6 +294,7 @@ namespace Bomber_console_server
         public void GameProccess()
         {
             GameTimer--;
+            gb.tick++;
 
             PlayerProccess();
             PlayerBonusCollision();
@@ -495,6 +496,11 @@ namespace Bomber_console_server
             for (int i = 0; i < Prioritets.Count; i++)
             {
                 Player tplayer = gb.Players[Prioritets[i]];
+
+                if (tplayer.Health < 1)
+                {
+                    continue;
+                }
 
                 //if (tplayer is Bot)
                 //{
