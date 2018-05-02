@@ -270,7 +270,7 @@ namespace Bomber_console_server
 
         public void NextTick()
         {
-            CheckGameOver();
+          
 
             if (isGameOver == false)
             {
@@ -286,6 +286,8 @@ namespace Bomber_console_server
             {
                 return;
             }
+
+            CheckGameOver();
         }
 
 

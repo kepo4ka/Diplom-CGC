@@ -754,7 +754,7 @@ namespace Bomber_wpf
         /// </summary>
         public void NextTick()
         {
-            CheckGameOver();
+         
 
             if (isGameOver == false)
             {
@@ -765,6 +765,12 @@ namespace Bomber_wpf
                 CommunicateWithClients();
                 UpdateListView();
             }
+            else
+            {
+                return;
+            }
+
+            CheckGameOver();
         }
 
 
@@ -851,18 +857,12 @@ namespace Bomber_wpf
         public void SetXYInfo()
         {
             for (int i = 0; i < tempGB.XYinfo.GetLength(0); i++)
-            {
-              
-
-
-
+            {    
                 for (int j = 0; j < tempGB.XYinfo.GetLength(1); j++)
                 {
                     var tXYInfo = tempGB.XYinfo[i, j];
 
-
                     tXYInfo.Type = tempGB.Cells[i, j].Type;
-
 
                     for (int ii = 0; ii < tempGB.Players.Count; ii++)
                     {
@@ -911,6 +911,7 @@ namespace Bomber_wpf
         /// </summary>
         public void GameOver(List<Player> winners)
         {
+            UpdateListView();
             isGameOver = true;
 
             if (winners.Count == 1)
@@ -932,7 +933,7 @@ namespace Bomber_wpf
 
 
             StopClearTempFiles();
-
+           
             EndGameMessage(winners);
         }
 
