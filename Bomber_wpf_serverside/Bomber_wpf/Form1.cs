@@ -483,13 +483,29 @@ namespace Bomber_wpf
                     UserInfo tempUserInfo = usersInfo[i];
                     NetworkStream strm = tempUserInfo.client.GetStream();
                     string userjson = JsonConvert.SerializeObject(tempUserInfo.player);
+                    // SendMessage(tempUserInfo.client.GetStream(), gameboardjson.Length + "");
+                    //  ReceiveMessage(strm);
+
+                    // Helper.LOG(Compiler.LogPath, $"SEND: gameboardjson length - {gameboardjson.Length}");
+
+                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: gameboardjson length - {gameboardjson.Length}");
+
+                    gameboardjson = Helper.CompressString(gameboardjson);
+
+                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: gameboardjson compressed length - {gameboardjson.Length}");
+
                     SendMessage(tempUserInfo.client.GetStream(), gameboardjson.Length + "");
                     ReceiveMessage(strm);
+
                     SendMessage(tempUserInfo.client.GetStream(), gameboardjson);
-                    Helper.LOG(Compiler.LogPath, $"SEND: gameboardjson length - {gameboardjson.Length}");
                     ReceiveMessage(strm);
+
+                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: userjson length - {userjson.Length}");
+
+                    userjson = Helper.CompressString(userjson);
+                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: userjson compressed length - {userjson.Length}");
+
                     SendMessage(tempUserInfo.client.GetStream(), userjson);
-                    Helper.LOG(Compiler.LogPath, $"SEND: userjson length - {userjson.Length}");
 
                     string action = ReceiveMessage(strm);
                     tempUserInfo.player.ACTION = Helper.DecryptAction(action);
@@ -498,7 +514,7 @@ namespace Bomber_wpf
                 }
                 catch (Exception er)
                 {
-                    Helper.LOG(Compiler.LogPath, "CommunicateWithClients ERROR: " + er.Message + " " + er.GetType());
+                    Helper.LOG(Compiler.LogPath, $"CommunicateWithClients ERROR ({usersInfo[i].player.Name}): " + er.Message + " " + er.GetType());
                     PlayerDisconnect(usersInfo[i].player);
                 }
             }
@@ -681,7 +697,7 @@ namespace Bomber_wpf
         public void GameProccess()
         {
             GameTimer--;
-            gb.tick++;
+            gb.Tick++;
 
             PlayerProccess();
             PlayerBonusCollision();
@@ -2210,32 +2226,35 @@ namespace Bomber_wpf
             {
                 for (int i = 0; i < gameboardpseudo.GetLength(0); i++)
                 {
-                    string line = sr.ReadLine();
-                    string[] linesplit = line.Split();
-
-                    if (linesplit.Length != gameboardpseudo.GetLength(1))
+                    string line = "";
+                    if ((line = sr.ReadLine().Trim()) != "")
                     {
-                        throw new Exception("Ошибка при парсинге карты: неверное количество столбцов");
-                    }
+                        string[] linesplit = line.Split();
 
-                    for (int j = 0; j < linesplit.Length; j++)
-                    {
-                        int t = 0;
-                        if (!int.TryParse(linesplit[j], out t))
+                        if (linesplit.Length != gameboardpseudo.GetLength(1))
                         {
-                            throw new Exception($"Ошибка при парсинге карты: нечисловое значение [{i},{j}");
+                            throw new Exception("Ошибка при парсинге карты: неверное количество столбцов");
                         }
-                        gameboardpseudo[i, j] = t;
+
+                        for (int j = 0; j < linesplit.Length; j++)
+                        {
+                            int t = 0;
+                            if (!int.TryParse(linesplit[j], out t))
+                            {
+                                throw new Exception($"Ошибка при парсинге карты: нечисловое значение [{i},{j}");
+                            }
+                            gameboardpseudo[i, j] = t;
+                        }
                     }
                 }
             }
 
             
 
-            gameboardpseudo[0, 0] = gameboardpseudo[0, 0] == 5 ? 5 : 0;
-            gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
-            gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] = gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] == 5 ? 5 : 0;
-            gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
+            //gameboardpseudo[0, 0] = gameboardpseudo[0, 0] == 5 ? 5 : 0;
+            //gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
+            //gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] = gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] == 5 ? 5 : 0;
+            //gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
 
             return gameboardpseudo;
 
