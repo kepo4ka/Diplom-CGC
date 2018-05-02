@@ -285,7 +285,7 @@ namespace Bomber_wpf
             }
             else
             {
-                this.Hide();
+                this.Close();
 
                 startPage.Show();
             }
@@ -754,7 +754,7 @@ namespace Bomber_wpf
         /// </summary>
         public void NextTick()
         {
-         
+            CheckGameOver();
 
             if (isGameOver == false)
             {
@@ -770,7 +770,7 @@ namespace Bomber_wpf
                 return;
             }
 
-            CheckGameOver();
+          
         }
 
 
@@ -926,15 +926,12 @@ namespace Bomber_wpf
                 }
             }
 
-            gameBoardStates.Add(gb);
+          //  gameBoardStates.Add(gb);
 
             SaveGameInfo();
-
-
-
             StopClearTempFiles();
            
-            EndGameMessage(winners);
+            EndGameMessage();
         }
 
 
@@ -980,12 +977,12 @@ namespace Bomber_wpf
         /// Диалоговое окно с информацией о результатах игровой сессии
         /// </summary>
         /// <param name="winners"></param>
-        public void EndGameMessage(List<Player> winners)
+        public void EndGameMessage()
         {
             var result = DialogResult.No;
             string message = "";
 
-            winners.Sort((a, b) => a.Health.CompareTo(b.Health));
+         //   winners.Sort((a, b) => a.Health.CompareTo(b.Health));
 
             if (GameTimer < 1)
             {
@@ -1025,7 +1022,7 @@ namespace Bomber_wpf
         public void CheckGameOver()
         {
             List<Player> winners = gb.Players.FindAll(c => c.Health > 0);
-
+           
             if (GameTimer < 1 || winners.Count < 2)
             {
                 GameOver(winners);
@@ -1039,7 +1036,7 @@ namespace Bomber_wpf
         {
             try
             {
-                string gameResultDirectoryName = Directory.GetCurrentDirectory() + "\\" + GetInfoAboutThisGame() + "\\";
+                string gameResultDirectoryName = Directory.GetCurrentDirectory() + "\\" + "games" + "\\" + GetInfoAboutThisGame() + "\\";
 
                 Helper.DeleteDirectory(gameResultDirectoryName);
                 Directory.CreateDirectory(gameResultDirectoryName);

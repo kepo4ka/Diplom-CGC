@@ -270,7 +270,7 @@ namespace Bomber_console_server
 
         public void NextTick()
         {
-          
+            CheckGameOver();
 
             if (isGameOver == false)
             {
@@ -287,7 +287,7 @@ namespace Bomber_console_server
                 return;
             }
 
-            CheckGameOver();
+        
         }
 
 
@@ -329,7 +329,7 @@ namespace Bomber_console_server
                 }
             }
 
-            gameBoardStates.Add(gb);
+          //  gameBoardStates.Add(gb);
             SaveGameInfo();
             StopClearTempFiles();
         }
