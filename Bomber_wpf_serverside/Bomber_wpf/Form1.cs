@@ -852,9 +852,17 @@ namespace Bomber_wpf
         {
             for (int i = 0; i < tempGB.XYinfo.GetLength(0); i++)
             {
+              
+
+
+
                 for (int j = 0; j < tempGB.XYinfo.GetLength(1); j++)
                 {
                     var tXYInfo = tempGB.XYinfo[i, j];
+
+
+                    tXYInfo.Type = tempGB.Cells[i, j].Type;
+
 
                     for (int ii = 0; ii < tempGB.Players.Count; ii++)
                     {

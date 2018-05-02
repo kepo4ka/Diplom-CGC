@@ -343,6 +343,8 @@ namespace Bomber_console_server
                 {
                     var tXYInfo = tempGB.XYinfo[i, j];
 
+                    tXYInfo.Type = tempGB.Cells[i, j].Type;
+
                     for (int ii = 0; ii < tempGB.Players.Count; ii++)
                     {
                         if (tempGB.Players[ii].X == i && tempGB.Players[ii].Y == j)

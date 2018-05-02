@@ -63,6 +63,7 @@ namespace ClassLibrary_CGC
             int size = 15;
             W = size;
             H = size;
+            
 
             Cells = new Cell[size, size];
             Bonuses = new List<Bonus>();
@@ -1074,9 +1075,11 @@ namespace ClassLibrary_CGC
         Bonus bonus;
        List<Lava> lavas;
         Bomb bomb;
+        CellType type;
 
         public XYInfo()
         {
+            Type = CellType.Free;
             Player = null;
             Bomb = null;
             Bonus = null;
@@ -1085,11 +1088,29 @@ namespace ClassLibrary_CGC
 
         public XYInfo(XYInfo origin)
         {
+            Type = origin.Type;
             Player = origin.Player;
             Bomb = origin.Bomb;
             Bonus = origin.Bonus;
             Lavas = origin.Lavas;
         }
+
+        /// <summary>
+        /// Тип ячейки
+        /// </summary>
+        public CellType Type
+        {
+            get
+            {
+                return type;
+            }
+
+            set
+            {
+                type = value;
+            }
+        }
+
 
         /// <summary>
         /// Игрок
