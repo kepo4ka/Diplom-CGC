@@ -91,9 +91,70 @@ namespace ClassLibrary_CGC
                 }
             }
 
-            for (int i = 0; i < pole.GetLength(0); i++)
+            //for (int i = 0; i < pole.GetLength(0); i++)
+            //{
+            //    for (int j= 0; j< pole.GetLength(1); j++)
+            //    {
+
+            //        switch (pole[j,i])
+            //        {
+            //            case 0:
+            //                break;
+
+            //            case 1:
+            //                Cells[i, j].Type = CellType.Indestructible;
+            //                break;
+
+            //            case 2:
+            //                Cells[i, j].Type = CellType.Destructible;
+            //                break;
+
+            //            case 3:
+            //                Cells[i, j].Type = CellType.Destructible;
+            //                Bonus bonus = new Bonus();                           
+            //                bonus.X = i;
+            //                bonus.Y = j;
+            //                bonus.Type = BonusType.Ammunition;
+            //                Bonuses.Add(bonus);
+            //                break;
+
+            //            case 4:
+            //                Cells[i, j].Type = CellType.Destructible;
+            //                Bonus tbonus = new Bonus();                            
+            //                tbonus.X = i;
+            //                tbonus.Y = j;
+            //                tbonus.Type = BonusType.Radius;
+            //                Bonuses.Add(tbonus);
+            //                break;
+
+            //            case 5:
+            //                Player player = new Player();
+            //                player.X = i;
+            //                player.Y = j;
+            //                Players.Add(player);
+            //                break;
+            //            case 6:
+            //                Bonus ttbonus = new Bonus();
+            //               ttbonus.Type = BonusType.Ammunition;
+            //                ttbonus.X = i;
+            //                ttbonus.Y = j;
+            //                ttbonus.Visible = true;
+            //                Bonuses.Add(ttbonus);
+            //                break;
+            //            case 7:
+            //                Bonus tttbonus = new Bonus();
+            //                tttbonus.Type = BonusType.Radius;
+            //                tttbonus.X = i;
+            //                tttbonus.Y = j;
+            //                Bonuses.Add(tttbonus);
+            //                break;
+            //        }
+            //    }
+            //}
+
+            for (int i = 0; i< pole.GetLength(1);i++)
             {
-                for (int j= 0; j< pole.GetLength(1); j++)
+                for (int j = pole.GetLength(0) - 1; j > 0; j--)
                 {
 
                     switch (pole[j,i])
@@ -111,7 +172,7 @@ namespace ClassLibrary_CGC
 
                         case 3:
                             Cells[i, j].Type = CellType.Destructible;
-                            Bonus bonus = new Bonus();                           
+                            Bonus bonus = new Bonus();
                             bonus.X = i;
                             bonus.Y = j;
                             bonus.Type = BonusType.Ammunition;
@@ -120,7 +181,7 @@ namespace ClassLibrary_CGC
 
                         case 4:
                             Cells[i, j].Type = CellType.Destructible;
-                            Bonus tbonus = new Bonus();                            
+                            Bonus tbonus = new Bonus();
                             tbonus.X = i;
                             tbonus.Y = j;
                             tbonus.Type = BonusType.Radius;
@@ -135,7 +196,7 @@ namespace ClassLibrary_CGC
                             break;
                         case 6:
                             Bonus ttbonus = new Bonus();
-                           ttbonus.Type = BonusType.Ammunition;
+                            ttbonus.Type = BonusType.Ammunition;
                             ttbonus.X = i;
                             ttbonus.Y = j;
                             ttbonus.Visible = true;
@@ -151,6 +212,7 @@ namespace ClassLibrary_CGC
                     }
                 }
             }
+
         }
 
 
