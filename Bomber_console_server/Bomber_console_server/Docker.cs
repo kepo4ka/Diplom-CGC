@@ -21,7 +21,7 @@ namespace Bomber_console_server
             errorput = "";
             hostPath = VolumeFormat(hostPath);
 
-            Helper.startProccess($"docker-machine ssh default docker run -it -d --network=host --name={name} --rm --volume {hostPath}:{contPath} {image}", out output, out errorput);           
+            Helper.startProccess($"docker-machine ssh default docker run -it -d --network=host --name={name} -m 64m --memory-swap 64m --rm --volume {hostPath}:{contPath} {image}", out output, out errorput);           
 
             if (errorput != "")
             {
