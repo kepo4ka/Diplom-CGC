@@ -53,10 +53,9 @@ namespace User_client
         /// ФУНКЦИЯ, КОТОРАЯ ИСПОЛЬЗУЕТСЯ ДЛЯ ОТЛАДКИ
         /// </summary>
         public static void DEBUGMYCODE()
-        {
-            myUser.ACTION = myUser.Play(gameBoard);
+        {            
+           myUser.ACTION = myUser.Play(gameBoard);          
         }
-
 
 
         /// <summary>
@@ -140,9 +139,15 @@ namespace User_client
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
 
-
-                    DEBUGMYCODE();
-
+                    try
+                    {
+                        DEBUGMYCODE();
+                    }
+                    catch (Exception er)
+                    {
+                        Log("STRATEGY ERROR: " + er.Message);
+                        myUser.ACTION = PlayerAction.Wait;
+                    }
 
                     SendMessage((int)myUser.ACTION + "");
 
