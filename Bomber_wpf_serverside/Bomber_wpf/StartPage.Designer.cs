@@ -48,9 +48,9 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.path1_lab = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.path1_btn = new System.Windows.Forms.Button();
             this.realGameButton = new System.Windows.Forms.Button();
             this.load_custom_map = new System.Windows.Forms.Button();
+            this.path1_btn = new System.Windows.Forms.Button();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -272,9 +272,9 @@
             // groupBox3
             // 
             this.groupBox3.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.groupBox3.Controls.Add(this.path1_btn);
             this.groupBox3.Controls.Add(this.path1_lab);
             this.groupBox3.Controls.Add(this.comboBox1);
-            this.groupBox3.Controls.Add(this.path1_btn);
             this.groupBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
             this.groupBox3.ForeColor = System.Drawing.Color.Crimson;
             this.groupBox3.Location = new System.Drawing.Point(10, 78);
@@ -309,18 +309,6 @@
             this.comboBox1.TabIndex = 0;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
-            // path1_btn
-            // 
-            this.path1_btn.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.path1_btn.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.path1_btn.Location = new System.Drawing.Point(6, 45);
-            this.path1_btn.Name = "path1_btn";
-            this.path1_btn.Size = new System.Drawing.Size(218, 26);
-            this.path1_btn.TabIndex = 1;
-            this.path1_btn.Text = "Выбрать файл";
-            this.path1_btn.UseVisualStyleBackColor = false;
-            this.path1_btn.Click += new System.EventHandler(this.path1_btn_Click);
-            // 
             // realGameButton
             // 
             this.realGameButton.Location = new System.Drawing.Point(12, 19);
@@ -340,6 +328,19 @@
             this.load_custom_map.Text = "Загрузить Свою карту";
             this.load_custom_map.UseVisualStyleBackColor = true;
             this.load_custom_map.Click += new System.EventHandler(this.load_custom_map_Click);
+            // 
+            // path1_btn
+            // 
+            this.path1_btn.Enabled = false;
+            this.path1_btn.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.path1_btn.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.path1_btn.Location = new System.Drawing.Point(6, 47);
+            this.path1_btn.Name = "path1_btn";
+            this.path1_btn.Size = new System.Drawing.Size(218, 24);
+            this.path1_btn.TabIndex = 10;
+            this.path1_btn.Text = "Выбрать файл";
+            this.path1_btn.UseVisualStyleBackColor = true;
+            this.path1_btn.Click += new System.EventHandler(this.path1_btn_Click_1);
             // 
             // StartPage
             // 
@@ -376,7 +377,6 @@
         private System.Windows.Forms.Button path3_btn;
         private System.Windows.Forms.Label path2_lab;
         private System.Windows.Forms.Label path1_lab;
-        private System.Windows.Forms.Button path1_btn;
         private System.Windows.Forms.Button realGameButton;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.ComboBox comboBox1;
@@ -389,5 +389,6 @@
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Button path2_btn;
         private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.Button path1_btn;
     }
 }

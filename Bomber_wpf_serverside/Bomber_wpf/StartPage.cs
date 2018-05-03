@@ -217,13 +217,13 @@ namespace Bomber_wpf
         //    label.Enabled = !label.Enabled;
         //}
 
-
-        private void path1_btn_Click(object sender, EventArgs e)
+        private void path1_btn_Click_1(object sender, EventArgs e)
         {
             path1_lab.Text = AddBotsFiles(0);
             ToolTip t = new ToolTip();
             t.SetToolTip(path1_lab, path1_lab.Text);
         }
+
 
         private void path2_btn_Click(object sender, EventArgs e)
         {
@@ -350,6 +350,8 @@ namespace Bomber_wpf
         {
             ComboboxChange(comboBox4, path4_btn, path4_lab, 3);
         }
+
+     
     }
 }
 
