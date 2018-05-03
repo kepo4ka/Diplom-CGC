@@ -148,7 +148,15 @@ namespace User_client
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
 
 
-                    DEBUGMYCODE();
+                    try
+                    {
+                        DEBUGMYCODE();
+                    }
+                    catch (Exception er)
+                    {
+                        Log("STRATEGY ERROR: " + er.Message);
+                        myUser.ACTION = PlayerAction.Wait;
+                    }
 
                     SendMessage((int)myUser.ACTION + "");
 
