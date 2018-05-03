@@ -1973,7 +1973,12 @@ namespace Bomber_wpf
           //  g.FillEllipse(new SolidBrush(cl), x * cw + cw / 10, y * cw + cw / 10, cw - cw / 5, cw - cw / 5);
         }
 
-
+        /// <summary>
+        /// Выбрать модельку игрока в зависимости от его направления и номера
+        /// </summary>
+        /// <param name="pa"></param>
+        /// <param name="i"></param>
+        /// <returns></returns>
         public Bitmap SelectDrawPlayerModel(PlayerAction pa, int i)
         {
             Bitmap playerImage = new Bitmap(Properties.Resources._default);
@@ -2066,8 +2071,6 @@ namespace Bomber_wpf
                     break;
                  
             }
-
-
             return playerImage;
         }
 
@@ -2094,13 +2097,7 @@ namespace Bomber_wpf
                     block = new Bitmap(Properties.Resources.lava);
                     break;
             }
-
             g.DrawImage(block, x * cw, y * cw);
-
-
-            //sb = new SolidBrush(cl);
-            //g.DrawRectangle(p, x * cw, y * cw, cw, cw);
-            //g.FillRectangle(sb, x * cw, y * cw, cw, cw);
         }
 
 
