@@ -17,6 +17,8 @@ namespace Bomber_wpf
         public string[] labels;
         int[,] gbpseudo = null;
         string UserMapPath = "";
+        int playersOnBoardCount = 0;
+        int playersAddedCount = 0;
 
 
         public StartPage()
@@ -53,7 +55,7 @@ namespace Bomber_wpf
         /// </summary>
         public void OpenRealGameForm()
         {
-            byte havePlayers = 0;
+            playersAddedCount = 0;
             for (int i = 0; i < paths.Length; i++)
             {
                 switch (paths[i])
@@ -61,21 +63,25 @@ namespace Bomber_wpf
                     case null:
                         break;
                     case "":
-                        havePlayers++;
+                        playersAddedCount++;
                         break;
-
                     case "needLoad":
                         MessageBox.Show("Не выбран файл стратегии для Игрока " + (i+1));
                         return;
-
                     default:
-                        havePlayers++;
+                        playersAddedCount++;
                         break;
                 }
             }
 
             //Если хотя бы два игрока (пользователь или бот)
-            if (havePlayers > 1)
+            if (playersAddedCount > playersOnBoardCount && playersOnBoardCount!=0)
+            {
+                MessageBox.Show("Количество добавленных Ботов должно быть меньше или равно количеству Ботов на указанной карте");
+                return;
+            }
+
+            if (playersAddedCount > 1)
             {
                 Form1 realGameForm = new Form1(this, UserMapPath);
                 this.Hide();
@@ -278,6 +284,33 @@ namespace Bomber_wpf
             {
                 UserMapPath = ofd.FileName;
             }
+            
+            if (String.IsNullOrWhiteSpace(UserMapPath))
+            {
+                return;
+            }
+            int[,] tempgbppseudo = new int[1, 1];
+            try
+            {
+                tempgbppseudo= Helper.GetGameboardFromFile(UserMapPath);
+            }
+            catch
+            {
+                return;
+            }
+
+            playersOnBoardCount = 0;
+            for (int i = 0; i < tempgbppseudo.GetLength(0); i++)
+            {
+                for (int j = 0; j < tempgbppseudo.GetLength(1); j++)
+                {
+                    if (tempgbppseudo[i,j]==5)
+                    {
+                        playersOnBoardCount++;
+                    }
+                }
+            }
+
         }
 
 
