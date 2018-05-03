@@ -153,12 +153,14 @@ namespace ClassLibrary_CGC
             //    }
             //}
 
-            for (int i = 14; i>0;i--)
-            {
-                for (int j = 14; j>0; j--)
-                {
 
-                    switch (pole[j,i])
+            for (int j = 0; j < 14; j++)
+            {
+               
+                    for (int i = 14; i > -1; i--)
+                    {
+
+                    switch (pole[i,j])
                     {
                         case 0:
                             break;
