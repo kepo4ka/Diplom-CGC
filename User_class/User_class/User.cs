@@ -11,6 +11,8 @@ namespace User_class
     {
         public GameBoard gameboard;
 
+        public int Tick;
+
         /// <summary>
         /// Задать Команду на следующий Тик
         /// </summary>
@@ -26,19 +28,27 @@ namespace User_class
 
             PlayerAction action = PlayerAction.Wait;
 
-            if (X<1)
+            int difX = (X - gb.W / 2);
+            int difY = (Y - gb.H / 2);
+
+            if (difX > 0)
+                action = PlayerAction.Left;
+            else if (difX <0)
             {
-                action = PlayerAction.Down;
+                action = PlayerAction.Right;
             }
 
-            if (gb.XYinfo[X,Y+1].Player != null || gb.Cells[X,Y+1].Type==CellType.Destructible)
-            {
-                action = PlayerAction.Bomb;
-            }
-            if (gb.XYinfo[X,Y+1].Bomb != null || gb.XYinfo[X,Y].Bomb != null)
+           else if (difY>0)
             {
                 action = PlayerAction.Up;
             }
+            else if (difY < 0)
+            {
+                action = PlayerAction.Down;
+            }
+             else action = PlayerAction.Bomb;
+         
+          
            
 
             return action;

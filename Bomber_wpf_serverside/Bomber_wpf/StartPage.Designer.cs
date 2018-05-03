@@ -349,8 +349,9 @@
             this.ClientSize = new System.Drawing.Size(513, 394);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox2);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "StartPage";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Bomberman Menu";
             this.groupBox2.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);

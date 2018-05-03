@@ -141,7 +141,9 @@ namespace User_client
 
                     try
                     {
+
                         DEBUGMYCODE();
+                        Console.WriteLine("action - " + myUser.ACTION.ToString());
                     }
                     catch (Exception er)
                     {

@@ -74,73 +74,9 @@ namespace Bomber_console_server
             InitGame();
         }
 
-        private int[,] GetGameboardFromFile(string psource)
-        {
-            int[,] gameboardpseudo = new int[15, 15];
-            string[] splitedFile = psource.Split('.');
-            string[] splitPath = psource.Split('\\');
-            string fileExtension = splitedFile[splitedFile.Length - 1];
-            string filePath = splitPath[splitPath.Length - 1];
-
-            //  MessageBox.Show("psource " + psource);
-
-            using (StreamReader sr = new StreamReader(psource))
-            {
-                for (int i = 0; i < gameboardpseudo.GetLength(0); i++)
-                {
-                    string line = sr.ReadLine();
-                    string[] linesplit = line.Split();
-
-                    if (linesplit.Length != gameboardpseudo.GetLength(1))
-                    {
-                        throw new Exception("Ошибка при парсинге карты: неверное количество столбцов");
-                    }
-
-                    for (int j = 0; j < linesplit.Length; j++)
-                    {
-                        int t = 0;
-                        if (!int.TryParse(linesplit[j], out t))
-                        {
-                            throw new Exception($"Ошибка при парсинге карты: нечисловое значение [{i},{j}");
-                        }
-                        gameboardpseudo[i, j] = t;
-                    }
-                }
-            }
-
-            gameboardpseudo[0, 0] = gameboardpseudo[0, 0] == 5 ? 5 : 0;
-            gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
-            gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] = gameboardpseudo[gameboardpseudo.GetLength(1) - 1, 0] == 5 ? 5 : 0;
-            gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[gameboardpseudo.GetLength(0) - 1, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
-
-            return gameboardpseudo;
-
-        }
+       
 
 
-        public int[,] LoadMap()
-        {
-            int[,] gameboardpseudo = null;
-                       
-            try
-            {
-                DirectoryInfo di = new DirectoryInfo(Compiler.mapsPath);
-                var files = di.GetFiles("*.txt");
-                if (files.Length < 1)
-                {
-                    throw new Exception($"Не удалось найти ни одной карты в папке {Compiler.mapsPath}");
-                }
-                MapPath = files[rn.Next(0, files.Length)].FullName;
-
-                gameboardpseudo = GetGameboardFromFile(MapPath);
-                return gameboardpseudo;
-            }
-            catch (Exception er)
-            {
-                Helper.LOG(Compiler.LogPath, $"Не удалось загрузить карту из стандартных карт: {er.Message}");
-                return null;
-            }
-        }
 
 
 
@@ -155,7 +91,7 @@ namespace Bomber_console_server
             DestroyedPlayers = new List<Player>();
             DestroyedCells = new List<Cell>();
 
-            gbpseudo = LoadMap();
+            gbpseudo = Helper.LoadMap(MapPath);
 
             if (gbpseudo == null)
             {
@@ -174,7 +110,7 @@ namespace Bomber_console_server
 
                 gb.Players.Clear();
             }
-            SetPseudoPlayers();
+          //  SetPseudoPlayers();
 
             try
             {
@@ -205,7 +141,7 @@ namespace Bomber_console_server
                         continue;
                     }
                     TcpClient tcp = server.AcceptTcpClient();
-                    tcp.ReceiveTimeout = 1000;
+                    tcp.ReceiveTimeout = Config.client_wait_time;
                     if (tcp == null)
                     {
                         continue;
@@ -1379,11 +1315,12 @@ namespace Bomber_console_server
 
                     string action = ReceiveMessage(strm);
                     tempUserInfo.player.ACTION = Helper.DecryptAction(action);
-                    Helper.LOG(Compiler.LogPath, $"{tempUserInfo.player.Name} = {tempUserInfo.player.ACTION}");
+                    Helper.LOG(Compiler.LogPath, $"{tempUserInfo.player.Name} action = {tempUserInfo.player.ACTION}");
                 }
                 catch (IOException er)
                 {
-                    Helper.LOG(Compiler.LogPath, "CommunicateWithClients IOException: " + er.Message);
+                    Helper.LOG(Compiler.LogPath, $"Игрок {usersInfo[i].player.Name} превысил ограничение по времени : {er.Message}");                
+                    PlayerDisconnect(usersInfo[i].player);
                 }
                 catch (Exception er)
                 {

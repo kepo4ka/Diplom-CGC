@@ -126,6 +126,8 @@
   <ItemGroup>
     <Content Include="Properties\ClassLibrary_CGC.dll" />
     <Content Include="Properties\User_class.dll" />
+    <None Include="Resources\house1.png" />
+    <None Include="Resources\house.png" />
     <None Include="Resources\lava.png" />
     <None Include="Resources\indescrible.png" />
     <None Include="Resources\describle.png" />

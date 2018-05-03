@@ -131,8 +131,7 @@ namespace User_client
                         gamestring += ReceiveMessage();
                     }
 
-                    gamestring = DecompressString(gamestring);
-					Thread.Sleep(995);
+                    gamestring = DecompressString(gamestring);					
                     SendMessage("p");
 
                     string userstr = ReceiveMessage();

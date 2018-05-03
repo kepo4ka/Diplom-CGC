@@ -7,22 +7,22 @@ using ClassLibrary_CGC;
 
 namespace User_class
 {
-[Serializable]
-public class User : Player
-{
-public override PlayerAction Play(GameBoard gb)
-{
-/*
-Код пользователя
-*/
-Random rn = new Random();
-PlayerAction action;
-action = (PlayerAction)rn.Next(6);
+    [Serializable]
+    public class User : Player
+    {
+        public override PlayerAction Play(GameBoard gb)
+        {
+            Random rn = new Random();
+            PlayerAction action;
+            action = (PlayerAction)rn.Next(6);
+
+            /*
+              Код пользователя
+            */           
 
 
 
-
-return action;
-}
-}
+            return action;
+        }
+    }
 }

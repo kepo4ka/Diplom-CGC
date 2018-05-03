@@ -133,6 +133,22 @@ namespace ClassLibrary_CGC
                             player.Y = j;
                             Players.Add(player);
                             break;
+                        case 6:
+                            Bonus ttbonus = new Bonus();
+                            ttbonus.X = i;
+                            ttbonus.Y = j;
+                            ttbonus.Type = BonusType.Ammunition;
+                            ttbonus.Visible = true;
+                            Bonuses.Add(ttbonus);
+                            break;
+                        case 7:
+                            Bonus tttbonus = new Bonus();
+                            tttbonus.X = i;
+                            tttbonus.Y = j;
+                            tttbonus.Type = BonusType.Radius;
+                            tttbonus.Visible = true;
+                            Bonuses.Add(tttbonus);
+                            break;
                         default:
                             break;
                     }
@@ -1109,8 +1125,7 @@ namespace ClassLibrary_CGC
     public class Config
     {
         public static int gameTicksMax = 300;
-        public static int all_game_client_max_wait_timeout = 120000;
-        public static int one_tick_client_wait_time = 2000;
+        public static int client_wait_time = 1500;
         public static int client_program_memory_quote = 64;
 
         public static int bonuses_count = 3;
