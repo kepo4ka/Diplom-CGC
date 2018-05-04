@@ -31,6 +31,7 @@
             this.savedGameButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.mapPathLabel = new System.Windows.Forms.Label();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.comboBox4 = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -51,7 +52,6 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.realGameButton = new System.Windows.Forms.Button();
             this.load_custom_map = new System.Windows.Forms.Button();
-            this.mapPathLabel = new System.Windows.Forms.Label();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -103,6 +103,15 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Игра в реальном времени";
             // 
+            // mapPathLabel
+            // 
+            this.mapPathLabel.AutoSize = true;
+            this.mapPathLabel.Location = new System.Drawing.Point(334, 283);
+            this.mapPathLabel.Name = "mapPathLabel";
+            this.mapPathLabel.Size = new System.Drawing.Size(132, 13);
+            this.mapPathLabel.TabIndex = 17;
+            this.mapPathLabel.Text = "Имя загруженной карты";
+            // 
             // groupBox6
             // 
             this.groupBox6.BackColor = System.Drawing.SystemColors.ButtonFace;
@@ -111,7 +120,7 @@
             this.groupBox6.Controls.Add(this.path4_btn);
             this.groupBox6.Controls.Add(this.path4_lab);
             this.groupBox6.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
-            this.groupBox6.ForeColor = System.Drawing.Color.DimGray;
+            this.groupBox6.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.groupBox6.Location = new System.Drawing.Point(250, 171);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Size = new System.Drawing.Size(230, 91);
@@ -127,7 +136,9 @@
             "Не использовать этого игрока",
             "Ждать ручного запуска для отладки",
             "Загрузить стратегию из файла *.cs",
-            "Использовать стандартного Бота"});
+            "Бот, двигающийся случайно",
+            "Неподвижный Бот",
+            "Бот \"туда-сюда\""});
             this.comboBox4.Location = new System.Drawing.Point(6, 18);
             this.comboBox4.Name = "comboBox4";
             this.comboBox4.Size = new System.Drawing.Size(218, 21);
@@ -171,7 +182,7 @@
             this.groupBox5.Controls.Add(this.path3_btn);
             this.groupBox5.Controls.Add(this.path3_lab);
             this.groupBox5.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
-            this.groupBox5.ForeColor = System.Drawing.Color.DodgerBlue;
+            this.groupBox5.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.groupBox5.Location = new System.Drawing.Point(10, 171);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(230, 91);
@@ -187,7 +198,9 @@
             "Не использовать этого игрока",
             "Ждать ручного запуска для отладки",
             "Загрузить стратегию из файла *.cs",
-            "Использовать стандартного Бота"});
+            "Бот, двигающийся случайно",
+            "Неподвижный Бот",
+            "Бот \"туда-сюда\""});
             this.comboBox3.Location = new System.Drawing.Point(6, 18);
             this.comboBox3.Name = "comboBox3";
             this.comboBox3.Size = new System.Drawing.Size(218, 21);
@@ -230,7 +243,7 @@
             this.groupBox4.Controls.Add(this.comboBox2);
             this.groupBox4.Controls.Add(this.path2_lab);
             this.groupBox4.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
-            this.groupBox4.ForeColor = System.Drawing.Color.LimeGreen;
+            this.groupBox4.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.groupBox4.Location = new System.Drawing.Point(250, 78);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(230, 91);
@@ -259,7 +272,9 @@
             "Не использовать этого игрока",
             "Ждать ручного запуска для отладки",
             "Загрузить стратегию из файла *.cs",
-            "Использовать стандартного Бота"});
+            "Бот, двигающийся случайно",
+            "Неподвижный Бот",
+            "Бот \"туда-сюда\""});
             this.comboBox2.Location = new System.Drawing.Point(6, 18);
             this.comboBox2.Name = "comboBox2";
             this.comboBox2.Size = new System.Drawing.Size(218, 21);
@@ -282,7 +297,7 @@
             this.groupBox3.Controls.Add(this.path1_lab);
             this.groupBox3.Controls.Add(this.comboBox1);
             this.groupBox3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
-            this.groupBox3.ForeColor = System.Drawing.Color.Crimson;
+            this.groupBox3.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.groupBox3.Location = new System.Drawing.Point(10, 78);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(230, 91);
@@ -322,7 +337,9 @@
             "Не использовать этого игрока",
             "Ждать ручного запуска для отладки",
             "Загрузить стратегию из файла *.cs",
-            "Использовать стандартного Бота"});
+            "Бот, двигающийся случайно",
+            "Неподвижный Бот",
+            "Бот \"туда-сюда\""});
             this.comboBox1.Location = new System.Drawing.Point(6, 18);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(218, 21);
@@ -348,15 +365,6 @@
             this.load_custom_map.Text = "Загрузить Свою карту";
             this.load_custom_map.UseVisualStyleBackColor = true;
             this.load_custom_map.Click += new System.EventHandler(this.load_custom_map_Click);
-            // 
-            // mapPathLabel
-            // 
-            this.mapPathLabel.AutoSize = true;
-            this.mapPathLabel.Location = new System.Drawing.Point(334, 283);
-            this.mapPathLabel.Name = "mapPathLabel";
-            this.mapPathLabel.Size = new System.Drawing.Size(132, 13);
-            this.mapPathLabel.TabIndex = 17;
-            this.mapPathLabel.Text = "Имя загруженной карты";
             // 
             // StartPage
             // 

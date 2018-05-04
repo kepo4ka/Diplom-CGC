@@ -405,6 +405,12 @@ namespace Bomber_wpf
                 case 3:
                     paths[i] = "";
                     break;
+                case 4:
+                    paths[i] = "wait_bot";
+                    break;
+                case 5:
+                    paths[i] = "right_left";
+                    break;
             }
         }
 

@@ -1039,7 +1039,8 @@ namespace ClassLibrary_CGC
 
         public override PlayerAction Play()
         {
-            if (X%2==0)
+            int t = rnd.Next(10);           
+            if (t%2==0)
             {
                 return PlayerAction.Right;
             }
