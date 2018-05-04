@@ -1011,6 +1011,12 @@ namespace ClassLibrary_CGC
     [Serializable]
     public class XYInfo
     {
+
+         
+        public bool Free { get; set; }
+
+
+
         Player player;
         Bonus bonus;
         List<Lava> lavas;
@@ -1125,7 +1131,7 @@ namespace ClassLibrary_CGC
     public class Config
     {
         public static int gameTicksMax = 300;
-        public static int client_wait_time = 1500;
+        public static int wait_time = 1500;
         public static int client_program_memory_quote = 64;
 
         public static int bonuses_count = 3;
@@ -1137,7 +1143,7 @@ namespace ClassLibrary_CGC
         public static int player_kill_points = 20;
         public static int player_survive_points = 20;
         public static int player_cell_destroy_points = 1;
-        public static int player_win_points = 100;
+        public static int player_win_points = 40;
         public static int player_bonus_find_points = 4;
 
         public static Color cell_destructible_color = Color.Bisque;
