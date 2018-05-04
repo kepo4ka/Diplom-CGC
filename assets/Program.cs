@@ -134,7 +134,7 @@ namespace User_client
                     Log("gamestring recieved compressed length " + gamestring.Length);
 
                     gamestring = DecompressString(gamestring);
-
+                    
                     Log("gamestring recieved decompressed length " + gamestring.Length);
 
 
@@ -146,7 +146,7 @@ namespace User_client
 
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
-
+					RemovePhantomBonuses();
 
                     try
                     {
@@ -274,6 +274,18 @@ namespace User_client
                 }
 
                 return Encoding.UTF8.GetString(buffer);
+            }
+        }
+		
+		 public static void RemovePhantomBonuses()
+        {
+            for (int i = 0; i < gameBoard.Bonuses.Count; i++)
+            {
+                if (gameBoard.Bonuses[i].Visible ==false)
+                {
+                    gameBoard.Bonuses.RemoveAt(i);
+                    i--;                        
+                }
             }
         }
     }
