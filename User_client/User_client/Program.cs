@@ -138,10 +138,10 @@ namespace User_client
 
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
+                    RemovePhantomBonuses();
 
                     try
                     {
-
                         DEBUGMYCODE();
                         Console.WriteLine("action - " + myUser.ACTION.ToString());
                     }
@@ -277,6 +277,20 @@ namespace User_client
                 return Encoding.UTF8.GetString(buffer);
             }
         }
+
+
+        public static void RemovePhantomBonuses()
+        {
+            for (int i = 0; i < gameBoard.Bonuses.Count; i++)
+            {
+                if (gameBoard.Bonuses[i].Visible ==false)
+                {
+                    gameBoard.Bonuses.RemoveAt(i);
+                    i--;                        
+                }
+            }
+        }
+
 
     }
 }
