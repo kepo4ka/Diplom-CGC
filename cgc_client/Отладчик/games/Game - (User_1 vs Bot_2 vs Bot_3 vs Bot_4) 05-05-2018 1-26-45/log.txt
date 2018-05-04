@@ -1,0 +1,139 @@
+[05-05-2018 1-21-49] : serverStart SocketException: Обычно разрешается только одно использование адреса сокета (протокол/сетевой адрес/порт) 
+
+[05-05-2018 1-24-45] : SEND User_1: gameboardjson compressed length - 1688 
+
+[05-05-2018 1-24-45] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-24-45] : User_1 action = Bomb 
+
+[05-05-2018 1-24-46] : SEND User_1: gameboardjson compressed length - 1752 
+
+[05-05-2018 1-24-46] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-24-46] : User_1 action = Bomb 
+
+[05-05-2018 1-24-47] : SEND User_1: gameboardjson compressed length - 1772 
+
+[05-05-2018 1-24-47] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-24-47] : User_1 action = Bomb 
+
+[05-05-2018 1-24-48] : SEND User_1: gameboardjson compressed length - 1780 
+
+[05-05-2018 1-24-48] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-24-48] : User_1 action = Bomb 
+
+[05-05-2018 1-24-53] : 97115 
+
+[05-05-2018 1-24-56] : DeleteDirectory ERROR: Отказано в доступе по пути "ClassLibrary_CGC.dll". 
+
+[05-05-2018 1-25-18] : Не удалось загрузить карту из стандартных карт: Не удалось найти часть пути "H:\Cloudmail\Sources\C#\Diplom-CGC\cgc_client\assets\maps". 
+
+[05-05-2018 1-25-18] : Не удалось загрузить Пользовальскую карту: Неверное имя файла 
+
+[05-05-2018 1-25-18] : Не удалось загрузить карту из стандартных карт: Не удалось найти часть пути "H:\Cloudmail\Sources\C#\Diplom-CGC\cgc_client\assets\maps". 
+
+[05-05-2018 1-25-18] : Игровое поле пришлось сгенерировать, т.к. не получилось его создать другим способом 
+
+[05-05-2018 1-25-18] : ERROR in CompileAndStartUserFiles: Не удалось найти часть пути "H:\Cloudmail\Sources\C#\Diplom-CGC\cgc_client\assets\Newtonsoft.Json.dll".    в Bomber_wpf.Compiler.Compile()
+   в Bomber_wpf.Form1.CompileAndStartUserFiles(String path, Int32 i) 
+
+[05-05-2018 1-25-37] : SEND User_1: gameboardjson compressed length - 1740 
+
+[05-05-2018 1-25-37] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-25-37] : User_1 action = Bomb 
+
+[05-05-2018 1-25-38] : SEND User_1: gameboardjson compressed length - 1760 
+
+[05-05-2018 1-25-38] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-25-38] : User_1 action = Bomb 
+
+[05-05-2018 1-25-39] : SEND User_1: gameboardjson compressed length - 1780 
+
+[05-05-2018 1-25-39] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-25-39] : User_1 action = Bomb 
+
+[05-05-2018 1-25-40] : SEND User_1: gameboardjson compressed length - 1840 
+
+[05-05-2018 1-25-40] : Стратегия игрока User_1 превысила ограничение по времени и Бот будет стоять на месте : Не удается записать данные в транспортное соединение: Удаленный хост принудительно разорвал существующее подключение. 
+
+[05-05-2018 1-25-46] : 102639 
+
+[05-05-2018 1-26-03] : SEND User_1: gameboardjson compressed length - 1788 
+
+[05-05-2018 1-26-03] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-26-03] : User_1 action = Up 
+
+[05-05-2018 1-26-03] : SEND User_1: gameboardjson compressed length - 1772 
+
+[05-05-2018 1-26-03] : SEND User_1: userjson compressed length - 152 
+
+[05-05-2018 1-26-03] : User_1 action = Up 
+
+[05-05-2018 1-26-04] : SEND User_1: gameboardjson compressed length - 1772 
+
+[05-05-2018 1-26-04] : SEND User_1: userjson compressed length - 152 
+
+[05-05-2018 1-26-04] : User_1 action = Up 
+
+[05-05-2018 1-26-05] : SEND User_1: gameboardjson compressed length - 1876 
+
+[05-05-2018 1-26-05] : SEND User_1: userjson compressed length - 152 
+
+[05-05-2018 1-26-05] : User_1 action = Up 
+
+[05-05-2018 1-26-06] : SEND User_1: gameboardjson compressed length - 1892 
+
+[05-05-2018 1-26-06] : SEND User_1: userjson compressed length - 152 
+
+[05-05-2018 1-26-06] : User_1 action = Up 
+
+[05-05-2018 1-26-07] : SEND User_1: gameboardjson compressed length - 1872 
+
+[05-05-2018 1-26-07] : SEND User_1: userjson compressed length - 152 
+
+[05-05-2018 1-26-07] : User_1 action = Up 
+
+[05-05-2018 1-26-08] : SEND User_1: gameboardjson compressed length - 1888 
+
+[05-05-2018 1-26-08] : SEND User_1: userjson compressed length - 152 
+
+[05-05-2018 1-26-08] : User_1 action = Up 
+
+[05-05-2018 1-26-09] : DeleteDirectory ERROR: Отказано в доступе по пути "ClassLibrary_CGC.dll". 
+
+[05-05-2018 1-26-35] : SEND User_1: gameboardjson compressed length - 1644 
+
+[05-05-2018 1-26-35] : SEND User_1: userjson compressed length - 144 
+
+[05-05-2018 1-26-36] : User_1 action = Up 
+
+[05-05-2018 1-26-36] : SEND User_1: gameboardjson compressed length - 1684 
+
+[05-05-2018 1-26-36] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-26-36] : User_1 action = Up 
+
+[05-05-2018 1-26-37] : SEND User_1: gameboardjson compressed length - 1692 
+
+[05-05-2018 1-26-37] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-26-37] : User_1 action = Up 
+
+[05-05-2018 1-26-38] : SEND User_1: gameboardjson compressed length - 1712 
+
+[05-05-2018 1-26-38] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-26-38] : User_1 action = Up 
+
+[05-05-2018 1-26-39] : SEND User_1: gameboardjson compressed length - 1804 
+
+[05-05-2018 1-26-39] : Стратегия игрока User_1 превысила ограничение по времени и Бот будет стоять на месте : Не удается записать данные в транспортное соединение: Удаленный хост принудительно разорвал существующее подключение. 
+
+[05-05-2018 1-26-45] : 107093 
+

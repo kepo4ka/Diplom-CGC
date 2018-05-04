@@ -1,0 +1,18 @@
+12
+4
+User_1 Bot_2 Bot_3 Bot_4 
+3 0 1 2 
+StandartMap2
+W W W W 
+W R U R 
+U L B W 
+U R U L 
+U R B B 
+U D W B 
+W B W L 
+W B W W 
+W U W D 
+W R W D 
+W U W D 
+W U W D 
+

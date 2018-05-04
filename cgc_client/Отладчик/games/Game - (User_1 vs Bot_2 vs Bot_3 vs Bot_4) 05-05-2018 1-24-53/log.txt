@@ -1,0 +1,28 @@
+[05-05-2018 1-21-49] : serverStart SocketException: Обычно разрешается только одно использование адреса сокета (протокол/сетевой адрес/порт) 
+
+[05-05-2018 1-24-45] : SEND User_1: gameboardjson compressed length - 1688 
+
+[05-05-2018 1-24-45] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-24-45] : User_1 action = Bomb 
+
+[05-05-2018 1-24-46] : SEND User_1: gameboardjson compressed length - 1752 
+
+[05-05-2018 1-24-46] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-24-46] : User_1 action = Bomb 
+
+[05-05-2018 1-24-47] : SEND User_1: gameboardjson compressed length - 1772 
+
+[05-05-2018 1-24-47] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-24-47] : User_1 action = Bomb 
+
+[05-05-2018 1-24-48] : SEND User_1: gameboardjson compressed length - 1780 
+
+[05-05-2018 1-24-48] : SEND User_1: userjson compressed length - 148 
+
+[05-05-2018 1-24-48] : User_1 action = Bomb 
+
+[05-05-2018 1-24-53] : 97115 
+
