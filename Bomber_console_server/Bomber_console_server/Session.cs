@@ -111,7 +111,7 @@ namespace Bomber_console_server
                 gb.Players.Clear();
             }
           //  SetPseudoPlayers();
-
+          
             try
             {
                 InitUsers();
@@ -141,7 +141,7 @@ namespace Bomber_console_server
                         continue;
                     }
                     TcpClient tcp = server.AcceptTcpClient();
-                    tcp.ReceiveTimeout = Config.client_wait_time;
+                    tcp.ReceiveTimeout = Config.wait_time;
                     if (tcp == null)
                     {
                         continue;
@@ -280,7 +280,7 @@ namespace Bomber_console_server
                 for (int j = 0; j < tempGB.XYinfo.GetLength(1); j++)
                 {
                     var tXYInfo = tempGB.XYinfo[i, j];
-
+                    
                     tXYInfo.Type = tempGB.Cells[i, j].Type;
 
                     for (int ii = 0; ii < tempGB.Players.Count; ii++)
@@ -317,6 +317,10 @@ namespace Bomber_console_server
                             tXYInfo.Bomb = tempGB.Bombs[ii];
                             break;
                         }
+                    }
+                    if (tXYInfo.Type == CellType.None && tXYInfo.Player == null && tXYInfo.Bomb == null && tXYInfo.Bonus == null)
+                    {
+                        tXYInfo.Free = true;
                     }
                 }
             }
@@ -739,7 +743,7 @@ namespace Bomber_console_server
                     tx = pplayer.X + 1;
                     ty = pplayer.Y;
 
-                    if (tx > gb.W - 1 || gb.Cells[tx, ty].Type != CellType.Free)
+                    if (tx > gb.W - 1 || gb.Cells[tx, ty].Type != CellType.None)
                     {
                         break;
                     }
@@ -756,7 +760,7 @@ namespace Bomber_console_server
                     tx = pplayer.X - 1;
                     ty = pplayer.Y;
 
-                    if (tx < 0 || gb.Cells[tx, ty].Type != CellType.Free)
+                    if (tx < 0 || gb.Cells[tx, ty].Type != CellType.None)
                     {
                         break;
                     }
@@ -773,7 +777,7 @@ namespace Bomber_console_server
                     tx = pplayer.X;
                     ty = pplayer.Y + 1;
 
-                    if (ty + 1 > gb.H - 1 || gb.Cells[tx, ty].Type != CellType.Free)
+                    if (ty + 1 > gb.H - 1 || gb.Cells[tx, ty].Type != CellType.None)
                     {
                         break;
                     }
@@ -790,7 +794,7 @@ namespace Bomber_console_server
                     tx = pplayer.X;
                     ty = pplayer.Y - 1;
 
-                    if (pplayer.Y - 1 < 0 || gb.Cells[tx, ty].Type != CellType.Free)
+                    if (pplayer.Y - 1 < 0 || gb.Cells[tx, ty].Type != CellType.None)
                     {
                         break;
                     }
@@ -1257,24 +1261,10 @@ namespace Bomber_console_server
         {
             tempGB = null;
             tempGB = (GameBoard)gb.Clone();
-
-            for (int i = 0; i < tempGB.Cells.GetLength(0); i++)
-            {
-                for (int j = 0; j < tempGB.Cells.GetLength(1); j++)
-                {
-                    if (tempGB.Cells[i,j].Type != CellType.Free)
-                    {
-
-                    }
-                    else
-                    {
-
-                    }
-                }
-            }
-
+            GameBoard tempGBmin = (GameBoard)gb.Clone();
+            tempGBmin.XYinfo = null;
+            gameBoardStates.Add(tempGBmin);
             SetXYInfo();
-            gameBoardStates.Add(tempGB);
             gameboardjson = JsonConvert.SerializeObject(tempGB);
         }
 
@@ -1379,7 +1369,7 @@ namespace Bomber_console_server
 
             for (int i = 0; i < DestroyedCells.Count; i++)
             {
-                DestroyedCells[i].Type = CellType.Free;
+                DestroyedCells[i].Type = CellType.None;
             }
             DestroyedCells.Clear();
         }

@@ -172,6 +172,20 @@ namespace Bomber_wpf
                     {
                         string json = sr.ReadToEnd();
                         gameBoardStates = JsonConvert.DeserializeObject<List<GameBoard>>(json);
+                        List<Bonus> bonu = new List<Bonus>();
+                        for (int k = 0; k < gameBoardStates.Count; k++)
+                        {
+                            for (int i = 0; i < gameBoardStates[k].Bonuses.Count; i++)
+                            {
+                                if (gameBoardStates[k].Bonuses[i].Visible != true)
+                                {
+                                    gameBoardStates[k].Bonuses.RemoveAt(i);
+                                    i--;
+                                }
+                            }
+                        }
+
+
                     }
                     break;
 

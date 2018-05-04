@@ -16,7 +16,7 @@ namespace ClassLibrary_CGC
 
     public enum CellType
     {
-        Free, Indestructible, Destructible
+        None, Indestructible, Destructible
     }
 
 
@@ -87,7 +87,7 @@ namespace ClassLibrary_CGC
                     {
                         X = i,
                         Y = j,
-                        Type = CellType.Free
+                        Type = CellType.None
                     };
                 }
             }
@@ -175,7 +175,7 @@ namespace ClassLibrary_CGC
                     {
                         X = i,
                         Y = j,
-                        Type = CellType.Free
+                        Type = CellType.None
                     };
                 }
             }
@@ -1006,16 +1006,57 @@ namespace ClassLibrary_CGC
     }
 
     /// <summary>
+    /// Неподвижный Бот
+    /// </summary>
+    [Serializable]
+    public class Wait_Bot : Player
+    {
+        public static Random rnd;
+
+        public Wait_Bot()
+        {
+            rnd = new Random();
+        }
+
+        public override PlayerAction Play()
+        {            
+            return PlayerAction.Wait;
+        }
+    }
+
+    /// <summary>
+    /// Маячящий бот
+    /// </summary>
+    [Serializable]
+    public class Right_Left_Bot : Player
+    {
+        public static Random rnd;
+
+        public Right_Left_Bot()
+        {
+            rnd = new Random();
+        }
+
+        public override PlayerAction Play()
+        {
+            if (X%2==0)
+            {
+                return PlayerAction.Right;
+            }
+            else
+            {
+                return PlayerAction.Left;
+            }           
+        }
+    }
+
+    /// <summary>
     /// Объект, содержащий всю информацию о одной клетке и игровых объектах внутри неё
     /// </summary>
     [Serializable]
     public class XYInfo
-    {
-
-         
+    {         
         public bool Free { get; set; }
-
-
 
         Player player;
         Bonus bonus;
@@ -1025,11 +1066,12 @@ namespace ClassLibrary_CGC
 
         public XYInfo()
         {
-            Type = CellType.Free;
+            Type = CellType.None;
             Player = null;
             Bomb = null;
             Bonus = null;
             lavas = new List<Lava>();
+            Free = true;
         }
 
         public XYInfo(XYInfo origin)
@@ -1039,6 +1081,7 @@ namespace ClassLibrary_CGC
             Bomb = origin.Bomb;
             Bonus = origin.Bonus;
             Lavas = origin.Lavas;
+            Free = origin.Free;
         }
 
         /// <summary>
@@ -1080,11 +1123,7 @@ namespace ClassLibrary_CGC
         {
             get
             {
-                if (bonus != null && bonus.Visible == true)
-                {
-                    return bonus;
-                }
-                return null;
+                return bonus;
             }
             set
             {
