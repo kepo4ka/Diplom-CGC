@@ -304,7 +304,6 @@ namespace Bomber_wpf
             else
             {
                 this.Close();
-
                 startPage.Show();
             }
         }
@@ -972,7 +971,7 @@ namespace Bomber_wpf
 
             if (result == DialogResult.Yes)
             {
-                this.Close();
+                this.Hide();
 
                 this.startPage.OpenRealGameForm();
             }
