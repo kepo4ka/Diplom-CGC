@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,19 +12,23 @@ namespace User_class
     {
         public override PlayerAction Play(GameBoard gb)
         {
-            Random rn = new Random();
-            PlayerAction action;
-            if (rn.Next(1, 10) % 2 == 0)
+            PlayerAction action = PlayerAction.Wait;
+            if (gb.Tick == 1)
+            {
+                action = PlayerAction.Bomb;
+            }
+            if (gb.Tick == 2)
+            {
+                action = PlayerAction.Wait;
+            }
+            if (gb.Tick == 3)
             {
                 action = PlayerAction.Up;
             }
-            else
+            if (gb.Tick == 4)
             {
-                action = PlayerAction.Down;
+                action = PlayerAction.Right;
             }
-            /*
-                 Код пользователя
-            */
 
             return action;
         }

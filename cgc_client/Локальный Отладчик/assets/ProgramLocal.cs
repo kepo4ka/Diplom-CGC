@@ -11,6 +11,7 @@ using User_class;
 using Newtonsoft.Json;
 
 
+
 namespace User_client
 {
     class Program
@@ -42,20 +43,21 @@ namespace User_client
                 {
                     server.Close();
                 }
-                Log(e.Message);               
-            }
+                Log(e.Message);
 
-            Environment.Exit(0);
-            //   Console.ReadKey();
+                //  Environment.Exit(0);
+            }
+            Console.ReadKey();
         }
 
         /// <summary>
         /// ФУНКЦИЯ, КОТОРАЯ ИСПОЛЬЗУЕТСЯ ДЛЯ ОТЛАДКИ
         /// </summary>
         public static void DEBUGMYCODE()
-        {            
-           myUser.ACTION = myUser.Play(gameBoard);          
+        {
+            myUser.ACTION = myUser.Play(gameBoard);
         }
+
 
 
         /// <summary>
@@ -75,7 +77,7 @@ namespace User_client
 
             try
             {
-                using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\log.txt", true))
+                using (StreamWriter sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\compiler\\" +  myUser.Name + "\\log.txt", true))
                 {
                     string time = DateTime.Now.ToString("dd-MM-yyyy H-mm-ss");
                     time = "[" + time + "] ";
@@ -126,24 +128,22 @@ namespace User_client
 
                     while (gamestring.Length < length)
                     {
-                        gamestring += ReceiveMessage();                      
+                        gamestring += ReceiveMessage();
                     }
-                                     
-                    gamestring = DecompressString(gamestring);                   
 
+                    gamestring = DecompressString(gamestring);					
                     SendMessage("p");
 
-                    string userstr = ReceiveMessage();                
-                    userstr = DecompressString(userstr);                   
+                    string userstr = ReceiveMessage();
+                    userstr = DecompressString(userstr);
 
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
 
+
                     try
                     {
-
                         DEBUGMYCODE();
-                        Console.WriteLine("action - " + myUser.ACTION.ToString());
                     }
                     catch (Exception er)
                     {
@@ -153,7 +153,7 @@ namespace User_client
 
                     SendMessage((int)myUser.ACTION + "");
 
-                   // Log("My ACTION: " + myUser.ACTION);
+                    Log("My ACTION: " + myUser.ACTION);
                 }
                 catch (Exception e)
                 {
@@ -277,6 +277,9 @@ namespace User_client
                 return Encoding.UTF8.GetString(buffer);
             }
         }
+
+
+
 
     }
 }

@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClassLibrary_CGC">
-      <HintPath>..\..\ClassLibrary_CGC\ClassLibrary_CGC\bin\Debug\ClassLibrary_CGC.dll</HintPath>
+      <HintPath>..\..\assets\ClassLibrary_CGC.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
