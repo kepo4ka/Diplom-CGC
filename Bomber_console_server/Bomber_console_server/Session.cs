@@ -419,18 +419,17 @@ namespace Bomber_console_server
                 //    {
                 //        actions += Helper.ActionToSymbol(tempgb.Players[j].ACTION) + " ";
                 //    }
-                //    sw.WriteLine(actions);
-                //}
-            
-
-
+                //    sw.WriteLine(actions);              //}            
         }
+
+
+
 
         public string GetPlayerCommandsUnity()
         {
             string result = "";
 
-            result += gameBoardStates.Count + "\n";
+            result += gameBoardStates.Count + "\r\n";
 
             string players = "";
             string prioritets = "";
@@ -439,9 +438,10 @@ namespace Bomber_console_server
                 prioritets += Prioritets[i] + " ";
                 players += gb.Players[i].Name + " ";
             }
-            result += players + "\n";
-            result += prioritets + "\n";
-            result += Helper.SpliteEndPath(MapPath) + "\n";
+            result += gb.Players.Count + "\r\n";
+            result += players + "\r\n";
+            result += prioritets + "\r\n";
+            result += Helper.SpliteEndPath(MapPath) + "\r\n";
 
             for (int i = 0; i < gameBoardStates.Count; i++)
             {
@@ -452,7 +452,7 @@ namespace Bomber_console_server
                 {
                     actions += Helper.ActionToSymbol(tempgb.Players[j].ACTION) + " ";
                 }
-                result += actions + "\n";
+                result += actions + "\r\n";
             }
 
             return result;
