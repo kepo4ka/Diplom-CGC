@@ -37,7 +37,7 @@ namespace Bomber_wpf
         string UserCommands = "UserCommands.json";
         string UserCommandsUnity = "UserCommandsUnity.txt";
 
-        string gameResultsFileName = "gameResults.json";
+        string gameResultsFileName = "gameResults.txt";
 
 
         Color[] player_colors = new Color[4]
@@ -47,6 +47,7 @@ namespace Bomber_wpf
 
 
         bool isGameOver = false;
+        bool isVisualizeGameOver = false;
 
         IPAddress serverIp = IPAddress.Parse("127.0.0.1");
         int serverPort;
@@ -130,7 +131,7 @@ namespace Bomber_wpf
                     case "wait":
                         MessageBox.Show("Ждём клиента #" + (i + 1));
                         TcpClient ttcp = server.AcceptTcpClient();
-                        ttcp.ReceiveTimeout = Config.client_wait_time;
+                      //  ttcp.ReceiveTimeout = Config.wait_time;
 
                         User ttuser = (User)CreatePlayer(true, k);
                         usersInfo.Add(new UserInfo(ttuser, ttcp, null));
@@ -145,7 +146,7 @@ namespace Bomber_wpf
                         }
 
                         TcpClient tcp = server.AcceptTcpClient();
-                        tcp.ReceiveTimeout = Config.client_wait_time;
+                    //    tcp.ReceiveTimeout = Config.wait_time;
                         if (tcp == null)
                         {
                             continue;
@@ -225,6 +226,7 @@ namespace Bomber_wpf
         /// </summary>
         public void InitVisualizingGame()
         {
+            isVisualizeGameOver = false;
             gb = savedGameBoardStates[0];
 
             initListView();
@@ -245,11 +247,26 @@ namespace Bomber_wpf
         /// </summary>
         public void NextTickInVisualizingGame()
         {
-            gb = savedGameBoardStates[GameTimer];
-            GameTimer++;
             CheckVisualizingGameOver();
-            DrawAll();
-            UpdateListView();
+
+            if (isVisualizeGameOver == false)
+            {
+                gb = savedGameBoardStates[GameTimer];
+                GameTimer++;               
+                try
+                {
+                    DrawAll();
+                }
+                catch (Exception er)
+                {
+                    MessageBox.Show(er.Message);
+                }
+                UpdateListView();
+            }
+            else
+            {
+                return;
+            }
         }
 
         /// <summary>
@@ -257,7 +274,7 @@ namespace Bomber_wpf
         /// </summary>
         public void CheckVisualizingGameOver()
         {
-            if (GameTimer >= savedGameBoardStates.Count - 1)
+            if (GameTimer >= savedGameBoardStates.Count)
             {
                 VisualizingGameOver();
             }
@@ -269,8 +286,10 @@ namespace Bomber_wpf
         /// </summary>
         public void VisualizingGameOver()
         {
+            isVisualizeGameOver = true;
             game_timer.Stop();
             game_timer.Tick -= visualizing_game_Tick;
+           
 
             var result = DialogResult.No;
             string message = "Воспроизведение завершено!\n Начать заново?";
@@ -313,7 +332,9 @@ namespace Bomber_wpf
             if (gbpseudo == null)
             {
                 gb = new GameBoard();
-                Helper.LOG(Compiler.LogPath, "Игровое поле пришлось сгенерировать, т.к. не получилось его создать другим способом");
+                string error = "Игровое поле пришлось сгенерировать, т.к. не получилось его создать другим способом";
+                Helper.LOG(Compiler.LogPath, error );
+                log_box.AppendText($"{error} \n");
             }
             else
             {
@@ -406,28 +427,6 @@ namespace Bomber_wpf
         }
 
 
-        public void streamWrite(Stream strm, string message)
-        {
-            Helper.LOG(Compiler.LogPath, "send length " + message.Length);
-            using (StreamWriter sw = new StreamWriter(strm))
-            {
-                sw.Write(message);
-                sw.Flush();
-            }
-        }
-
-        public string streamRead(Stream strm)
-        {
-            string message = "";
-            using (StreamReader sr = new StreamReader(strm))
-            {
-                message = sr.ReadToEnd();
-            }
-            Helper.LOG(Compiler.LogPath, "read length " + message.Length);
-            return message;
-        }
-
-
 
 
         /// <summary>
@@ -435,7 +434,7 @@ namespace Bomber_wpf
         /// </summary>
         public void CommunicateWithClients()
         {
-            Helper.LOG(Compiler.LogPath, $"gameboardjson length - {gameboardjson.Length}");
+        //    Helper.LOG(Compiler.LogPath, $"gameboardjson length - {gameboardjson.Length}");
             gameboardjson = Helper.CompressString(gameboardjson);
 
             for (int i = 0; i < usersInfo.Count; i++)
@@ -450,34 +449,44 @@ namespace Bomber_wpf
                     NetworkStream strm = tempUserInfo.client.GetStream();
                     string userjson = JsonConvert.SerializeObject(tempUserInfo.player);
          
-                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: gameboardjson compressed length - {gameboardjson.Length}");
+                   Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: gameboardjson compressed length - {gameboardjson.Length}");
+                    log_box.AppendText($"Отправлена информация (Gameboard) стретегии {tempUserInfo.player.Name} \n");
 
                     SendMessage(tempUserInfo.client.GetStream(), gameboardjson.Length + "");
                     ReceiveMessage(strm);
 
                     SendMessage(tempUserInfo.client.GetStream(), gameboardjson);
                     ReceiveMessage(strm);
-
-                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: userjson length - {userjson.Length}");
-
+                    
                     userjson = Helper.CompressString(userjson);
                     Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: userjson compressed length - {userjson.Length}");
+                    log_box.AppendText($"Отправлена информация (User) стретегии {tempUserInfo.player.Name} \n");
+
 
                     SendMessage(tempUserInfo.client.GetStream(), userjson);
 
                     string action = ReceiveMessage(strm);
                     tempUserInfo.player.ACTION = Helper.DecryptAction(action);
-                    Helper.LOG(Compiler.LogPath, $"{tempUserInfo.player.Name} action = {tempUserInfo.player.ACTION}");
+                    string actionMessage = $"{tempUserInfo.player.Name} action = {tempUserInfo.player.ACTION}";
+
+                    Helper.LOG(Compiler.LogPath, actionMessage);
+                    log_box.AppendText(actionMessage + "\r\n");
+                    log_box.AppendText("-----\r\n");
 
                 }
                 catch (IOException er)
                 {
-                    Helper.LOG(Compiler.LogPath, $"Игрок {usersInfo[i].player.Name} превысил ограничение по времени : {er.Message}");
+                    string error = $"Стратегия игрока {usersInfo[i].player.Name} превысила ограничение по времени и Бот будет стоять на месте : {er.Message}";
+                    Helper.LOG(Compiler.LogPath, error);
+                    log_box.AppendText(error + "\n");
                     PlayerDisconnect(usersInfo[i].player);
                 }
                 catch (Exception er)
                 {
-                    Helper.LOG(Compiler.LogPath, $"CommunicateWithClients ERROR ({usersInfo[i].player.Name}): " + er.Message + " " + er.GetType());
+                    string error = $"Critical ERROR ({usersInfo[i].player.Name}): " + er.Message + " " + er.GetType() + ". Бот будет стоять на месте";
+
+                    Helper.LOG(Compiler.LogPath, error);
+                    log_box.AppendText(error + "\n");
                     PlayerDisconnect(usersInfo[i].player);
                 }
             }
@@ -712,6 +721,8 @@ namespace Bomber_wpf
         public void NextTick()
         {
             CheckGameOver();
+            log_box.AppendText("-------------------\r\n");
+            log_box.AppendText("Ход № " + GameTimer + " \r\n");
 
             if (isGameOver == false)
             {               
@@ -865,7 +876,7 @@ namespace Bomber_wpf
         /// </summary>
         public void GameOver(List<Player> winners)
         {
-            UpdateListView();
+           
             isGameOver = true;
 
             if (winners.Count == 1)
@@ -880,7 +891,10 @@ namespace Bomber_wpf
                 }
             }
 
-          //  gameBoardStates.Add(gb);
+            UpdateListView();
+            DrawAll();
+
+            gameBoardStates.Add(gb);
 
             SaveGameInfo();
             StopClearTempFiles();
@@ -1001,7 +1015,7 @@ namespace Bomber_wpf
                 BinaryFormatter form = new BinaryFormatter();
                 using (FileStream fs = new FileStream($"{gameResultDirectoryName}\\{gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
                 {
-                    form.Serialize(fs, gameBoardStates);
+                   // form.Serialize(fs, gameBoardStates);
                 }
 
                 using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{gameStaterVisualizerJSONFileName}", false))
@@ -1015,8 +1029,8 @@ namespace Bomber_wpf
                 using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{gameResultsFileName}", false))
                 {
                     sw.AutoFlush = true;
-                    string GameResultsJson = JsonConvert.SerializeObject(GetPlayerResult());
-                    sw.Write(GameResultsJson);
+                    string GameResult = GetPlayerResult();
+                    sw.Write(GameResult);
                 }
 
                 using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{UserCommands}", false))
@@ -1085,7 +1099,7 @@ namespace Bomber_wpf
         {
             string result = "";
 
-            result += gameBoardStates.Count + "\n";
+            result += gameBoardStates.Count + "\r\n";
 
             string players = "";
             string prioritets = "";
@@ -1094,9 +1108,10 @@ namespace Bomber_wpf
                 prioritets += Prioritets[i] + " ";
                 players += gb.Players[i].Name + " ";
             }
-            result += players + "\n";
-            result += prioritets + "\n";
-            result += Helper.SpliteEndPath(MapPath) + "\n";
+            result += gb.Players.Count + "\r\n";
+            result += players + "\r\n";
+            result += prioritets + "\r\n";
+            result += Helper.SpliteEndPath(MapPath) + "\r\n";
 
             for (int i = 0; i < gameBoardStates.Count; i++)
             {
@@ -1107,7 +1122,7 @@ namespace Bomber_wpf
                 {
                     actions += Helper.ActionToSymbol(tempgb.Players[j].ACTION) + " ";
                 }
-                result += actions + "\n";
+                result += actions + "\r\n";
             }
 
             return result;
@@ -1119,11 +1134,12 @@ namespace Bomber_wpf
         /// Получить информацию о результатах игроков
         /// </summary>
         /// <returns></returns>
-        private List<Player> GetPlayerResult()
+        private string GetPlayerResult()
         {
+            string result = "";
             if (gameBoardStates.Count < 1)
             {
-                return null;
+                return result;
             }
 
             List<Player> players = new List<Player>();
@@ -1133,10 +1149,12 @@ namespace Bomber_wpf
             for (int i = 0; i < lastGameBoardState.Players.Count; i++)
             {
                 var tplayer = lastGameBoardState.Players[i];
-                players.Add(tplayer);
+
+                result += tplayer.Name + " - " + tplayer.Points + "\r\n";
+              //  players.Add(tplayer);
             }
 
-            return players;
+            return result;
         }
 
 
@@ -1341,15 +1359,19 @@ namespace Bomber_wpf
                 if (tempbonus[i, j] != null && tempbonus[i, j].Visible == true)
                 {
                     tvitya.Points += Config.player_bonus_find_points;
+                    string message = "";
 
                     if (tempbonus[i, j].Type == BonusType.Radius)
                     {
                         tvitya.BangRadius++;
+                        message = $"Подрывник {tvitya.Name} подобрал Бонус \"Запас Дикого Огня\"";
                     }
                     else
                     {
                         tvitya.BombsCount++;
+                        message = $"Подрывник {tvitya.Name} подобрал Бонус \"Склад Бомб\"";
                     }
+                    log_box.AppendText(message + "\r\n");
 
                     gb.Bonuses.Remove(tempbonus[i, j]);
                     tempbonus[i, j] = null;
@@ -1462,7 +1484,7 @@ namespace Bomber_wpf
                     tx = pplayer.X;
                     ty = pplayer.Y + 1;
 
-                    if (ty + 1 > gb.H - 1 || gb.Cells[tx, ty].Type != CellType.Free)
+                    if (ty > gb.H - 1 || gb.Cells[tx, ty].Type != CellType.Free)
                     {
                         break;
                     }
@@ -1479,7 +1501,7 @@ namespace Bomber_wpf
                     tx = pplayer.X;
                     ty = pplayer.Y - 1;
 
-                    if (pplayer.Y - 1 < 0 || gb.Cells[tx, ty].Type != CellType.Free)
+                    if (ty < 0 || gb.Cells[tx, ty].Type != CellType.Free)
                     {
                         break;
                     }
@@ -1626,11 +1648,16 @@ namespace Bomber_wpf
             //    PlayerAddPointsKill(plava);
             //}
             pplayer.Health--;
-
+            
             if (pplayer is User && pplayer.Health < 1)
             {
                 PlayerDisconnect(pplayer);
             }
+            if (pplayer.Health < 1)
+            {
+                log_box.AppendText($"Подрывник {pplayer.Name} погиб в бою \r\n");
+            }
+
         }
 
 

@@ -66,7 +66,7 @@ namespace Bomber_wpf
                         playersAddedCount++;
                         break;
                     case "needLoad":
-                        MessageBox.Show("Не выбран файл стратегии для Игрока " + (i+1));
+                        MessageBox.Show("Не выбран файл стратегии для Игрока " + (i + 1));
                         return;
                     default:
                         playersAddedCount++;
@@ -75,7 +75,7 @@ namespace Bomber_wpf
             }
 
             //Если хотя бы два игрока (пользователь или бот)
-            if (playersAddedCount > playersOnBoardCount && playersOnBoardCount!=0)
+            if (playersAddedCount > playersOnBoardCount && playersOnBoardCount != 0)
             {
                 MessageBox.Show("Количество добавленных Ботов должно быть меньше или равно количеству Ботов на указанной карте");
                 return;
@@ -83,6 +83,28 @@ namespace Bomber_wpf
 
             if (playersAddedCount > 1)
             {
+                Compiler cpm = new Compiler();
+                Random rn = new Random();
+                if (string.IsNullOrWhiteSpace(UserMapPath))
+                {
+                    try
+                    {
+                        DirectoryInfo di = new DirectoryInfo(Compiler.mapsPath);
+                        var files = di.GetFiles("*.txt");
+                        if (files.Length < 1)
+                        {
+                            throw new Exception($"Не удалось найти ни одной карты в папке {Compiler.mapsPath}");
+                        }
+                        UserMapPath = files[rn.Next(0, files.Length)].FullName;
+                    }
+                    catch (Exception er)
+                    {
+                        Helper.LOG(Compiler.LogPath, $"Не удалось загрузить карту из стандартных карт: {er.Message}");
+
+                    }
+                }
+
+
                 Form1 realGameForm = new Form1(this, UserMapPath);
                 this.Hide();
                 realGameForm.Show();
@@ -231,11 +253,16 @@ namespace Bomber_wpf
         }
 
 
-        private void path2_btn_Click(object sender, EventArgs e)
+        private void path2_btn_Click_1(object sender, EventArgs e)
         {
             path2_lab.Text = AddBotsFiles(1);
             ToolTip t = new ToolTip();
             t.SetToolTip(path2_lab, path2_lab.Text);
+        }
+
+        private void path2_btn_Click(object sender, EventArgs e)
+        {
+
         }
 
         private void path3_btn_Click(object sender, EventArgs e)
@@ -276,6 +303,7 @@ namespace Bomber_wpf
 
         private void load_custom_map_Click(object sender, EventArgs e)
         {
+            mapPathLabel.Text = "";
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Txt file | *.txt";
             ofd.InitialDirectory = Directory.GetCurrentDirectory();
@@ -284,15 +312,18 @@ namespace Bomber_wpf
             {
                 UserMapPath = ofd.FileName;
             }
-            
+
             if (String.IsNullOrWhiteSpace(UserMapPath))
             {
                 return;
             }
+
+            mapPathLabel.Text = Helper.SpliteEndPath(UserMapPath);
+
             int[,] tempgbppseudo = new int[1, 1];
             try
             {
-                tempgbppseudo= Helper.GetGameboardFromFile(UserMapPath);
+                tempgbppseudo = Helper.GetGameboardFromFile(UserMapPath);
             }
             catch
             {
@@ -304,7 +335,7 @@ namespace Bomber_wpf
             {
                 for (int j = 0; j < tempgbppseudo.GetLength(1); j++)
                 {
-                    if (tempgbppseudo[i,j]==5)
+                    if (tempgbppseudo[i, j] == 5)
                     {
                         playersOnBoardCount++;
                     }
@@ -316,13 +347,13 @@ namespace Bomber_wpf
 
         public void CheckComboBoxes()
         {
-            if (comboBox1.SelectedIndex ==0 && comboBox2.SelectedIndex ==0 && comboBox3.SelectedIndex ==0 && comboBox4.SelectedIndex ==0)
+            if (comboBox1.SelectedIndex == 0 && comboBox2.SelectedIndex == 0 && comboBox3.SelectedIndex == 0 && comboBox4.SelectedIndex == 0)
             {
                 realGameButton.Enabled = false;
                 return;
             }
 
-            realGameButton.Enabled = true;  
+            realGameButton.Enabled = true;
         }
 
 
@@ -384,7 +415,7 @@ namespace Bomber_wpf
             ComboboxChange(comboBox4, path4_btn, path4_lab, 3);
         }
 
-     
+
     }
 }
 

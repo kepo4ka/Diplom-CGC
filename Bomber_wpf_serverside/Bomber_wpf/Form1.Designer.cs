@@ -109,7 +109,7 @@
             this.log_box.Multiline = true;
             this.log_box.Name = "log_box";
             this.log_box.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.log_box.Size = new System.Drawing.Size(1002, 173);
+            this.log_box.Size = new System.Drawing.Size(1008, 221);
             this.log_box.TabIndex = 6;
             this.log_box.TextChanged += new System.EventHandler(this.log_box_TextChanged);
             this.log_box.DoubleClick += new System.EventHandler(this.log_box_DoubleClick);
@@ -118,18 +118,17 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1032, 450);
+            this.ClientSize = new System.Drawing.Size(1032, 689);
             this.Controls.Add(this.log_box);
             this.Controls.Add(this.slow_btn);
             this.Controls.Add(this.control_btn);
             this.Controls.Add(this.fast_btn);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.panel1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Bomberman Game";
-            this.TopMost = true;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.groupBox1.ResumeLayout(false);
