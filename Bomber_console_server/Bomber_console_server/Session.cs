@@ -84,14 +84,14 @@ namespace Bomber_console_server
         public void InitGame()
         {
             isGameOver = false;
-
+            MapPath = "";
             GameTimer = Config.gameTicksMax;
             pseudoplayers = new List<Player>();
             Prioritets = new List<int>();
             DestroyedPlayers = new List<Player>();
             DestroyedCells = new List<Cell>();
 
-            gbpseudo = Helper.LoadMap(MapPath);
+            gbpseudo = Helper.LoadMap(out MapPath);
 
             if (gbpseudo == null)
             {
@@ -124,7 +124,7 @@ namespace Bomber_console_server
             catch (Exception er)
             {
                 StopClearTempFiles();
-                throw new Exception(er.Message);
+                throw new Exception(er.Message + er.StackTrace);
             }
         }
 
@@ -141,7 +141,7 @@ namespace Bomber_console_server
                         continue;
                     }
                     TcpClient tcp = server.AcceptTcpClient();
-                    tcp.ReceiveTimeout = Config.wait_time;
+                    tcp.ReceiveTimeout = 5000;
                     if (tcp == null)
                     {
                         continue;
@@ -265,7 +265,7 @@ namespace Bomber_console_server
                 }
             }
 
-          //  gameBoardStates.Add(gb);
+            gameBoardStates.Add(gb);
             SaveGameInfo();
             StopClearTempFiles();
         }
@@ -392,7 +392,8 @@ namespace Bomber_console_server
             Compiler.SaveGameResult(GetPlayerResult());
             Compiler.SavePlayersAllCommands(GetPlayersInfoAllTicks());
             Compiler.Compress();
-            Compiler.SavePlayersAllCommandsUnity(GetPlayerCommandsUnity());              
+            string unity = GetPlayerCommandsUnity();
+            Compiler.SavePlayersAllCommandsUnity(unity);              
 
                 //sw.WriteLine(gameBoardStates.Count);
 

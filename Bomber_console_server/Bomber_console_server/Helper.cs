@@ -360,8 +360,9 @@ namespace Bomber_console_server
 
 
 
-        public static int[,] LoadMap(string MapPath)
+        public static int[,] LoadMap(out string MapPath)
         {
+            MapPath = "";
             int[,] gameboardpseudo = null;
             Compiler cmp = new Compiler();
 
@@ -380,6 +381,7 @@ namespace Bomber_console_server
             }
             catch (Exception er)
             {
+              
                 Helper.LOG(Compiler.LogPath, $"Не удалось загрузить карту из стандартных карт: {er.Message}");
                 return null;
             }
@@ -399,25 +401,30 @@ namespace Bomber_console_server
             {
                 for (int i = 0; i < gameboardpseudo.GetLength(0); i++)
                 {
-                    string line = sr.ReadLine();
-                    string[] linesplit = line.Split();
-
-                    if (linesplit.Length != gameboardpseudo.GetLength(1))
+                    string line = "";
+                    if ((line = sr.ReadLine().Trim()) != "")
                     {
-                        throw new Exception("Ошибка при парсинге карты: неверное количество столбцов");
-                    }
+                        string[] linesplit = line.Split();
 
-                    for (int j = 0; j < linesplit.Length; j++)
-                    {
-                        int t = 0;
-                        if (!int.TryParse(linesplit[j], out t))
+                        if (linesplit.Length != gameboardpseudo.GetLength(1))
                         {
-                            throw new Exception($"Ошибка при парсинге карты: нечисловое значение [{i},{j}");
+                            throw new Exception("Ошибка при парсинге карты: неверное количество столбцов");
                         }
-                        gameboardpseudo[i, j] = t;
+
+                        for (int j = 0; j < linesplit.Length; j++)
+                        {
+                            int t = 0;
+                            if (!int.TryParse(linesplit[j], out t))
+                            {
+                                throw new Exception($"Ошибка при парсинге карты: нечисловое значение [{i},{j}");
+                            }
+                            gameboardpseudo[i, j] = t;
+                        }
                     }
                 }
             }
+
+
 
             //gameboardpseudo[0, 0] = gameboardpseudo[0, 0] == 5 ? 5 : 0;
             //gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] = gameboardpseudo[0, gameboardpseudo.GetLength(1) - 1] == 5 ? 5 : 0;
@@ -427,6 +434,7 @@ namespace Bomber_console_server
             return gameboardpseudo;
 
         }
+
 
 
     }
