@@ -614,7 +614,7 @@ namespace Bomber_wpf
             DrawBonuses();
             DrawBombs();
             DrawPlayers();
-            DrawGrid();
+         //   DrawGrid();
         }
 
         /// <summary>
@@ -1029,11 +1029,11 @@ namespace Bomber_wpf
 
 
 
-                BinaryFormatter form = new BinaryFormatter();
-                using (FileStream fs = new FileStream($"{gameResultDirectoryName}\\{gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
-                {
-                    // form.Serialize(fs, gameBoardStates);
-                }
+                //BinaryFormatter form = new BinaryFormatter();
+                //using (FileStream fs = new FileStream($"{gameResultDirectoryName}\\{gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
+                //{
+                //     form.Serialize(fs, gameBoardStates);
+                //}
 
                 using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{gameStaterVisualizerJSONFileName}", false))
                 {
@@ -1050,12 +1050,13 @@ namespace Bomber_wpf
                     sw.Write(GameResult);
                 }
 
-                using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{UserCommands}", false))
-                {
-                    sw.AutoFlush = true;
-                    string allTicksPlayersStats = JsonConvert.SerializeObject(GetPlayersInfoAllTicks());
-                    sw.Write(allTicksPlayersStats);
-                }
+                //using (StreamWriter sw = new StreamWriter($"{gameResultDirectoryName}\\{UserCommands}", false))
+                //{
+                //    sw.AutoFlush = true;
+                //    string allTicksPlayersStats = JsonConvert.SerializeObject(GetPlayersInfoAllTicks());
+                //    sw.Write(allTicksPlayersStats);
+                //}
+
                 File.Copy($"{Compiler.LogPath}", $"{gameResultDirectoryName}\\log.txt");
 
 
@@ -1845,6 +1846,10 @@ namespace Bomber_wpf
                 {
                     var tcell = gb.Cells[i, j];
 
+                    if ((i+j)%2==0)
+                    {
+                        g.FillRectangle(Brushes.LightGray, tcell.X * cw, tcell.Y * cw, cw, cw);
+                    }
 
                     if (tcell.Type == CellType.Destructible)
                     {
@@ -2112,7 +2117,7 @@ namespace Bomber_wpf
             switch (type)
             {
                 case 1:
-                    block = new Bitmap(Properties.Resources.house);
+                    block = new Bitmap(Properties.Resources.house1);
                     break;
                 case 2:
                     block = new Bitmap(Properties.Resources.indescrible);
