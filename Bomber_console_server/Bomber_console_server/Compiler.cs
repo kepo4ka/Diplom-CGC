@@ -126,7 +126,7 @@ namespace Bomber_console_server
 
             try
             {
-              //  DeleteOnlyDirectories(HostUserPath);
+                DeleteOnlyDirectories(HostUserPath);
                 DeleteOnlyDirectories($"{main_php_path}");
             }
             catch (Exception er)
