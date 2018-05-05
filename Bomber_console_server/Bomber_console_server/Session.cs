@@ -141,7 +141,7 @@ namespace Bomber_console_server
                         continue;
                     }
                     TcpClient tcp = server.AcceptTcpClient();
-                    tcp.ReceiveTimeout = 5000;
+                    tcp.ReceiveTimeout = Config.wait_time;
                     if (tcp == null)
                     {
                         continue;
@@ -1312,11 +1312,13 @@ namespace Bomber_console_server
                 {
                     Helper.LOG(Compiler.LogPath, $"Игрок {usersInfo[i].player.Name} превысил ограничение по времени : {er.Message}");                
                     PlayerDisconnect(usersInfo[i].player);
+                    usersInfo[i].player.ACTION = PlayerAction.Wait;
                 }
                 catch (Exception er)
                 {
                     Helper.LOG(Compiler.LogPath, "CommunicateWithClients ERROR: " + er.Message);
                     PlayerDisconnect(usersInfo[i].player);
+                    usersInfo[i].player.ACTION = PlayerAction.Wait;
                 }
             }
         }
