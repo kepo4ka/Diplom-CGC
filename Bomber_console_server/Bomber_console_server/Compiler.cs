@@ -146,11 +146,11 @@ namespace Bomber_console_server
         public static void SaveGameStatesForVisualizer(List<GameBoard> gameBoardStates)
         {
 
-            BinaryFormatter form = new BinaryFormatter();
-            using (FileStream fs = new FileStream($"{HostUserPath}\\{MyPath.gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
-            {
-                form.Serialize(fs, gameBoardStates);
-            }
+            //BinaryFormatter form = new BinaryFormatter();
+            //using (FileStream fs = new FileStream($"{HostUserPath}\\{MyPath.gameStaterVisualizerFileName}", FileMode.OpenOrCreate))
+            //{
+            //    form.Serialize(fs, gameBoardStates);
+            //}
 
             using (StreamWriter sw = new StreamWriter($"{HostUserPath}\\{MyPath.gameStaterVisualizerJSONFileName}", false))
             {
@@ -201,8 +201,19 @@ namespace Bomber_console_server
 
         public static void Compress()
         {
-            Helper.Compress($"{HostUserPath}\\{MyPath.gameStaterVisualizerFileName}", $"{HostUserPath}\\{MyPath.gameStaterVisualizeFileNamerDATtoGZ}");
+        //    Helper.Compress($"{HostUserPath}\\{MyPath.gameStaterVisualizerFileName}", $"{HostUserPath}\\{MyPath.gameStaterVisualizeFileNamerDATtoGZ}");
             Helper.Compress($"{HostUserPath}\\{MyPath.gameStaterVisualizerJSONFileName}", $"{HostUserPath}\\{MyPath.gameStaterVisualizeFileNamerJSONtoGZ}");
+            if (File.Exists($"{HostUserPath}\\{MyPath.gameStaterVisualizerFileName}"))
+            {
+                try
+                {
+                    File.Delete($"{HostUserPath}\\{MyPath.gameStaterVisualizerJSONFileName}");
+                }
+                catch
+                {
+
+                }
+            }
         }
 
 

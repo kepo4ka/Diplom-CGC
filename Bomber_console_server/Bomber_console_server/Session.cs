@@ -390,7 +390,7 @@ namespace Bomber_console_server
 
             Compiler.SaveGameStatesForVisualizer(gameBoardStates);
             Compiler.SaveGameResult(GetPlayerResult());
-            Compiler.SavePlayersAllCommands(GetPlayersInfoAllTicks());
+           // Compiler.SavePlayersAllCommands(GetPlayersInfoAllTicks());
             Compiler.Compress();
             string unity = GetPlayerCommandsUnity();
             Compiler.SavePlayersAllCommandsUnity(unity);              
