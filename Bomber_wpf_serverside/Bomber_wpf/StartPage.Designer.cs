@@ -52,6 +52,8 @@
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.realGameButton = new System.Windows.Forms.Button();
             this.load_custom_map = new System.Windows.Forms.Button();
+            this.version_label = new System.Windows.Forms.Label();
+            this.github_link = new System.Windows.Forms.LinkLabel();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox6.SuspendLayout();
@@ -368,11 +370,32 @@
             this.load_custom_map.UseVisualStyleBackColor = true;
             this.load_custom_map.Click += new System.EventHandler(this.load_custom_map_Click);
             // 
+            // version_label
+            // 
+            this.version_label.AutoSize = true;
+            this.version_label.Location = new System.Drawing.Point(9, 410);
+            this.version_label.Name = "version_label";
+            this.version_label.Size = new System.Drawing.Size(0, 13);
+            this.version_label.TabIndex = 3;
+            // 
+            // github_link
+            // 
+            this.github_link.AutoSize = true;
+            this.github_link.Location = new System.Drawing.Point(351, 410);
+            this.github_link.Name = "github_link";
+            this.github_link.Size = new System.Drawing.Size(150, 13);
+            this.github_link.TabIndex = 4;
+            this.github_link.TabStop = true;
+            this.github_link.Text = "Скачать последнюю версию";
+            this.github_link.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.github_link_LinkClicked);
+            // 
             // StartPage
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(513, 413);
+            this.ClientSize = new System.Drawing.Size(513, 432);
+            this.Controls.Add(this.github_link);
+            this.Controls.Add(this.version_label);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox2);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -391,6 +414,7 @@
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -419,5 +443,7 @@
         private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.Button path1_btn;
         private System.Windows.Forms.Label mapPathLabel;
+        private System.Windows.Forms.Label version_label;
+        private System.Windows.Forms.LinkLabel github_link;
     }
 }

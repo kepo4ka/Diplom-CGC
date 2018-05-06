@@ -5,6 +5,8 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using ClassLibrary_CGC;
 using System.IO;
+using System.Net;
+using System.Diagnostics;
 
 using Newtonsoft.Json;
 
@@ -19,6 +21,7 @@ namespace Bomber_wpf
         string UserMapPath = "";
         int playersOnBoardCount = 0;
         int playersAddedCount = 0;
+        string githubLink = "";
 
 
         public StartPage()
@@ -30,6 +33,8 @@ namespace Bomber_wpf
             labels[1] = null;
             labels[2] = null;
             labels[3] = null;
+           
+            
 
             for (int i = 1; i < paths.Length; i++)
             {
@@ -40,8 +45,29 @@ namespace Bomber_wpf
             comboBox2.SelectedIndex = 3;
             comboBox3.SelectedIndex = 3;
             comboBox4.SelectedIndex = 3;
+
+            SetVersions();
         }
 
+
+        public void SetVersions()
+        {
+            version_label.Text = "Текущая версия: " + Properties.Settings.Default["v"] + " ";
+
+            try
+            {
+                string[] githubInfo = Helper.GetLastVersion();
+
+                version_label.Text += "Последняя версия: " + githubInfo[0] + " ";
+
+                Properties.Settings.Default["v"] = githubInfo[0];
+                githubLink = githubInfo[1];
+            }
+            catch
+            {
+                version_label.Text += "Не удалось узнать последнюю версию";
+            }
+        }
 
         private void realGameButton_Click(object sender, EventArgs e)
         {
@@ -435,7 +461,10 @@ namespace Bomber_wpf
             ComboboxChange(comboBox4, path4_btn, path4_lab, 3);
         }
 
-
+        private void github_link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start(githubLink);
+        }
     }
 }
 

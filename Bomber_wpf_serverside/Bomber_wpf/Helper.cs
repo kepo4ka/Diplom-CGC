@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Net;
 using System.Net.Sockets;
 
+using Newtonsoft.Json;
 using ClassLibrary_CGC;
 using System.Diagnostics;
 using System.Windows.Forms;
@@ -17,7 +18,7 @@ namespace Bomber_wpf
     class Helper
     {
 
-       public static Random rn = new Random();
+        public static Random rn = new Random();
 
         /// <summary>
         /// Распознать Команду из строки
@@ -36,7 +37,7 @@ namespace Bomber_wpf
             else
             {
                 pa = PlayerAction.Wait;
-            }       
+            }
             return pa;
         }
 
@@ -75,7 +76,7 @@ namespace Bomber_wpf
 
             return sb.ToString();
         }
-        
+
 
         /// <summary>
         /// Выделить из Пути файла имя этого Файла
@@ -187,7 +188,7 @@ namespace Bomber_wpf
             procStartInfo.CreateNoWindow = false;
 
             Process proc = new Process();
-          
+
 
             //запуск CMD
             proc.StartInfo = procStartInfo;
@@ -221,7 +222,7 @@ namespace Bomber_wpf
             ProcessStartInfo procStartInfo =
                 new ProcessStartInfo(
                     "cmd", "/c " + stroke);
-           
+
             procStartInfo.UseShellExecute = false;
             // не создавать окно CMD
             procStartInfo.CreateNoWindow = false;
@@ -232,8 +233,8 @@ namespace Bomber_wpf
             //запуск CMD
             proc.StartInfo = procStartInfo;
             proc.Start();
-         
-           
+
+
         }
 
 
@@ -270,7 +271,7 @@ namespace Bomber_wpf
                     {
                         f.Delete();
                     }
-    
+
                     foreach (DirectoryInfo df in diA)
                     {
                         DeleteDirectory(df.FullName);
@@ -286,7 +287,7 @@ namespace Bomber_wpf
             {
                 Helper.LOG(Compiler.LogPath, "DeleteDirectory ERROR: " + e.Message);
             }
-        }       
+        }
 
 
         /// <summary>
@@ -317,7 +318,7 @@ namespace Bomber_wpf
             }
         }
 
-      
+
         /// <summary>
         /// Считать данные из файла
         /// </summary>
@@ -342,7 +343,7 @@ namespace Bomber_wpf
                         return null;
                     }
                 }
-            }              
+            }
             return data;
         }
 
@@ -629,5 +630,56 @@ namespace Bomber_wpf
             }
             return symbol;
         }
+
+
+
+        public static string[] GetLastVersion()
+        {
+            string tag = "";
+            string [] content;
+
+            string site = "http://195.133.48.168";
+            site = "http://195.133.48.168/core/getgithubuserfileslast.php?JOPA=mercyme";
+
+            try
+            {
+                // Создаём объект WebClient
+                using (var webClient = new WebClient())
+                {
+                    // Выполняем запрос по адресу и получаем ответ в виде строки
+
+                    var response = webClient.DownloadString(site);
+                    
+                    content = response.Trim().Split();
+                    if (content.Length!=2)
+                    {
+                        throw new Exception();
+                    }
+                }
+            }
+            catch
+            {
+                site = "http://localhost/core/getgithubuserfileslast.php?JOPA=mercyme";
+                // Создаём объект WebClient
+                using (var webClient = new WebClient())
+                {
+                    // Выполняем запрос по адресу и получаем ответ в виде строки
+
+                    var response = webClient.DownloadString(site);
+                    content = response.Trim().Split();
+                    if (content.Length != 2)
+                    {
+                        throw new Exception();
+                    }
+                }
+            }
+
+            return content;
+        }
+
+
+
+
+
     }
 }
