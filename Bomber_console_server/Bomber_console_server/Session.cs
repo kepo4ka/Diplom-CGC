@@ -1275,9 +1275,9 @@ namespace Bomber_console_server
         /// </summary>
         public void CommunicateWithClients()
         {
-            Helper.LOG(Compiler.LogPath, $"gameboardjson length - {gameboardjson.Length}");
+            int lenght = gameboardjson.Length;
             gameboardjson = Helper.CompressString(gameboardjson);
-            Helper.LOG(Compiler.LogPath, $"gameboardjson compressed length - {gameboardjson.Length}");
+          //  Helper.LOG(Compiler.LogPath, $"gameboardjson {lenght} {gameboardjson.Length}");
 
             for (int i = 0; i < usersInfo.Count; i++)
             {
@@ -1297,16 +1297,15 @@ namespace Bomber_console_server
                     SendMessage(tempUserInfo.client.GetStream(), gameboardjson);
                     ReceiveMessage(strm);
 
-                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: userjson length - {userjson.Length}");
 
                     userjson = Helper.CompressString(userjson);
-                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}: userjson compressed length - {userjson.Length}");
+                    Helper.LOG(Compiler.LogPath, $"SEND {tempUserInfo.player.Name}");
 
                     SendMessage(tempUserInfo.client.GetStream(), userjson);
-
+                    
                     string action = ReceiveMessage(strm);
                     tempUserInfo.player.ACTION = Helper.DecryptAction(action);
-                    Helper.LOG(Compiler.LogPath, $"{tempUserInfo.player.Name} action = {tempUserInfo.player.ACTION}");
+                    Helper.LOG(Compiler.LogPath, $"RECIEVE {tempUserInfo.player.Name} action = {tempUserInfo.player.ACTION}");
                 }
                 catch (IOException er)
                 {

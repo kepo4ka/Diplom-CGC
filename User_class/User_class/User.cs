@@ -15,11 +15,6 @@ namespace User_class
         static int lastY;
         static PlayerAction lastAction;
 
-
-
-
-
-
         /// <summary>
         /// Задать Команду на следующий Ход
         /// </summary>
