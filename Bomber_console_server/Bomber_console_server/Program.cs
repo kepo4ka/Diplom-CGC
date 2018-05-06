@@ -66,7 +66,7 @@ namespace Bomber_console_server
                         catch (Exception e)
                         {
                             Helper.LOG("log.txt", $"При работе игровой сессии №{waitGames[i].id} возникла Ошибка: {e.Message}");
-                            mysql.SetSandboxGameErrorStatus(waitGames[i].id, e.Message);
+                            mysql.SetSandboxGameErrorStatus(waitGames[i].id, "Ошибка при работе сессии");
                         }
                     }
                 }
