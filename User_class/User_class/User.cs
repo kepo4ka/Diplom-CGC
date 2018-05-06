@@ -11,8 +11,8 @@ namespace User_class
     {
         public GameBoard gameboard;
 
-         static int lastX;
-         static int lastY;
+        static int lastX;
+        static int lastY;
         static PlayerAction lastAction;
 
 
@@ -28,12 +28,10 @@ namespace User_class
         public override PlayerAction Play(GameBoard gb)
         {
             /*
-                Код пользователя
+                Пример тупого бота, который пытается дойти до центра (не учивая другие объект)
             */
             Random rn = new Random();
             gameboard = gb;
-
-            Console.WriteLine(gameboard.Bonuses.Count);
 
             PlayerAction action = PlayerAction.Wait;
 
@@ -41,31 +39,12 @@ namespace User_class
             int difY = (Y - gb.H / 2);
 
 
-            if (lastAction == PlayerAction.Right && gb.XYinfo[X + 1, Y].Free != true)
-            {
-               return action = PlayerAction.Bomb;
-            }
-            if (lastAction == PlayerAction.Bomb && gb.XYinfo[X + 1, Y].Free != true)
-            {
-               return action = PlayerAction.Left;
-            }
-            if (lastAction == PlayerAction.Left)
-            {
-               return action = PlayerAction.Left;
-            }
-
-
-            if (gb.XYinfo[lastX, lastY].Free != true)
-            {
-                action = PlayerAction.Bomb;
-            }
-            else if (difY > 0)
+            if (difY > 0)
                 action = PlayerAction.Up;
             else if (difY < 0)
             {
                 action = PlayerAction.Down;
             }
-
             else if (difX > 0)
             {
                 action = PlayerAction.Left;
@@ -78,10 +57,6 @@ namespace User_class
             lastX = X;
             lastY = Y;
             lastAction = action;
-
-            /*
-             Код пользователя
-           */
 
 
             return action;
