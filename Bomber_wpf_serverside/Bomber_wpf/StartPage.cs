@@ -52,15 +52,11 @@ namespace Bomber_wpf
 
         public void SetVersions()
         {
-            version_label.Text = "Текущая версия: " + Properties.Settings.Default["v"] + " ";
-
             try
             {
                 string[] githubInfo = Helper.GetLastVersion();
 
                 version_label.Text += "Последняя версия: " + githubInfo[0] + " ";
-
-                Properties.Settings.Default["v"] = githubInfo[0];
                 githubLink = githubInfo[1];
             }
             catch

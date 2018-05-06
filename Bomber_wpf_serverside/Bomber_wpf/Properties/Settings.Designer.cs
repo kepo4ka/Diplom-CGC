@@ -22,17 +22,5 @@ namespace Bomber_wpf.Properties {
                 return defaultInstance;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("V1.1")]
-        public string v {
-            get {
-                return ((string)(this["v"]));
-            }
-            set {
-                this["v"] = value;
-            }
-        }
     }
 }
