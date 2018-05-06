@@ -640,9 +640,6 @@ namespace Bomber_wpf
 
             string site = "http://195.133.48.168";
             site = "http://195.133.48.168/core/getgithubuserfileslast.php?JOPA=mercyme";
-
-            try
-            {
                 // Создаём объект WebClient
                 using (var webClient = new WebClient())
                 {
@@ -655,25 +652,7 @@ namespace Bomber_wpf
                     {
                         throw new Exception();
                     }
-                }
-            }
-            catch
-            {
-                site = "http://localhost/core/getgithubuserfileslast.php?JOPA=mercyme";
-                // Создаём объект WebClient
-                using (var webClient = new WebClient())
-                {
-                    // Выполняем запрос по адресу и получаем ответ в виде строки
-
-                    var response = webClient.DownloadString(site);
-                    content = response.Trim().Split();
-                    if (content.Length != 2)
-                    {
-                        throw new Exception();
-                    }
-                }
-            }
-
+                }   
             return content;
         }
 
