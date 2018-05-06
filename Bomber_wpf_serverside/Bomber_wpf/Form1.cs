@@ -90,6 +90,7 @@ namespace Bomber_wpf
             MapPath = mapPath;
             Compiler cmp = new Compiler();
 
+           
             InitGame();
 
         }
@@ -362,7 +363,7 @@ namespace Bomber_wpf
                 }
                 gb.Players.Clear();
             }
-
+           
 
             // SetPseudoPlayers();
 

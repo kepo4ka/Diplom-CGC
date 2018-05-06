@@ -79,6 +79,11 @@ namespace User_class
             lastY = Y;
             lastAction = action;
 
+            /*
+             Код пользователя
+           */
+
+
             return action;
         }
 
