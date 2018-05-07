@@ -64,7 +64,7 @@ namespace Bomber_console_server
         {
             output = "";
             errorput = "";
-            Helper.startProccess($"docker-machine ssh default docker stop {ID}", out output, out errorput);
+            Helper.startProccess($"docker-machine ssh default docker kill {ID}", out output, out errorput);
 
             if (errorput !="")
             {
