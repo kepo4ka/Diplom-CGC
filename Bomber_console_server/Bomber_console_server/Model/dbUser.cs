@@ -14,6 +14,6 @@ namespace Bomber_console_server.Model
       public  int last_upload_time;
        public int compiledAndUsedSourceId;
         public string user_exe_phppath;
-       
+        public bool is_bot;       
     }
 }

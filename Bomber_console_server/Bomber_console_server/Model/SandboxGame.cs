@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Bomber_console_server.Model
 {
-   public class SandboxGame
+   public class Game
     {
      public   int id;
        public int datetime;

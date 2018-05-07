@@ -16,7 +16,7 @@ namespace Bomber_console_server
         public static string gameStaterVisualizeFileNamerJSONtoGZ = "VisualizerJSON.gz";
         public static string gameResultsFileName = "gameResults.json";
 
-       public static string binDir = "C:\\xampp\\htdocs\\sandbox";
+       public static string binDir = "C:\\xampp\\htdocs";
        public static string source_file_name = "strategy.cs";
        public static string exe_file_name = "Program.exe";
 

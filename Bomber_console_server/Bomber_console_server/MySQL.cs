@@ -19,9 +19,10 @@ namespace Bomber_console_server
         string Connect = "Database=test;Data Source=127.0.0.1;User Id=root;Password=''; CharSet=utf8";       
         static string binDir = MyPath.binDir;
         static string exe_file_name = MyPath.exe_file_name;
+        
 
         public MySQL()
-        {
+        {          
             myConnection = new MySqlConnection(Connect);
             myConnection.Open();    
         }
@@ -45,7 +46,7 @@ namespace Bomber_console_server
                     {                       
                         ug.group_id = reader.GetInt16(0);   
                         dbUser us = new dbUser();
-                        us.id = reader.GetInt16(1);
+                        us.id = reader.GetInt16(1);                       
                         ug.users.Add(us);
                     }
                 }
@@ -59,11 +60,11 @@ namespace Bomber_console_server
             return ug;          
         }
 
-        public List<SandboxGame> GetWaitGameSandBox()
+        public List<Game> GetWaitGame(string type)
         {
-            List<SandboxGame> games_list = new List<SandboxGame>();
+            List<Game> games_list = new List<Game>();
 
-            string sql = "SELECT * FROM sandbox_game_session WHERE status='wait'";
+            string sql = $"SELECT * FROM {type} WHERE status='wait'";
 
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = myConnection;
@@ -75,16 +76,19 @@ namespace Bomber_console_server
                 {
                     while (reader.Read())
                     {
-                        SandboxGame sb = new SandboxGame();
+                        Game sb = new Game();
                         sb.id = reader.GetInt16(0);
                         sb.datetime = reader.GetInt32(1);
                         UserGroup ug = new UserGroup();
                         ug.group_id = reader.GetInt16(2);                        
                         sb.usergroup = ug;
                         sb.status = reader.GetString(3);
-                        dbUser us = new dbUser();
-                        us.id = reader.GetInt16(4);
-                        sb.creator = us;
+                        if (type == "sandbox")
+                        {
+                            dbUser us = new dbUser();
+                            us.id = reader.GetInt16(4);
+                            sb.creator = us;
+                        }
                         games_list.Add(sb);
                     }
                 }
@@ -96,10 +100,10 @@ namespace Bomber_console_server
                 games_list[i].creator = GetUserSourceInfo(games_list[i].creator.id);
             }
 
-
-
             return games_list;
         }
+
+
 
 
 
@@ -130,10 +134,59 @@ namespace Bomber_console_server
         }
 
 
-        public bool SetSandboxGameWorkStatus(int id)
+        public List<dbUser> GetOnlyUsers(int group_id)
+        {
+            List<dbUser> users = new List<dbUser>();
+
+            string sql = $"SELECT users.id FROM users, users_group WHERE users_group.group_id={group_id} AND users_group.user_id = users.id AND users.is_bot=1";
+
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = myConnection;
+            cmd.CommandText = sql;
+
+            using (System.Data.Common.DbDataReader reader = cmd.ExecuteReader())
+            {
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        dbUser us = new dbUser();
+                        us.id = reader.GetInt16(0);
+                        users.Add(us);              
+                    }
+                }
+            }
+            return users;
+        }
+
+        public bool CheckUserIsBot(int user_id)
+        {
+            List<dbUser> users = new List<dbUser>();
+
+            string sql = $"SELECT users.id FROM users WHERE users.id = @id AND users.is_bot=1";
+
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = myConnection;
+            cmd.CommandText = sql;
+            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = user_id;
+
+
+            using (System.Data.Common.DbDataReader reader = cmd.ExecuteReader())
+            {
+                if (reader.HasRows)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+
+        public bool SetGameWorkStatus(int id, string type)
         {
             //   string sql = "UPDATE sources SET error='', exe_path='', status=@status WHERE user_id=@user_id";
-            string sql = $"UPDATE sandbox_game_session SET status='work' WHERE id=@id";
+            string sql = $"UPDATE {type} SET status='work' WHERE id=@id";
 
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = myConnection;
@@ -151,9 +204,9 @@ namespace Bomber_console_server
 
 
 
-        public bool SetSandboxGameCompiledStatus(int id, string gameresult)
+        public bool SetGameCompiledStatus(int id, string type, string gameresult)
         {
-            string sql = $"UPDATE sandbox_game_session SET result='{gameresult}', errors='', status='ok' WHERE id=@id";
+            string sql = $"UPDATE {type} SET result='{gameresult}', errors='', status='ok' WHERE id=@id";
 
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = myConnection;
@@ -170,9 +223,9 @@ namespace Bomber_console_server
         }
 
 
-        public bool SetSandboxGameErrorStatus(int id, string error)
+        public bool SetGameErrorStatus(int id, string type, string error)
         {
-            string sql = $"UPDATE sandbox_game_session SET errors='{error}', status='error' WHERE id=@id";
+            string sql = $"UPDATE {type} SET errors='{error}', status='error' WHERE id=@id";
 
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = myConnection;
@@ -187,6 +240,27 @@ namespace Bomber_console_server
             }
             return false;
         }
+
+
+        public bool AddUserRatingPoints(int user_id, int points)
+        {
+            string sql = $"UPDATE users SET points= points + {points} WHERE id=@id";
+
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = myConnection;
+            cmd.CommandText = sql;
+
+            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = user_id;
+
+            int affected_rows = cmd.ExecuteNonQuery();
+            if (affected_rows == 1)
+            {
+                return true;
+            }
+            return false;
+        }
+
+
 
     }
 }

@@ -46,14 +46,14 @@ namespace Bomber_console_server
             LogPath = $"{HostUserPath}\\log.txt";           
         }
 
-        public Compiler(string _php_dir_path, int i, int sandboxId)
+        public Compiler(string _php_dir_path, int i, int gameId, string type)
         {
             if (_php_dir_path == "" || _php_dir_path == null)
             {
                 throw new Exception("Неверное имя exe файла");
             }
 
-            main_php_path = $"{MyPath.binDir}\\{sandboxId}";
+            main_php_path = $"{MyPath.binDir}\\{type}\\{gameId}";
             php_dir_path = _php_dir_path;
 
             CscEXE_Path = RuntimeEnvironment.GetRuntimeDirectory() + "csc.exe";
@@ -72,7 +72,7 @@ namespace Bomber_console_server
             mapsPath = assets_Path + "\\" + "maps";
 
             HostUserPath = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
-            HostUserPath += $"\\docker_temp\\{Session.gameID}";
+            HostUserPath += $"\\docker_temp\\{Session.GameType}";
             LogPath = $"{HostUserPath}\\log.txt";
             containerName = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPA");           
            
