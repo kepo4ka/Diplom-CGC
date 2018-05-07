@@ -1460,8 +1460,8 @@ namespace Bomber_wpf
         {
             Bomb[,] tbombs_mass = ListToMass(gb.Bombs);
             Player[,] tplayer_mass = ListToMass(gb.Players);
-            int tx = 0;
-            int ty = 0;
+            int tx = pplayer.X;
+            int ty = pplayer.Y;
 
             switch (pplayer.ACTION)
             {
@@ -1534,7 +1534,7 @@ namespace Bomber_wpf
                     break;
 
                 case PlayerAction.Bomb:
-                    if (pplayer.BombsCount > 0)
+                    if (pplayer.BombsCount > 0 && tbombs_mass[tx,ty] == null)
                     {
                         CreateBomb(pplayer);
                         pplayer.BombsCount--;

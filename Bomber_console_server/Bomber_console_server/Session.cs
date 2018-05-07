@@ -33,11 +33,11 @@ namespace Bomber_console_server
         List<GameBoard> savedGameBoardStates;
         string[] php_compiled_path;
         static int phpgameID;
-        string MapPath;
+        string MapPath;       
 
-        public static string gameID;
+        public static string GameType;
         public string gameboardjson;
-        static SandboxGame sandboxgame;
+        static Game sandboxgame;
 
         List<int> Prioritets = new List<int>();
 
@@ -49,7 +49,7 @@ namespace Bomber_console_server
 
         Random rn = new Random();
 
-        public Session(SandboxGame _sandboxgame)
+        public Session(Game _sandboxgame, string type)
         {
             Compiler cmp = new Compiler();
 
@@ -63,8 +63,18 @@ namespace Bomber_console_server
             gameBoardStates = new List<GameBoard>();
             savedGameBoardStates = new List<GameBoard>();
 
-            // gameID = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
-            gameID = "JOPAJOPA";          
+            // GameType = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
+
+            GameType = "sandbox";
+
+            switch (type)
+            {
+                case "rating":
+                    GameType = "rating";
+                    break;
+                    
+            }
+                  
 
             isGameOver = false;
 
@@ -735,8 +745,8 @@ namespace Bomber_console_server
         {
             Bomb[,] tbombs_mass = ListToMass(gb.Bombs);
             Player[,] tplayer_mass = ListToMass(gb.Players);
-            int tx = 0;
-            int ty = 0;
+            int tx = pplayer.X;
+            int ty = pplayer.Y;
 
             switch (pplayer.ACTION)
             {
@@ -809,7 +819,7 @@ namespace Bomber_console_server
                     break;
 
                 case PlayerAction.Bomb:
-                    if (pplayer.BombsCount > 0)
+                    if (pplayer.BombsCount > 0 && tbombs_mass[tx,ty]==null)
                     {
                         CreateBomb(pplayer);
                         pplayer.BombsCount--;
@@ -1182,7 +1192,7 @@ namespace Bomber_console_server
         {
             try
             {
-                Compiler compiler = new Compiler(php_exe_path, i, sandboxgame.id);
+                Compiler compiler = new Compiler(php_exe_path, i, sandboxgame.id, GameType);
                 // compiler.Compile();
                 compiler.StartProccess(serverPort);
                 //  Thread.Sleep(1000);
