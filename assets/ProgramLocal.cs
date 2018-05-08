@@ -45,9 +45,9 @@ namespace User_client
                 }
                 Log(e.Message);
 
-                //  Environment.Exit(0);
+                Environment.Exit(0);
             }
-            Console.ReadKey();
+          //  Console.ReadKey();
         }
 
         /// <summary>
@@ -161,8 +161,8 @@ namespace User_client
                     connected = false;
                     if (server != null)
                         server.Close();
-                    Console.ReadKey();
-                   //   Environment.Exit(0);
+                  //  Console.ReadKey();
+                      Environment.Exit(0);
                 }
             }
         }
