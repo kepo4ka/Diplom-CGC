@@ -37,18 +37,18 @@ namespace Bomber_console_server
         static void MonitoringGames()
         {
             mysql = new MySQL();
-            Helper.LOG("log.txt", "Поиск ожидающих игровых сессий...");
+            Console.WriteLine("MonitoringGames start...");
 
             while (true)
             {
-
                 gameType = "sandbox";
                 WorkWithWaitGames();
 
                 gameType = "rating";
                 WorkWithWaitGames();
-                
 
+                gameType = "final";
+                WorkWithWaitGames();
 
                 Thread.Sleep(5000);
             }
@@ -76,6 +76,7 @@ namespace Bomber_console_server
                             dbUser tempUser = waitGames[i].usergroup.users[j];
                             tempUser.user_exe_phppath = $"{MyPath.binDir}\\{gameType}\\{waitGames[i].id}\\{tempUser.id}";
                         }
+
                         Session session = new Session(waitGames[i], $"{gameType}");
 
                         string json = OpenGameResultFile(waitGames[i].id);
@@ -103,6 +104,26 @@ namespace Bomber_console_server
                                 }
                             }
                         }
+                        if (gameType =="final")
+                        {
+                            List<Player> users = JsonConvert.DeserializeObject<List<Player>>(json);
+
+                            for (int k = 0; k < waitGames[i].usergroup.users.Count; k++)
+                            {
+                                var tempUser = waitGames[i].usergroup.users[k];                             
+
+                                for (int j = 0; j < users.Count; j++)
+                                {
+                                    if (int.Parse(users[j].ID) == tempUser.id)
+                                    {
+                                        mysql.AddUserFinalPoints(tempUser.id, users[j].Points);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+
 
 
                         mysql.SetGameCompiledStatus(waitGames[i].id, gameType, json);
@@ -111,7 +132,7 @@ namespace Bomber_console_server
                     catch (Exception e)
                     {
                         Helper.LOG("log.txt", $"При работе игровой сессии ({gameType}) №{waitGames[i].id} возникла Ошибка: {e.Message}");
-                        mysql.SetGameErrorStatus(waitGames[i].id, gameType, "Ошибка при работе сессии");
+                        mysql.SetGameErrorStatus(waitGames[i].id, gameType, $"Ошибка при работе сессии: {e.Message}");
                     }
                 }
             }

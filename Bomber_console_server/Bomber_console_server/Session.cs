@@ -65,14 +65,19 @@ namespace Bomber_console_server
 
             // GameType = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPAJOPA");
 
-            GameType = "sandbox";
+           
 
             switch (type)
             {
                 case "rating":
                     GameType = "rating";
                     break;
-                    
+                case "sandbox":
+                    GameType = "sandbox";
+                    break;
+                case "final":
+                    GameType = "final";
+                    break;                    
             }
                   
 
@@ -331,6 +336,10 @@ namespace Bomber_console_server
                     if (tXYInfo.Type == CellType.None && tXYInfo.Player == null && tXYInfo.Bomb == null && tXYInfo.Bonus == null)
                     {
                         tXYInfo.Free = true;
+                    }
+                    else
+                    {
+                        tXYInfo.Free = false;
                     }
                 }
             }

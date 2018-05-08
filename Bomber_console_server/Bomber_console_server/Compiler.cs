@@ -72,7 +72,7 @@ namespace Bomber_console_server
             mapsPath = assets_Path + "\\" + "maps";
 
             HostUserPath = Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)).FullName;
-            HostUserPath += $"\\docker_temp\\{Session.GameType}";
+            HostUserPath += $"\\docker_temp\\{type}";
             LogPath = $"{HostUserPath}\\log.txt";
             containerName = Helper.CalculateMD5Hash(DateTime.Now.Millisecond * Helper.rn.NextDouble() + "JOPA");           
            
