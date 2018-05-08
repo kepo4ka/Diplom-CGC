@@ -260,6 +260,23 @@ namespace Bomber_console_server
             return false;
         }
 
+        public bool AddUserFinalPoints(int user_id, int points)
+        {
+            string sql = $"UPDATE final_points SET points= points + {points} WHERE user_id=@id";
+
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = myConnection;
+            cmd.CommandText = sql;
+
+            cmd.Parameters.AddWithValue("@id", SqlDbType.Int).Value = user_id;
+
+            int affected_rows = cmd.ExecuteNonQuery();
+            if (affected_rows == 1)
+            {
+                return true;
+            }
+            return false;
+        }
 
 
     }
