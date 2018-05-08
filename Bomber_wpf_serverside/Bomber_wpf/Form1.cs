@@ -450,7 +450,7 @@ namespace Bomber_wpf
         /// </summary>
         public void CommunicateWithClients()
         {
-            //    Helper.LOG(Compiler.LogPath, $"gameboardjson length - {gameboardjson.Length}");                
+            //  Helper.LOG(Compiler.LogPath, $"gameboardjson length - {gameboardjson.Length}");                
 
             for (int i = 0; i < usersInfo.Count; i++)
             {
@@ -727,7 +727,7 @@ namespace Bomber_wpf
             gameBoardStates.Add(tempGBmin);
             SetXYInfo();
             gameboardjson = JsonConvert.SerializeObject(tempGB);
-            gameboardjson = Helper.CompressString(gameboardjson);
+            gameboardjson = Helper.CompressString(gameboardjson);          
         }
 
 
@@ -883,6 +883,10 @@ namespace Bomber_wpf
                     if (tXYInfo.Type == CellType.None && tXYInfo.Player == null && tXYInfo.Bomb == null && tXYInfo.Bonus == null)
                     {
                         tXYInfo.Free = true;
+                    }
+                    else
+                    {
+                        tXYInfo.Free = false;
                     }
 
                 }
