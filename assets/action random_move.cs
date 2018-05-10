@@ -15,7 +15,7 @@ namespace User_class
         {
             PlayerAction action = PlayerAction.Wait;
             action = (PlayerAction)rn.Next(6);
-			if (action = PlayerAction.Bomb)
+			if (action == PlayerAction.Bomb)
 			{
 				action = PlayerAction.Wait;
 			}
