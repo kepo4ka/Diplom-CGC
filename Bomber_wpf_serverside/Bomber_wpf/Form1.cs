@@ -1892,6 +1892,11 @@ namespace Bomber_wpf
                     PlayerID = _bomb.PlayerID
                 };
                 gb.Lavas.Add(tlava);
+
+                if (gb.Cells[i, _bomb.Y].Type==CellType.Destructible)
+                {
+                    break;
+                }
             }
 
 
@@ -1910,6 +1915,11 @@ namespace Bomber_wpf
                     PlayerID = _bomb.PlayerID
                 };
                 gb.Lavas.Add(tlava);
+
+                if (gb.Cells[i, _bomb.Y].Type == CellType.Destructible)
+                {
+                    break;
+                }
             }
 
 
@@ -1928,6 +1938,11 @@ namespace Bomber_wpf
                     PlayerID = _bomb.PlayerID
                 };
                 gb.Lavas.Add(tlava);
+
+                if (gb.Cells[_bomb.X, j].Type == CellType.Destructible)
+                {
+                    break;
+                }
             }
 
 
@@ -1946,6 +1961,11 @@ namespace Bomber_wpf
                     PlayerID = _bomb.PlayerID
                 };
                 gb.Lavas.Add(tlava);
+
+                if (gb.Cells[_bomb.X, j].Type == CellType.Destructible)
+                {
+                    break;
+                }
             }
         }
 
