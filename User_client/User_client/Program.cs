@@ -9,6 +9,8 @@ using System.Diagnostics;
 using ClassLibrary_CGC;
 using User_class;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 
 
 namespace User_client
@@ -26,6 +28,17 @@ namespace User_client
 
         static void Main(string[] args)
         {
+
+            try
+            {
+                ConfigInit();
+            }
+            catch (Exception er)
+            {
+                Log(er.Message);
+                Environment.Exit(0);              
+            }
+
             try
             {
                 Connect();
@@ -42,7 +55,7 @@ namespace User_client
                 {
                     server.Close();
                 }
-                Log(e.Message);               
+                Log(e.Message);
             }
 
             Environment.Exit(0);
@@ -53,10 +66,28 @@ namespace User_client
         /// ФУНКЦИЯ, КОТОРАЯ ИСПОЛЬЗУЕТСЯ ДЛЯ ОТЛАДКИ
         /// </summary>
         public static void DEBUGMYCODE()
-        {            
-           myUser.ACTION = myUser.Play(gameBoard);          
+        {
+            myUser.ACTION = myUser.Play(gameBoard);
         }
 
+
+        /// <summary>
+        /// Получить Настройки из соответствующего файла
+        /// </summary>
+        public static void ConfigInit()
+        {
+            using (StreamReader sr = new StreamReader("config.json"))
+            {
+                string config_str = sr.ReadToEnd();
+
+                if (String.IsNullOrWhiteSpace(config_str))
+                {
+                    throw new Exception("Не удалось настроить Config");
+                }
+                dynamic config_decode = JObject.Parse(config_str);
+                Config.SetConfig(config_decode);
+            }
+        }
 
         /// <summary>
         /// Записать сообщение в Лог
@@ -126,15 +157,15 @@ namespace User_client
 
                     while (gamestring.Length < length)
                     {
-                        gamestring += ReceiveMessage();                      
+                        gamestring += ReceiveMessage();
                     }
-                                     
-                    gamestring = DecompressString(gamestring);                   
+
+                    gamestring = DecompressString(gamestring);
 
                     SendMessage("p");
 
-                    string userstr = ReceiveMessage();                
-                    userstr = DecompressString(userstr);                   
+                    string userstr = ReceiveMessage();
+                    userstr = DecompressString(userstr);
 
                     gameBoard = JsonConvert.DeserializeObject<GameBoard>(gamestring);
                     myUser = JsonConvert.DeserializeObject<User>(userstr);
@@ -153,7 +184,7 @@ namespace User_client
 
                     SendMessage((int)myUser.ACTION + "");
 
-                   // Log("My ACTION: " + myUser.ACTION);
+                    // Log("My ACTION: " + myUser.ACTION);
                 }
                 catch (Exception e)
                 {
@@ -161,8 +192,8 @@ namespace User_client
                     connected = false;
                     if (server != null)
                         server.Close();
-                  //  Console.ReadKey();
-                      Environment.Exit(0);
+                    //  Console.ReadKey();
+                    Environment.Exit(0);
                 }
             }
         }
@@ -283,10 +314,10 @@ namespace User_client
         {
             for (int i = 0; i < gameBoard.Bonuses.Count; i++)
             {
-                if (gameBoard.Bonuses[i].Visible ==false)
+                if (gameBoard.Bonuses[i].Visible == false)
                 {
                     gameBoard.Bonuses.RemoveAt(i);
-                    i--;                        
+                    i--;
                 }
             }
         }

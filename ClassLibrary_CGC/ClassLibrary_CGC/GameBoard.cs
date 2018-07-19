@@ -35,7 +35,7 @@ namespace ClassLibrary_CGC
         Random rn = new Random();
 
         public GameBoard()
-        {
+        {           
             int size = 15;
             W = size;
             H = size;
@@ -46,7 +46,7 @@ namespace ClassLibrary_CGC
             Lavas = new List<Lava>();
             Players = new List<Player>();
 
-            GenerateBonuses(Config.bonuses_count);
+            GenerateBonuses(Config.Bonuses_count);
 
             for (int i = 0; i < XYinfo.GetLength(0); i++)
             {
@@ -737,7 +737,7 @@ namespace ClassLibrary_CGC
         {
             PlayerID = "";
             LiveTime = 0;
-            this.LiveTime = Config.lava_livetime;
+            this.LiveTime = Config.Lava_livetime;
         }
 
         public Lava(Lava origin)
@@ -750,7 +750,7 @@ namespace ClassLibrary_CGC
 
         public Lava(Bomb pbomb)
         {
-            this.LiveTime = Config.lava_livetime;
+            this.LiveTime = Config.Lava_livetime;
             this.PlayerID = pbomb.PlayerID;
         }
 
@@ -810,7 +810,7 @@ namespace ClassLibrary_CGC
             BangRadius = 0;
             Health = 1;
             ACTION = PlayerAction.Wait;
-            BombsCount = Config.player_bombs_count_start;
+            BombsCount = Config.Player_bombs_count_start;
         }
 
         public Player(Player origin)
@@ -832,8 +832,8 @@ namespace ClassLibrary_CGC
             this.ID = ID;
             Health = 1;
             ACTION = PlayerAction.Wait;
-            BombsCount = Config.player_bombs_count_start;
-            BangRadius = Config.bang_start_radius;
+            BombsCount = Config.Player_bombs_count_start;
+            BangRadius = Config.Bang_start_radius;
         }
 
 
@@ -843,8 +843,8 @@ namespace ClassLibrary_CGC
             this.Name = NAME;
             Health = 1;
             ACTION = PlayerAction.Wait;
-            BombsCount = Config.player_bombs_count_start;
-            BangRadius = Config.bang_start_radius;
+            BombsCount = Config.Player_bombs_count_start;
+            BangRadius = Config.Bang_start_radius;
         }
 
         /// <summary>
@@ -1164,40 +1164,4 @@ namespace ClassLibrary_CGC
     }
 
 
-    /// <summary>
-    /// Конфигурация
-    /// </summary>
-    [Serializable]
-    public class Config
-    {
-        public static int gameTicksMax = 300;
-        public static int wait_time = 1500;
-        public static int client_program_memory_quote = 64;
-
-        public static int bonuses_count = 3;
-        public static int bang_start_radius = 1;
-        public static int lava_livetime = 2;
-        public static int bomb_live_time = 3;
-
-        public static int player_bombs_count_start = 1;
-        public static int player_kill_points = 20;
-        public static int player_survive_points = 20;
-        public static int player_cell_destroy_points = 1;
-        public static int player_win_points = 40;
-        public static int player_bonus_find_points = 4;
-
-        public static Color cell_destructible_color = Color.Bisque;
-        public static Color cell_indestructible_color = Color.Black;
-
-        public static Color lava_color = Color.Orange;
-        public static Color bomb_color = Color.Red;
-
-        public static Color bonus_fast = Color.Yellow;
-        public static Color bonus_big = Color.IndianRed;
-
-        public Config()
-        {
-
-        }
-    }
 }
