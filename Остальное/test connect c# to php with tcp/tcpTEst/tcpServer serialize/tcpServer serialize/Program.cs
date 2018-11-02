@@ -13,37 +13,87 @@ namespace tcpServer_serialize
     {
         static void Main(string[] args)
         {
+
+           
+           
+
+
             Int32 port = 9595;
             IPAddress localAddr = IPAddress.Parse("127.0.0.1");
             TcpListener server = new TcpListener(localAddr, port);
             server.Start();
 
+
+            Console.WriteLine("Server");
+
             while (true)
             {
                 TcpClient client = server.AcceptTcpClient();
                 NetworkStream strm = client.GetStream();
-                //IFormatter formatter = new BinaryFormatter();
 
-                //Person p = (Person)formatter.Deserialize(strm);
+                string response = ReceiveMessage(strm);
+                Console.WriteLine(response);
+                SendMessage(bigString(), strm);
+                strm.Close();
+                client.Close();
 
-                //Console.WriteLine("Hi, I'm " + p.FirstName);
-
-                byte[] data = new byte[256];
-                strm.Read(data, 0, data.Length);
-
-                string message = Encoding.UTF8.GetString(data);
-
-                data = Encoding.UTF8.GetBytes("привет");
-                strm.Write(data, 0, data.Length);
-
-                Console.WriteLine(message);
             }
+
             Console.ReadKey();
 
             //strm.Close();
             //client.Close();
             server.Stop();
         }
+
+        /// <summary>
+        /// Отправить сообщение
+        /// </summary>
+        /// <param name="message">Отправляемое сообщение</param>
+        static void SendMessage(string message, NetworkStream stream)
+        {
+            byte[] data = Encoding.Unicode.GetBytes(message);
+            stream.Write(data, 0, data.Length);
+        }
+
+        /// <summary>
+        /// Получить сообщение
+        /// </summary>
+        /// <returns>Полученное сообщение</returns>
+        static string ReceiveMessage(NetworkStream stream)
+        {
+            string message = "";
+
+            byte[] data = new byte[256];
+            StringBuilder builder = new StringBuilder();
+            int bytes = 0;
+            do
+            {
+                bytes = stream.Read(data, 0, data.Length);
+                builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+            }
+            while (stream.DataAvailable);
+            message = builder.ToString();
+            return message;
+        }
+
+        static string bigString()
+        {
+            
+            string add = "odsfjpsodfjposidjpfoijs";
+
+            for (int i = 0; i < 15; i++)
+            {
+                add += add;
+            }
+            
+            Console.WriteLine(add.Length);
+
+            return add;
+
+        }
+
+
     }
 
 
